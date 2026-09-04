@@ -1,136 +1,67 @@
-import React, { useState } from 'react';
-import AuthLayout from './components/AuthLayout';
-import LoginForm from './components/LoginForm';
-import RegisterForm from './components/RegisterForm';
-import TwoFactorModal from './components/TwoFactorModal';
-import ForgotPasswordModal from './components/ForgotPasswordModal';
-import HelpSupportModal from './components/HelpSupportModal';
-import DashboardPreview from './components/DashboardPreview';
-import Toast from './components/Toast';
+import React from 'react';
+import { HealthProvider, useHealth } from './context/HealthContext';
+import Navbar from './components/common/Navbar';
+import Footer from './components/common/Footer';
+import EmergencyModal from './components/common/EmergencyModal';
+import Toast from './components/common/Toast';
+import HeroSection from './components/home/HeroSection';
+import HowItWorks from './components/home/HowItWorks';
+import FeatureGrid from './components/home/FeatureGrid';
+import HealthProfileView from './components/profile/HealthProfileView';
+import MedicineRiskView from './components/risk-checker/MedicineRiskView';
+import DrugInteractionView from './components/interactions/DrugInteractionView';
+import PrescriptionOCRView from './components/ocr/PrescriptionOCRView';
+import MedicationHistoryView from './components/history/MedicationHistoryView';
+import SafetyReportView from './components/report/SafetyReportView';
+import UserDashboard from './components/dashboard/UserDashboard';
+import AIChatbotModal from './components/chatbot/AIChatbotModal';
+import AuthModal from './components/auth/AuthModal';
 
-export default function App() {
-  const [activeTab, setActiveTab] = useState('login'); // 'login' | 'register'
-  const [selectedRole, setSelectedRole] = useState('doctor'); // 'patient' | 'doctor' | 'admin'
-  
-  // Modals
-  const [is2FAOpen, setIs2FAOpen] = useState(false);
-  const [pendingUserEmail, setPendingUserEmail] = useState('');
-  const [isForgotOpen, setIsForgotOpen] = useState(false);
-  const [isHelpOpen, setIsHelpOpen] = useState(false);
-
-  // Authenticated State & Toast
-  const [authenticatedUser, setAuthenticatedUser] = useState(null);
-  const [toast, setToast] = useState(null);
-
-  const showToast = (message, type = 'info') => {
-    setToast({ message, type });
-  };
-
-  const handleLoginSuccess = (userData) => {
-    setAuthenticatedUser(userData);
-    showToast(`Welcome back, ${userData.name || 'Practitioner'}! Session securely opened.`, 'success');
-  };
-
-  const handleTrigger2FA = (email) => {
-    setPendingUserEmail(email);
-    setIs2FAOpen(true);
-  };
-
-  const handle2FAVerified = () => {
-    setIs2FAOpen(false);
-    setAuthenticatedUser({
-      email: pendingUserEmail || 'verified.clinician@medisafe.ai',
-      role: selectedRole,
-      name: (pendingUserEmail || 'Dr. Verified').split('@')[0],
-    });
-    showToast('Two-Factor Authentication Verified! Welcome to MediSafe.', 'success');
-  };
-
-  const handleRegisterSuccess = (userData) => {
-    setAuthenticatedUser(userData);
-    showToast(`Account successfully registered for ${userData.name}! Clinical profile created.`, 'success');
-  };
-
-  const handleResetSent = (email) => {
-    showToast(`Password reset link dispatched to ${email}`, 'info');
-  };
-
-  const handleLogout = () => {
-    setAuthenticatedUser(null);
-    showToast('You have been securely signed out.', 'info');
-  };
-
-  // If logged in, show the interactive authenticated console preview
-  if (authenticatedUser) {
-    return (
-      <>
-        <DashboardPreview user={authenticatedUser} onLogout={handleLogout} />
-        {toast && (
-          <Toast
-            message={toast.message}
-            type={toast.type}
-            onClose={() => setToast(null)}
-          />
-        )}
-      </>
-    );
-  }
+function MainApp() {
+  const { activeTab } = useHealth();
 
   return (
-    <>
-      <AuthLayout
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        onOpenHelp={() => setIsHelpOpen(true)}
-      >
-        {activeTab === 'login' ? (
-          <LoginForm
-            selectedRole={selectedRole}
-            setSelectedRole={setSelectedRole}
-            onLoginSuccess={handleLoginSuccess}
-            onTrigger2FA={handleTrigger2FA}
-            onForgotPassword={() => setIsForgotOpen(true)}
-            onSwitchToRegister={() => setActiveTab('register')}
-          />
-        ) : (
-          <RegisterForm
-            selectedRole={selectedRole}
-            setSelectedRole={setSelectedRole}
-            onRegisterSuccess={handleRegisterSuccess}
-            onSwitchToLogin={() => setActiveTab('login')}
-          />
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-mediteal-500/30 selection:text-mediteal-300">
+      {/* Navigation Header */}
+      <Navbar />
+
+      {/* Main Content Area */}
+      <main className="flex-1">
+        {activeTab === 'home' && (
+          <>
+            <HeroSection />
+            <HowItWorks />
+            <FeatureGrid />
+          </>
         )}
-      </AuthLayout>
 
-      {/* 2FA Modal */}
-      <TwoFactorModal
-        isOpen={is2FAOpen}
-        onClose={() => setIs2FAOpen(false)}
-        onVerified={handle2FAVerified}
-        userEmail={pendingUserEmail}
-      />
+        {activeTab === 'dashboard' && <UserDashboard />}
+        {activeTab === 'risk-checker' && <MedicineRiskView />}
+        {activeTab === 'interactions' && <DrugInteractionView />}
+        {activeTab === 'ocr' && <PrescriptionOCRView />}
+        {activeTab === 'profile' && <HealthProfileView />}
+        {activeTab === 'history' && <MedicationHistoryView />}
+        {activeTab === 'report' && <SafetyReportView />}
+      </main>
 
-      {/* Forgot Password Modal */}
-      <ForgotPasswordModal
-        isOpen={isForgotOpen}
-        onClose={() => setIsForgotOpen(false)}
-        onResetSent={handleResetSent}
-      />
+      {/* Footer (hidden when printing) */}
+      <div className="print:hidden">
+        <Footer />
+      </div>
 
-      {/* Help & Support Modal */}
-      <HelpSupportModal
-        isOpen={isHelpOpen}
-        onClose={() => setIsHelpOpen(false)}
-      />
+      {/* Modals & Overlays */}
+      <EmergencyModal />
+      <AIChatbotModal />
+      <AuthModal />
+      <Toast />
+    </div>
+  );
+}
 
-      {/* Global Toast Alerts */}
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
-      )}
-    </>
+export default function App() {
+  return (
+    <HealthProvider>
+      <MainApp />
+    </HealthProvider>
   );
 }
