@@ -2,7 +2,7 @@
 // Accurately models the AI/ML, SHAP/LIME Explainable AI, and OCR pipelines
 // Designed so backend (Flask/FastAPI) and ML models can be plugged in seamlessly
 
-import { COMMON_MEDICATIONS, DRUG_DRUG_INTERACTIONS } from './drugDatabase';
+import { COMMON_MEDICATIONS, DRUG_DRUG_INTERACTIONS } from './drugDatabase.js';
 
 /**
  * Predicts personalized side effect probabilities based on patient physiology & dosage

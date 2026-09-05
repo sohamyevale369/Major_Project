@@ -13,11 +13,10 @@ import {
   ShieldCheck
 } from 'lucide-react';
 import { useHealth } from '../../context/HealthContext';
-import { SAMPLE_PATIENTS } from '../../data/samplePatients';
 import { DISEASE_LIST, ALLERGY_LIST } from '../../data/drugDatabase';
 
 export default function HealthProfileView() {
-  const { patient, updatePatient, loadPatientPreset, setActiveTab } = useHealth();
+  const { patient, updatePatient, loadPatientPreset, setActiveTab, activePatients = [] } = useHealth();
 
   const [formData, setFormData] = useState({
     name: patient.name || '',
@@ -122,34 +121,36 @@ export default function HealthProfileView() {
         </div>
 
         {/* 1-Click Preset Loaders */}
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs text-slate-400 font-medium">Quick Demo Profiles:</span>
-          {SAMPLE_PATIENTS.map(p => (
-            <button
-              key={p.id}
-              onClick={() => {
-                loadPatientPreset(p);
-                setFormData({
-                  name: p.name,
-                  age: p.age,
-                  gender: p.gender,
-                  weight: p.weight,
-                  diseases: p.diseases,
-                  allergies: p.allergies,
-                  medicalHistory: p.medicalHistory,
-                  currentMedicines: p.currentMedicines
-                });
-              }}
-              className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition ${
-                patient.id === p.id
-                  ? 'bg-mediteal-500 text-slate-950 border-mediteal-400'
-                  : 'bg-slate-900 text-slate-300 border-slate-700 hover:border-slate-500'
-              }`}
-            >
-              {p.name.split(' ')[0]} ({p.age}y)
-            </button>
-          ))}
-        </div>
+        {activePatients.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs text-slate-400 font-medium">Registered Patients ({activePatients.length}):</span>
+            {activePatients.map(p => (
+              <button
+                key={p.id}
+                onClick={() => {
+                  loadPatientPreset(p);
+                  setFormData({
+                    name: p.name,
+                    age: p.age,
+                    gender: p.gender,
+                    weight: p.weight,
+                    diseases: p.diseases,
+                    allergies: p.allergies,
+                    medicalHistory: p.medicalHistory,
+                    currentMedicines: p.currentMedicines
+                  });
+                }}
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition ${
+                  patient.id === p.id || patient.name === p.name
+                    ? 'bg-mediteal-500 text-slate-950 border-mediteal-400'
+                    : 'bg-slate-900 text-slate-300 border-slate-700 hover:border-slate-500'
+                }`}
+              >
+                {p.name.split(' ')[0]} ({p.age}y)
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">

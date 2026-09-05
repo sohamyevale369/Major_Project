@@ -1,0 +1,62 @@
+[
+  {
+    "id": "usr-new-1788590733394",
+    "name": "Soham Vikas Yevale",
+    "email": "sohamyevale624@gmail.com",
+    "password": "Vnetra@1126",
+    "role": "patient",
+    "department": "",
+    "licenseNumber": "",
+    "age": 23,
+    "gender": "Male",
+    "chronicDiseases": [],
+    "allergies": [],
+    "status": "Active",
+    "isNewUser": true,
+    "registeredAt": "2026-09-05T06:45:33.394Z",
+    "lastLogin": "2026-09-05T06:45:33.394Z",
+    "notes": "Registered through MediSafe AI online portal."
+  },
+  {
+    "id": "usr-admin-1",
+    "name": "System Administrator",
+    "email": "admin@medisafe.ai",
+    "password": "Admin@123",
+    "role": "admin",
+    "department": "Clinical IT & Compliance",
+    "licenseNumber": "SYS-ADMIN-001",
+    "status": "Active",
+    "isNewUser": false,
+    "registeredAt": "2024-01-10T08:30:00.000Z",
+    "lastLogin": "2026-09-05T06:46:01.101Z",
+    "notes": "Master administrator with full system audit, user management & deduplication rights."
+  },
+  {
+    "id": "usr-doc-1",
+    "name": "Dr. Rajesh Sharma, MD",
+    "email": "dr.sharma@medisafe.ai",
+    "password": "Doctor@123",
+    "role": "clinician",
+    "department": "Internal Medicine & Pharmacology",
+    "licenseNumber": "MD-98421",
+    "status": "Active",
+    "isNewUser": false,
+    "registeredAt": "2024-03-15T09:00:00.000Z",
+    "lastLogin": "2025-03-02T14:20:00.000Z",
+    "notes": "Chief Attending Physician. Consulted for senior nephrotoxicity alerts."
+  },
+  {
+    "id": "usr-doc-2",
+    "name": "Dr. Helen Adams, FACC",
+    "email": "dr.adams@medisafe.ai",
+    "password": "Doctor@123",
+    "role": "clinician",
+    "department": "Cardiovascular Care Unit",
+    "licenseNumber": "MD-77123",
+    "status": "Active",
+    "isNewUser": false,
+    "registeredAt": "2024-05-20T11:45:00.000Z",
+    "lastLogin": "2025-02-28T16:00:00.000Z",
+    "notes": "Cardiology Specialist. Supervises anticoagulant interaction protocols."
+  }
+]

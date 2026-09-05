@@ -12,15 +12,16 @@ import {
   HelpCircle
 } from 'lucide-react';
 import { useHealth } from '../../context/HealthContext';
-import { SAMPLE_PATIENTS } from '../../data/samplePatients';
 import RiskBadge from '../common/RiskBadge';
 
 export default function HeroSection() {
-  const { setActiveTab, loadPatientPreset, runSafetyCheck } = useHealth();
+  const { setActiveTab, loadPatientPreset, runSafetyCheck, activePatients = [], patient } = useHealth();
 
   const handleQuickDemo = (patientId, drugName, dosage) => {
-    const targetPatient = SAMPLE_PATIENTS.find(p => p.id === patientId) || SAMPLE_PATIENTS[0];
-    loadPatientPreset(targetPatient);
+    const targetPatient = activePatients.find(p => p.id === patientId || p.name.toLowerCase().includes(patientId.toLowerCase())) || activePatients[0] || patient;
+    if (targetPatient) {
+      loadPatientPreset(targetPatient);
+    }
     runSafetyCheck(drugName, dosage);
     setActiveTab('risk-checker');
     window.scrollTo({ top: 0, behavior: 'smooth' });

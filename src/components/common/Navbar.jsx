@@ -13,25 +13,34 @@ import {
   Menu,
   X,
   ChevronDown,
-  Sparkles
+  Sparkles,
+  ShieldCheck,
+  LogOut,
+  Stethoscope,
+  HeartPulse,
+  KeyRound
 } from 'lucide-react';
 import { useHealth } from '../../context/HealthContext';
-import { SAMPLE_PATIENTS } from '../../data/samplePatients';
 
 export default function Navbar() {
   const {
     activeTab,
     setActiveTab,
     patient,
+    activePatients = [],
     loadPatientPreset,
     setIsChatbotOpen,
-    setIsAuthModalOpen,
     currentUser,
+    logout,
     setEmergencyAlert
   } = useHealth();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [patientDropdownOpen, setPatientDropdownOpen] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+
+  const isAdmin = currentUser?.role === 'admin';
+  const isClinician = currentUser?.role === 'clinician';
 
   const navItems = [
     { id: 'home', label: 'Home', icon: Shield },
@@ -40,12 +49,14 @@ export default function Navbar() {
     { id: 'interactions', label: 'Drug Interactions', icon: RefreshCw },
     { id: 'ocr', label: 'Prescription OCR', icon: Camera },
     { id: 'profile', label: 'Health Profile', icon: User },
-    { id: 'history', label: 'History & Report', icon: History }
+    { id: 'history', label: 'History & Report', icon: History },
+    { id: 'admin', label: 'Admin Console', icon: ShieldCheck, adminBadge: true }
   ];
 
   const handleNavClick = (id) => {
     setActiveTab(id);
     setMobileMenuOpen(false);
+    setUserDropdownOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -112,18 +123,24 @@ export default function Navbar() {
                   onClick={() => handleNavClick(item.id)}
                   className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
                     isActive
-                      ? 'bg-mediteal-500/15 text-mediteal-300 border border-mediteal-500/30 shadow-sm'
+                      ? item.adminBadge
+                        ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40 shadow-sm'
+                        : 'bg-mediteal-500/15 text-mediteal-300 border border-mediteal-500/30 shadow-sm'
                       : 'text-slate-300 hover:text-white hover:bg-slate-850'
                   } ${item.highlight && !isActive ? 'ring-1 ring-mediteal-500/20' : ''}`}
                 >
-                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-mediteal-400' : 'text-slate-400'}`} />
+                  <Icon className={`w-3.5 h-3.5 ${
+                    item.adminBadge
+                      ? 'text-purple-400'
+                      : isActive ? 'text-mediteal-400' : 'text-slate-400'
+                  }`} />
                   <span>{item.label}</span>
                 </button>
               );
             })}
           </nav>
 
-          {/* Right-Hand Controls (Patient Switcher, AI Chatbot, Auth) */}
+          {/* Right-Hand Controls (Patient Switcher, AI Chatbot, User Account & Sign Out) */}
           <div className="flex items-center gap-2 sm:gap-3">
             
             {/* Quick Patient Switcher for Easy Demonstration */}
@@ -131,17 +148,17 @@ export default function Navbar() {
               <button
                 onClick={() => setPatientDropdownOpen(!patientDropdownOpen)}
                 className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl border border-slate-700/80 bg-slate-900/90 hover:border-mediteal-500/50 text-xs text-slate-200 transition-all group"
-                title="Switch Demo Patient Profile"
+                title="Switch Patient Profile"
               >
                 <div className="w-6 h-6 rounded-lg bg-mediteal-500/20 text-mediteal-300 flex items-center justify-center font-bold text-xs">
-                  {patient.name.charAt(0)}
+                  {patient?.name ? patient.name.charAt(0) : 'P'}
                 </div>
                 <div className="text-left hidden md:block">
                   <div className="text-[11px] font-bold text-slate-200 group-hover:text-mediteal-300 leading-none">
-                    {patient.name}
+                    {patient?.name || 'No Patient Selected'}
                   </div>
                   <div className="text-[10px] text-slate-400 leading-none mt-0.5">
-                    Age {patient.age} • {patient.diseases[0] ? patient.diseases[0].slice(0, 15) + '…' : 'Healthy'}
+                    {patient?.age ? `Age ${patient.age}` : 'Profile'} • {patient?.diseases?.[0] ? patient.diseases[0].slice(0, 15) + '…' : 'Active'}
                   </div>
                 </div>
                 <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
@@ -151,32 +168,38 @@ export default function Navbar() {
               {patientDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-72 rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl p-2 z-50 animate-fade-in">
                   <div className="px-3 py-2 border-b border-slate-800 text-xs">
-                    <span className="font-bold text-white block">Switch Test Patient Profile</span>
-                    <span className="text-slate-400 text-[11px]">1-click test scenarios for testing</span>
+                    <span className="font-bold text-white block">Active Patients ({activePatients.length})</span>
+                    <span className="text-slate-400 text-[11px]">Real-time synchronized with User Database</span>
                   </div>
                   <div className="py-1 space-y-1">
-                    {SAMPLE_PATIENTS.map((p) => (
-                      <button
-                        key={p.id}
-                        onClick={() => {
-                          loadPatientPreset(p);
-                          setPatientDropdownOpen(false);
-                        }}
-                        className={`w-full text-left px-3 py-2 rounded-xl text-xs transition flex items-start gap-2.5 ${
-                          patient.id === p.id
-                            ? 'bg-mediteal-500/20 text-mediteal-300 font-semibold border border-mediteal-500/30'
-                            : 'text-slate-300 hover:bg-slate-800'
-                        }`}
-                      >
-                        <span className="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5 text-mediteal-400">
-                          {p.name.charAt(0)}
-                        </span>
-                        <div>
-                          <div className="font-semibold text-white">{p.name} ({p.age}y)</div>
-                          <div className="text-[11px] text-slate-400 line-clamp-1">{p.description}</div>
-                        </div>
-                      </button>
-                    ))}
+                    {activePatients.length === 0 ? (
+                      <div className="px-3 py-4 text-center text-slate-400 text-xs">
+                        No patient records currently in database.
+                      </div>
+                    ) : (
+                      activePatients.map((p) => (
+                        <button
+                          key={p.id}
+                          onClick={() => {
+                            loadPatientPreset(p);
+                            setPatientDropdownOpen(false);
+                          }}
+                          className={`w-full text-left px-3 py-2 rounded-xl text-xs transition flex items-start gap-2.5 ${
+                            patient?.id === p.id || patient?.name === p.name
+                              ? 'bg-mediteal-500/20 text-mediteal-300 font-semibold border border-mediteal-500/30'
+                              : 'text-slate-300 hover:bg-slate-800'
+                          }`}
+                        >
+                          <span className="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5 text-mediteal-400">
+                            {p.name.charAt(0)}
+                          </span>
+                          <div>
+                            <div className="font-semibold text-white">{p.name} ({p.age}y)</div>
+                            <div className="text-[11px] text-slate-400 line-clamp-1">{p.description}</div>
+                          </div>
+                        </button>
+                      ))
+                    )}
                   </div>
                   <div className="pt-2 mt-1 border-t border-slate-800 text-center">
                     <button
@@ -206,6 +229,95 @@ export default function Navbar() {
               </span>
             </button>
 
+            {/* User Account & Logout Menu */}
+            {currentUser && (
+              <div className="relative">
+                <button
+                  onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                  className="flex items-center gap-2 p-1.5 sm:px-3 sm:py-1.5 rounded-xl border border-slate-700 bg-slate-900 hover:border-slate-600 text-xs text-slate-200 transition"
+                  title="User Profile & Account"
+                >
+                  <div className={`w-6 h-6 rounded-lg flex items-center justify-center font-bold text-xs ${
+                    isAdmin
+                      ? 'bg-purple-500/20 text-purple-300'
+                      : isClinician
+                      ? 'bg-sky-500/20 text-sky-300'
+                      : 'bg-emerald-500/20 text-emerald-300'
+                  }`}>
+                    {currentUser.name ? currentUser.name.charAt(0) : 'U'}
+                  </div>
+                  <div className="text-left hidden lg:block">
+                    <div className="text-[11px] font-bold text-white leading-none">
+                      {currentUser.name}
+                    </div>
+                    <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold mt-0.5 leading-none">
+                      {currentUser.role}
+                    </div>
+                  </div>
+                  <ChevronDown className="w-3.5 h-3.5 text-slate-400 hidden sm:block" />
+                </button>
+
+                {userDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl p-2 z-50 animate-fade-in text-xs">
+                    <div className="px-3 py-2 border-b border-slate-800">
+                      <span className="font-bold text-white block">{currentUser.name}</span>
+                      <span className="text-slate-400 text-[11px] font-mono truncate block">{currentUser.email}</span>
+                      <span className={`inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                        isAdmin
+                          ? 'bg-purple-500/20 text-purple-300'
+                          : isClinician
+                          ? 'bg-sky-500/20 text-sky-300'
+                          : 'bg-emerald-500/20 text-emerald-300'
+                      }`}>
+                        {currentUser.role} Account
+                      </span>
+                    </div>
+
+                    <div className="py-1 space-y-0.5">
+                      {isAdmin && (
+                        <button
+                          onClick={() => handleNavClick('admin')}
+                          className="w-full text-left px-3 py-2 rounded-xl text-purple-300 hover:bg-purple-500/10 font-semibold flex items-center gap-2 transition"
+                        >
+                          <ShieldCheck className="w-3.5 h-3.5" />
+                          <span>Admin Console</span>
+                        </button>
+                      )}
+
+                      <button
+                        onClick={() => handleNavClick('profile')}
+                        className="w-full text-left px-3 py-2 rounded-xl text-slate-300 hover:bg-slate-800 flex items-center gap-2 transition"
+                      >
+                        <User className="w-3.5 h-3.5 text-slate-400" />
+                        <span>Health Profile</span>
+                      </button>
+
+                      <button
+                        onClick={() => handleNavClick('dashboard')}
+                        className="w-full text-left px-3 py-2 rounded-xl text-slate-300 hover:bg-slate-800 flex items-center gap-2 transition"
+                      >
+                        <Activity className="w-3.5 h-3.5 text-slate-400" />
+                        <span>My Dashboard</span>
+                      </button>
+                    </div>
+
+                    <div className="pt-1 border-t border-slate-800">
+                      <button
+                        onClick={() => {
+                          setUserDropdownOpen(false);
+                          logout();
+                        }}
+                        className="w-full text-left px-3 py-2 rounded-xl text-rose-400 hover:bg-rose-500/10 font-semibold flex items-center gap-2 transition"
+                      >
+                        <LogOut className="w-3.5 h-3.5" />
+                        <span>Sign Out (Lock Tasks)</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Mobile Menu Toggle Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -231,16 +343,37 @@ export default function Navbar() {
                   onClick={() => handleNavClick(item.id)}
                   className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-medium text-left transition ${
                     isActive
-                      ? 'bg-mediteal-500/20 text-mediteal-300 border border-mediteal-500/40'
+                      ? item.adminBadge
+                        ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40'
+                        : 'bg-mediteal-500/20 text-mediteal-300 border border-mediteal-500/40'
                       : 'bg-slate-900/60 text-slate-300 hover:bg-slate-800'
                   }`}
                 >
-                  <Icon className="w-4 h-4 text-mediteal-400 shrink-0" />
+                  <Icon className={`w-4 h-4 shrink-0 ${item.adminBadge ? 'text-purple-400' : 'text-mediteal-400'}`} />
                   <span>{item.label}</span>
                 </button>
               );
             })}
           </div>
+
+          {currentUser && (
+            <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-xs flex items-center justify-between">
+              <div>
+                <span className="text-slate-400 text-[10px] block">Signed in as:</span>
+                <span className="font-bold text-white block">{currentUser.name}</span>
+                <span className="text-mediteal-300 text-[11px] font-mono">{currentUser.email}</span>
+              </div>
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  logout();
+                }}
+                className="px-3 py-1.5 rounded-lg bg-rose-500/10 text-rose-300 border border-rose-500/30 text-xs font-bold"
+              >
+                Sign Out
+              </button>
+            </div>
+          )}
 
           <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-xs">
             <span className="text-slate-400 block mb-1">Active Patient:</span>
