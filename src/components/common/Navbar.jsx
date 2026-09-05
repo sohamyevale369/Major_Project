@@ -32,7 +32,8 @@ export default function Navbar() {
     setIsChatbotOpen,
     currentUser,
     logout,
-    setEmergencyAlert
+    setEmergencyAlert,
+    showToast
   } = useHealth();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -50,10 +51,14 @@ export default function Navbar() {
     { id: 'ocr', label: 'Prescription OCR', icon: Camera },
     { id: 'profile', label: 'Health Profile', icon: User },
     { id: 'history', label: 'History & Report', icon: History },
-    { id: 'admin', label: 'Admin Console', icon: ShieldCheck, adminBadge: true }
+    ...(isAdmin ? [{ id: 'admin', label: 'Admin Console', icon: ShieldCheck, adminBadge: true }] : [])
   ];
 
   const handleNavClick = (id) => {
+    if (id === 'admin' && !isAdmin) {
+      showToast('No access to Admin Console for patients and doctors.', 'error');
+      return;
+    }
     setActiveTab(id);
     setMobileMenuOpen(false);
     setUserDropdownOpen(false);
@@ -143,78 +148,105 @@ export default function Navbar() {
           {/* Right-Hand Controls (Patient Switcher, AI Chatbot, User Account & Sign Out) */}
           <div className="flex items-center gap-2 sm:gap-3">
             
-            {/* Quick Patient Switcher for Easy Demonstration */}
-            <div className="relative">
+            {/* Patient Profile / Switcher: Single-patient isolation */}
+            {currentUser?.role === 'patient' ? (
+              /* Single Patient Direct Link to Personal Details Page */
               <button
-                onClick={() => setPatientDropdownOpen(!patientDropdownOpen)}
-                className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl border border-slate-700/80 bg-slate-900/90 hover:border-mediteal-500/50 text-xs text-slate-200 transition-all group"
-                title="Switch Patient Profile"
+                onClick={() => handleNavClick('profile')}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs transition-all group ${
+                  activeTab === 'profile'
+                    ? 'border-mediteal-400 bg-mediteal-500/20 text-white ring-1 ring-mediteal-400/30'
+                    : 'border-slate-700/80 bg-slate-900/90 hover:border-mediteal-500/50 text-slate-200'
+                }`}
+                title="View My Personal Details"
+                id="navbar-patient-profile-btn"
               >
                 <div className="w-6 h-6 rounded-lg bg-mediteal-500/20 text-mediteal-300 flex items-center justify-center font-bold text-xs">
                   {patient?.name ? patient.name.charAt(0) : 'P'}
                 </div>
                 <div className="text-left hidden md:block">
                   <div className="text-[11px] font-bold text-slate-200 group-hover:text-mediteal-300 leading-none">
-                    {patient?.name || 'No Patient Selected'}
+                    {patient?.name || currentUser?.name || 'Personal Details'}
                   </div>
-                  <div className="text-[10px] text-slate-400 leading-none mt-0.5">
-                    {patient?.age ? `Age ${patient.age}` : 'Profile'} • {patient?.diseases?.[0] ? patient.diseases[0].slice(0, 15) + '…' : 'Active'}
+                  <div className="text-[10px] text-mediteal-400 font-semibold leading-none mt-0.5">
+                    Personal Details →
                   </div>
                 </div>
-                <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
               </button>
+            ) : (
+              /* Clinician / Admin Clinical Preset Switcher */
+              <div className="relative">
+                <button
+                  onClick={() => setPatientDropdownOpen(!patientDropdownOpen)}
+                  className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl border border-slate-700/80 bg-slate-900/90 hover:border-mediteal-500/50 text-xs text-slate-200 transition-all group"
+                  title="Switch Clinical Patient Case"
+                >
+                  <div className="w-6 h-6 rounded-lg bg-mediteal-500/20 text-mediteal-300 flex items-center justify-center font-bold text-xs">
+                    {patient?.name ? patient.name.charAt(0) : 'P'}
+                  </div>
+                  <div className="text-left hidden md:block">
+                    <div className="text-[11px] font-bold text-slate-200 group-hover:text-mediteal-300 leading-none">
+                      {patient?.name || 'No Patient Selected'}
+                    </div>
+                    <div className="text-[10px] text-slate-400 leading-none mt-0.5">
+                      {patient?.age ? `Age ${patient.age}` : 'Profile'} • {patient?.diseases?.[0] ? patient.diseases[0].slice(0, 15) + '…' : 'Active'}
+                    </div>
+                  </div>
+                  <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                </button>
 
-              {/* Patient Dropdown Menu */}
-              {patientDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-72 rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl p-2 z-50 animate-fade-in">
-                  <div className="px-3 py-2 border-b border-slate-800 text-xs">
-                    <span className="font-bold text-white block">Active Patients ({activePatients.length})</span>
-                    <span className="text-slate-400 text-[11px]">Real-time synchronized with User Database</span>
+                {/* Patient Dropdown Menu */}
+                {patientDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-72 rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl p-2 z-50 animate-fade-in">
+                    <div className="px-3 py-2 border-b border-slate-800 text-xs">
+                      <span className="font-bold text-white block">Clinical Patients ({activePatients.length})</span>
+                      <span className="text-slate-400 text-[11px]">Real-time synchronized with User Database</span>
+                    </div>
+                    <div className="py-1 space-y-1">
+                      {activePatients.length === 0 ? (
+                        <div className="px-3 py-4 text-center text-slate-400 text-xs">
+                          No patient records currently in database.
+                        </div>
+                      ) : (
+                        activePatients.map((p) => (
+                          <button
+                            key={p.id}
+                            onClick={() => {
+                              loadPatientPreset(p);
+                              setPatientDropdownOpen(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 rounded-xl text-xs transition flex items-start gap-2.5 ${
+                              patient?.id === p.id || patient?.name === p.name
+                                ? 'bg-mediteal-500/20 text-mediteal-300 font-semibold border border-mediteal-500/30'
+                                : 'text-slate-300 hover:bg-slate-800'
+                            }`}
+                          >
+                            <span className="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5 text-mediteal-400">
+                              {p.name.charAt(0)}
+                            </span>
+                            <div>
+                              <div className="font-semibold text-white">{p.name} ({p.age}y)</div>
+                              <div className="text-[11px] text-slate-400 line-clamp-1">{p.description}</div>
+                            </div>
+                          </button>
+                        ))
+                      )}
+                    </div>
+                    <div className="pt-2 mt-1 border-t border-slate-800 text-center">
+                      <button
+                        onClick={() => {
+                          setActiveTab('profile');
+                          setPatientDropdownOpen(false);
+                        }}
+                        className="text-xs text-mediteal-400 hover:underline font-semibold"
+                      >
+                        Customize Profile Manually →
+                      </button>
+                    </div>
                   </div>
-                  <div className="py-1 space-y-1">
-                    {activePatients.length === 0 ? (
-                      <div className="px-3 py-4 text-center text-slate-400 text-xs">
-                        No patient records currently in database.
-                      </div>
-                    ) : (
-                      activePatients.map((p) => (
-                        <button
-                          key={p.id}
-                          onClick={() => {
-                            loadPatientPreset(p);
-                            setPatientDropdownOpen(false);
-                          }}
-                          className={`w-full text-left px-3 py-2 rounded-xl text-xs transition flex items-start gap-2.5 ${
-                            patient?.id === p.id || patient?.name === p.name
-                              ? 'bg-mediteal-500/20 text-mediteal-300 font-semibold border border-mediteal-500/30'
-                              : 'text-slate-300 hover:bg-slate-800'
-                          }`}
-                        >
-                          <span className="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5 text-mediteal-400">
-                            {p.name.charAt(0)}
-                          </span>
-                          <div>
-                            <div className="font-semibold text-white">{p.name} ({p.age}y)</div>
-                            <div className="text-[11px] text-slate-400 line-clamp-1">{p.description}</div>
-                          </div>
-                        </button>
-                      ))
-                    )}
-                  </div>
-                  <div className="pt-2 mt-1 border-t border-slate-800 text-center">
-                    <button
-                      onClick={() => {
-                        setActiveTab('profile');
-                        setPatientDropdownOpen(false);
-                      }}
-                      className="text-xs text-mediteal-400 hover:underline font-semibold"
-                    >
-                      Customize Profile Manually →
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
 
             {/* AI Assistant Button */}
             <button
@@ -375,11 +407,19 @@ export default function Navbar() {
             </div>
           )}
 
-          <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-xs">
-            <span className="text-slate-400 block mb-1">Active Patient:</span>
+          <button
+            onClick={() => handleNavClick('profile')}
+            className="w-full text-left p-3 rounded-xl bg-slate-900 border border-slate-800 text-xs hover:border-mediteal-500/50 transition block"
+          >
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-slate-400 text-[10px] uppercase font-bold tracking-wider">
+                {currentUser?.role === 'patient' ? 'My Personal Profile' : 'Active Patient Case'}
+              </span>
+              <span className="text-[10px] text-mediteal-400 font-semibold">View Details →</span>
+            </div>
             <span className="font-bold text-white block">{patient.name} ({patient.age}y, {patient.gender})</span>
             <span className="text-mediteal-300 text-[11px] block mt-0.5">{patient.diseases.join(', ') || 'No recorded conditions'}</span>
-          </div>
+          </button>
         </div>
       )}
     </header>

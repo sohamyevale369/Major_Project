@@ -43,6 +43,8 @@ export default function AuthPortal() {
   const [regAge, setRegAge] = useState('45');
   const [regGender, setRegGender] = useState('Male');
   const [regCondition, setRegCondition] = useState('');
+  const [regAdminToken, setRegAdminToken] = useState('');
+  const [tokenErrorPopup, setTokenErrorPopup] = useState(null);
 
   // Handle Login Submit
   const handleLoginSubmit = (e) => {
@@ -96,6 +98,28 @@ export default function AuthPortal() {
       return;
     }
 
+    // Validation 4: Admin Authorization Token ID verification
+    if (regRole === 'admin') {
+      const trimmedToken = (regAdminToken || '').trim().toUpperCase();
+      if (!trimmedToken) {
+        setTokenErrorPopup({
+          title: 'Missing Admin Token ID',
+          message: 'An Admin Authorization Token ID is strictly required to register a System Administrator account. Please enter the unique security key.'
+        });
+        setErrorMessage('Admin Authorization Token ID is required.');
+        return;
+      }
+
+      if (trimmedToken !== 'MEDI0284517') {
+        setTokenErrorPopup({
+          title: 'Incorrect Token ID — Access Denied',
+          message: 'The token ID entered is incorrect. Only authorized clinical employees with a verified security key can register as System Administrator.'
+        });
+        setErrorMessage('Incorrect Token ID: Registration rejected. Unauthorized key entered.');
+        return;
+      }
+    }
+
     setLoading(true);
 
     setTimeout(() => {
@@ -104,6 +128,7 @@ export default function AuthPortal() {
         email: regEmail,
         password: regPassword,
         role: regRole,
+        adminToken: regRole === 'admin' ? regAdminToken.trim().toUpperCase() : undefined,
         department: regRole === 'clinician' ? regDepartment : undefined,
         licenseNumber: regRole === 'clinician' ? (regLicense || 'MD-ACTIVE') : undefined,
         age: regAge ? Number(regAge) : 40,
@@ -565,6 +590,42 @@ export default function AuthPortal() {
                 </div>
               )}
 
+              {regRole === 'admin' && (
+                <div className="p-4 rounded-2xl bg-purple-950/35 border border-purple-500/40 space-y-3 animate-fade-in shadow-inner">
+                  <div className="flex items-center justify-between">
+                    <div className="text-xs font-bold text-purple-300 flex items-center gap-1.5">
+                      <KeyRound className="w-4 h-4 text-purple-400" />
+                      <span>Admin Security Authorization</span>
+                    </div>
+                    <span className="text-[10px] uppercase tracking-wider font-extrabold text-purple-300 bg-purple-500/20 px-2 py-0.5 rounded-md border border-purple-500/40">
+                      Restricted
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-300 leading-relaxed">
+                    System Administrators have full control over user records, database deduplication, and audits. Only authorized clinical employees with a verified security token can register.
+                  </p>
+                  <div>
+                    <label className="block text-xs font-semibold text-purple-200 mb-1.5">
+                      Authorization Token ID <span className="text-rose-400">*</span>
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        required
+                        value={regAdminToken}
+                        onChange={(e) => setRegAdminToken(e.target.value)}
+                        placeholder="Enter Unique Key (e.g. MEDI0284517)"
+                        className="w-full pl-10 pr-3.5 py-2.5 rounded-xl bg-slate-950 border border-purple-500/50 text-white font-mono font-bold tracking-wider text-xs sm:text-sm focus:border-purple-400 focus:outline-none transition shadow-inner"
+                      />
+                      <KeyRound className="w-4 h-4 text-purple-400 absolute left-3.5 top-3" />
+                    </div>
+                    <span className="text-[10px] text-slate-400 mt-1 block">
+                      Case-insensitive • Required for administrator account activation
+                    </span>
+                  </div>
+                </div>
+              )}
+
               <button
                 type="submit"
                 disabled={loading}
@@ -606,6 +667,46 @@ export default function AuthPortal() {
         </div>
 
       </div>
+
+      {/* ================= INCORRECT TOKEN POPUP MODAL ================= */}
+      {tokenErrorPopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fade-in">
+          <div className="relative w-full max-w-md rounded-3xl border border-rose-500/40 bg-slate-900 shadow-2xl p-6 sm:p-8 space-y-5 text-center">
+            <div className="w-14 h-14 rounded-2xl bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center justify-center mx-auto text-2xl shadow-inner">
+              🚫
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-lg sm:text-xl font-bold text-white">
+                {tokenErrorPopup.title}
+              </h3>
+              <p className="text-xs text-slate-300 leading-relaxed pt-1.5">
+                {tokenErrorPopup.message}
+              </p>
+            </div>
+            <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 text-left text-xs space-y-1.5 font-mono">
+              <div className="flex justify-between text-slate-400">
+                <span>Attempted Role:</span>
+                <span className="text-purple-400 font-bold">SYSTEM ADMIN</span>
+              </div>
+              <div className="flex justify-between text-slate-400">
+                <span>Security Rule:</span>
+                <span className="text-slate-200">Authorized Employees Only</span>
+              </div>
+              <div className="flex justify-between text-slate-400">
+                <span>Verification:</span>
+                <span className="text-rose-400 font-bold">REJECTED (INVALID TOKEN)</span>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setTokenErrorPopup(null)}
+              className="w-full py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs transition shadow-lg shadow-rose-500/20"
+            >
+              Close & Enter Correct Token
+            </button>
+          </div>
+        </div>
+      )}
 
     </div>
   );

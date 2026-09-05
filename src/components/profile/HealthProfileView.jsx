@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   User,
   HeartPulse,
@@ -10,13 +10,15 @@ import {
   Plus,
   X,
   Check,
-  ShieldCheck
+  ShieldCheck,
+  LogOut,
+  Shield
 } from 'lucide-react';
 import { useHealth } from '../../context/HealthContext';
 import { DISEASE_LIST, ALLERGY_LIST } from '../../data/drugDatabase';
 
 export default function HealthProfileView() {
-  const { patient, updatePatient, loadPatientPreset, setActiveTab, activePatients = [] } = useHealth();
+  const { patient, updatePatient, loadPatientPreset, setActiveTab, activePatients = [], currentUser, logout } = useHealth();
 
   const [formData, setFormData] = useState({
     name: patient.name || '',
@@ -33,6 +35,22 @@ export default function HealthProfileView() {
   const [customAllergy, setCustomAllergy] = useState('');
   const [newMedName, setNewMedName] = useState('');
   const [newMedDosage, setNewMedDosage] = useState('');
+
+  // Automatically keep formData synchronized with active patient record
+  useEffect(() => {
+    if (patient) {
+      setFormData({
+        name: patient.name || '',
+        age: patient.age || 45,
+        gender: patient.gender || 'Male',
+        weight: patient.weight || 70,
+        diseases: patient.diseases || [],
+        allergies: patient.allergies || [],
+        medicalHistory: patient.medicalHistory || '',
+        currentMedicines: patient.currentMedicines || []
+      });
+    }
+  }, [patient]);
 
   const toggleDisease = (disease) => {
     setFormData(prev => {
@@ -120,36 +138,45 @@ export default function HealthProfileView() {
           </p>
         </div>
 
-        {/* 1-Click Preset Loaders */}
-        {activePatients.length > 0 && (
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs text-slate-400 font-medium">Registered Patients ({activePatients.length}):</span>
-            {activePatients.map(p => (
-              <button
-                key={p.id}
-                onClick={() => {
-                  loadPatientPreset(p);
-                  setFormData({
-                    name: p.name,
-                    age: p.age,
-                    gender: p.gender,
-                    weight: p.weight,
-                    diseases: p.diseases,
-                    allergies: p.allergies,
-                    medicalHistory: p.medicalHistory,
-                    currentMedicines: p.currentMedicines
-                  });
-                }}
-                className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition ${
-                  patient.id === p.id || patient.name === p.name
-                    ? 'bg-mediteal-500 text-slate-950 border-mediteal-400'
-                    : 'bg-slate-900 text-slate-300 border-slate-700 hover:border-slate-500'
-                }`}
-              >
-                {p.name.split(' ')[0]} ({p.age}y)
-              </button>
-            ))}
+        {/* Patient Isolation / Preset Header */}
+        {currentUser?.role === 'patient' ? (
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700/80 text-xs">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-slate-400">Authenticated Session:</span>
+            <span className="font-bold text-white">{currentUser.name}</span>
+            <span className="text-slate-500 font-mono text-[11px]">({currentUser.email})</span>
           </div>
+        ) : (
+          activePatients.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs text-slate-400 font-medium">Clinical Case Presets ({activePatients.length}):</span>
+              {activePatients.map(p => (
+                <button
+                  key={p.id}
+                  onClick={() => {
+                    loadPatientPreset(p);
+                    setFormData({
+                      name: p.name,
+                      age: p.age,
+                      gender: p.gender,
+                      weight: p.weight,
+                      diseases: p.diseases,
+                      allergies: p.allergies,
+                      medicalHistory: p.medicalHistory,
+                      currentMedicines: p.currentMedicines
+                    });
+                  }}
+                  className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition ${
+                    patient.id === p.id || patient.name === p.name
+                      ? 'bg-mediteal-500 text-slate-950 border-mediteal-400'
+                      : 'bg-slate-900 text-slate-300 border-slate-700 hover:border-slate-500'
+                  }`}
+                >
+                  {p.name.split(' ')[0]} ({p.age}y)
+                </button>
+              ))}
+            </div>
+          )
         )}
       </div>
 
@@ -510,6 +537,35 @@ export default function HealthProfileView() {
           </div>
         </div>
 
+      </div>
+
+      {/* 1 Patient Session Security & Prominent Logout */}
+      <div className="mt-8 p-6 rounded-3xl bg-gradient-to-r from-slate-900 via-rose-950/20 to-slate-900 border border-rose-500/30 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-6 animate-fade-in">
+        <div className="flex items-center gap-4 text-left">
+          <div className="w-12 h-12 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-400 flex items-center justify-center shrink-0 shadow-inner">
+            <LogOut className="w-6 h-6" />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-white flex items-center gap-2">
+              <span>Patient Session & Privacy Control</span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold">
+                Single Active Session
+              </span>
+            </h3>
+            <p className="text-xs text-slate-400 mt-1 max-w-xl leading-relaxed">
+              MediSafe enforces strict single-patient session isolation. Clicking Log Out will immediately expire your active session, lock all clinical tasks, and redirect to the register and login portal.
+            </p>
+          </div>
+        </div>
+
+        <button
+          onClick={() => logout()}
+          id="profile-session-logout-btn"
+          className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-bold text-xs sm:text-sm transition-all shadow-lg shadow-rose-950/50 flex items-center justify-center gap-2 shrink-0 group active:scale-95"
+        >
+          <LogOut className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+          <span>Log Out & Expire Session</span>
+        </button>
       </div>
     </div>
   );

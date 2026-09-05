@@ -15,7 +15,7 @@ import { useHealth } from '../../context/HealthContext';
 import RiskBadge from '../common/RiskBadge';
 
 export default function HeroSection() {
-  const { setActiveTab, loadPatientPreset, runSafetyCheck, activePatients = [], patient } = useHealth();
+  const { setActiveTab, loadPatientPreset, runSafetyCheck, activePatients = [], patient, currentUser } = useHealth();
 
   const handleQuickDemo = (patientId, drugName, dosage) => {
     const targetPatient = activePatients.find(p => p.id === patientId || p.name.toLowerCase().includes(patientId.toLowerCase())) || activePatients[0] || patient;
@@ -99,7 +99,7 @@ export default function HeroSection() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
             
-            {/* Demo Card 1: Soham Vikas Yevale + Routine Safety Check */}
+            {/* Demo Card 1: Logged-in Patient Routine Safety Check */}
             <div className="group relative rounded-2xl border border-emerald-500/30 bg-gradient-to-b from-slate-900/90 to-emerald-950/20 p-5 hover:border-emerald-500/60 transition-all shadow-lg hover:shadow-emerald-950/40 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between mb-3">
@@ -109,7 +109,7 @@ export default function HeroSection() {
                   <RiskBadge level="LOW" score={15} size="sm" />
                 </div>
                 <h3 className="text-base font-bold text-white group-hover:text-emerald-200 transition">
-                  {activePatients[0]?.name || 'Soham Vikas Yevale'} ({activePatients[0]?.age || 23}y) + Paracetamol
+                  {patient?.name || currentUser?.name || 'Personal Profile'} ({patient?.age || 23}y) + Paracetamol
                 </h3>
                 <p className="text-xs text-slate-300 mt-2 leading-relaxed">
                   Standard antipyretic evaluation with no renal, cardiac, or allergy conflicts. MediSafe assigns a <strong className="text-emerald-300">15% Low Risk</strong> safety score.
@@ -117,9 +117,9 @@ export default function HeroSection() {
               </div>
 
               <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between">
-                <span className="text-[11px] text-slate-400 font-mono">Patient: {activePatients[0]?.name || 'Soham Vikas Yevale'}</span>
+                <span className="text-[11px] text-slate-400 font-mono">Patient: {patient?.name || currentUser?.name || 'You'}</span>
                 <button
-                  onClick={() => handleQuickDemo(activePatients[0]?.id || 'usr-new-1788590733394', 'Paracetamol (Acetaminophen)', '500mg')}
+                  onClick={() => handleQuickDemo(patient?.id || 'usr-default', 'Paracetamol (Acetaminophen)', '500mg')}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 text-xs font-bold border border-emerald-500/40 transition group-hover:scale-105"
                 >
                   <span>Test Case</span>
@@ -128,34 +128,64 @@ export default function HeroSection() {
               </div>
             </div>
 
-            {/* Demo Card 2: Mrunali Kadam + Clinical Profile */}
-            <div className="group relative rounded-2xl border border-mediteal-500/30 bg-gradient-to-b from-slate-900/90 to-teal-950/20 p-5 hover:border-mediteal-500/60 transition-all shadow-lg hover:shadow-teal-950/40 flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-mediteal-400 bg-mediteal-500/15 px-2.5 py-0.5 rounded-md border border-mediteal-500/30">
-                    Patient Profile
-                  </span>
-                  <RiskBadge level="LOW" score={18} size="sm" />
+            {/* Demo Card 2: Allergy Simulation (strictly isolating other patient data) */}
+            {currentUser?.role === 'patient' || activePatients.length <= 1 ? (
+              <div className="group relative rounded-2xl border border-sky-500/30 bg-gradient-to-b from-slate-900/90 to-sky-950/20 p-5 hover:border-sky-500/60 transition-all shadow-lg hover:shadow-sky-950/40 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-sky-400 bg-sky-500/15 px-2.5 py-0.5 rounded-md border border-sky-500/30">
+                      Allergy Simulation
+                    </span>
+                    <RiskBadge level="HIGH" score={92} size="sm" />
+                  </div>
+                  <h3 className="text-base font-bold text-white group-hover:text-sky-200 transition">
+                    Penicillin / Amoxicillin Allergy Test
+                  </h3>
+                  <p className="text-xs text-slate-300 mt-2 leading-relaxed">
+                    MediSafe cross-evaluates drug excipients and chemical classes against allergy history to protect from severe anaphylactic shock.
+                  </p>
                 </div>
-                <h3 className="text-base font-bold text-white group-hover:text-mediteal-200 transition">
-                  {activePatients[1]?.name || 'Mrunali Kadam'} ({activePatients[1]?.age || 22}y) + Routine Check
-                </h3>
-                <p className="text-xs text-slate-300 mt-2 leading-relaxed">
-                  Real-time clinical compatibility assessment for registered patient profile. Verifies zero drug-drug clashes.
-                </p>
-              </div>
 
-              <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between">
-                <span className="text-[11px] text-slate-400 font-mono">Patient: {activePatients[1]?.name || 'Mrunali Kadam'}</span>
-                <button
-                  onClick={() => handleQuickDemo(activePatients[1]?.id || 'usr-new-1788596030403', 'Paracetamol (Acetaminophen)', '500mg')}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-mediteal-500/20 hover:bg-mediteal-500/30 text-mediteal-300 text-xs font-bold border border-mediteal-500/40 transition group-hover:scale-105"
-                >
-                  <span>Test Case</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
+                <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between">
+                  <span className="text-[11px] text-slate-400 font-mono">Clinical AI Test Case</span>
+                  <button
+                    onClick={() => handleQuickDemo('simulation', 'Amoxicillin', '500mg')}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 text-xs font-bold border border-sky-500/40 transition group-hover:scale-105"
+                  >
+                    <span>Test Case</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="group relative rounded-2xl border border-mediteal-500/30 bg-gradient-to-b from-slate-900/90 to-teal-950/20 p-5 hover:border-mediteal-500/60 transition-all shadow-lg hover:shadow-teal-950/40 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-mediteal-400 bg-mediteal-500/15 px-2.5 py-0.5 rounded-md border border-mediteal-500/30">
+                      Clinical Case
+                    </span>
+                    <RiskBadge level="LOW" score={18} size="sm" />
+                  </div>
+                  <h3 className="text-base font-bold text-white group-hover:text-mediteal-200 transition">
+                    {activePatients[1]?.name} ({activePatients[1]?.age}y) + Routine Check
+                  </h3>
+                  <p className="text-xs text-slate-300 mt-2 leading-relaxed">
+                    Real-time clinical compatibility assessment for registered patient profile. Verifies zero drug-drug clashes.
+                  </p>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between">
+                  <span className="text-[11px] text-slate-400 font-mono">Patient: {activePatients[1]?.name}</span>
+                  <button
+                    onClick={() => handleQuickDemo(activePatients[1]?.id, 'Paracetamol (Acetaminophen)', '500mg')}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-mediteal-500/20 hover:bg-mediteal-500/30 text-mediteal-300 text-xs font-bold border border-mediteal-500/40 transition group-hover:scale-105"
+                  >
+                    <span>Test Case</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Demo Card 3: Clinical High-Risk Simulation Case */}
             <div className="group relative rounded-2xl border border-rose-500/30 bg-gradient-to-b from-slate-900/90 to-rose-950/20 p-5 hover:border-rose-500/60 transition-all shadow-lg hover:shadow-rose-950/40 flex flex-col justify-between">

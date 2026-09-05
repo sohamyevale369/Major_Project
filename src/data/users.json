@@ -1,5 +1,41 @@
 [
   {
+    "id": "usr-new-1788598162155",
+    "name": "Ovee yevale",
+    "email": "oveeyevale@gmail.com",
+    "password": "Temp123",
+    "role": "admin",
+    "department": "",
+    "licenseNumber": "",
+    "age": 45,
+    "gender": "Male",
+    "chronicDiseases": [],
+    "allergies": [],
+    "status": "Active",
+    "isNewUser": true,
+    "registeredAt": "2026-09-05T08:49:22.155Z",
+    "lastLogin": "2026-09-05T08:49:22.155Z",
+    "notes": "Registered through MediSafe AI online portal."
+  },
+  {
+    "id": "usr-new-1788597045562",
+    "name": "Soham Vikas Yevale",
+    "email": "tradersoham.369@gmail.com",
+    "password": "Vnetra@1126",
+    "role": "admin",
+    "department": "",
+    "licenseNumber": "",
+    "age": 45,
+    "gender": "Male",
+    "chronicDiseases": [],
+    "allergies": [],
+    "status": "Active",
+    "isNewUser": true,
+    "registeredAt": "2026-09-05T08:30:45.562Z",
+    "lastLogin": "2026-09-05T08:30:45.562Z",
+    "notes": "Registered through MediSafe AI online portal."
+  },
+  {
     "id": "usr-new-1788590733394",
     "name": "Soham Vikas Yevale",
     "email": "sohamyevale624@gmail.com",
@@ -14,7 +50,7 @@
     "status": "Active",
     "isNewUser": false,
     "registeredAt": "2026-09-05T06:45:33.394Z",
-    "lastLogin": "2026-09-05T06:45:33.394Z",
+    "lastLogin": "2026-09-05T08:49:38.020Z",
     "notes": "Registered through MediSafe AI online portal."
   },
   {
@@ -34,20 +70,6 @@
     "registeredAt": "2026-09-05T08:13:50.403Z",
     "lastLogin": "2026-09-05T08:13:50.403Z",
     "notes": "Verified Patient Profile"
-  },
-  {
-    "id": "usr-admin-1",
-    "name": "System Administrator",
-    "email": "admin@medisafe.ai",
-    "password": "Admin@123",
-    "role": "admin",
-    "department": "Clinical IT & Compliance",
-    "licenseNumber": "SYS-ADMIN-001",
-    "status": "Active",
-    "isNewUser": false,
-    "registeredAt": "2024-01-10T08:30:00.000Z",
-    "lastLogin": "2026-09-05T06:46:01.101Z",
-    "notes": "Master administrator with full system audit, user management & deduplication rights."
   },
   {
     "id": "usr-doc-1",

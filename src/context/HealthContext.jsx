@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { SAMPLE_PATIENTS } from '../data/samplePatients';
 import { evaluateMedicationSafety } from '../data/mockAI';
 import {
@@ -27,12 +27,35 @@ export function HealthProvider({ children }) {
   const [users, setUsers] = useState(() => getAllUsers());
   const [auditLogs, setAuditLogs] = useState(() => getSystemAuditLogs());
 
+  // Strict resource visibility isolation:
+  // Patients can NEVER view other patients' or doctors' records.
+  // Clinicians can view patient medical records, but never other doctors or admin credentials.
+  const visibleUsers = useMemo(() => {
+    if (!currentUser) return [];
+    if (currentUser.role === 'patient') {
+      return (users || []).filter(u => u.email?.toLowerCase() === currentUser.email?.toLowerCase());
+    }
+    if (currentUser.role === 'clinician') {
+      return (users || []).filter(u => u.role === 'patient');
+    }
+    return users || [];
+  }, [users, currentUser]);
+
   // Dynamic patient list strictly derived from live users database in real-time
+  // Patient session privacy: If current user is a patient, they can ONLY see their own patient profile.
+  // Other patients are never exposed to a patient session.
   const activePatients = (users || [])
-    .filter(u => u && u.role === 'patient')
+    .filter(u => {
+      if (!u || u.role !== 'patient') return false;
+      if (currentUser?.role === 'patient') {
+        return u.email?.toLowerCase() === currentUser.email?.toLowerCase();
+      }
+      return true;
+    })
     .map(u => ({
       id: u.id,
       name: u.name,
+      email: u.email,
       age: u.age || 40,
       gender: u.gender || 'Not specified',
       weight: u.weight || 70,
@@ -46,8 +69,24 @@ export function HealthProvider({ children }) {
       testScenarioHighlight: `${u.chronicDiseases?.join(', ') || 'Standard Clinical Monitoring'}`
     }));
 
-  // Active patient profile initialized from stored users
+  // Active patient profile initialized from stored users or active session
   const [patient, setPatient] = useState(() => {
+    const session = getActiveUserSession();
+    if (session && session.role === 'patient') {
+      return {
+        id: session.id,
+        name: session.name,
+        email: session.email,
+        age: session.age || 23,
+        gender: session.gender || 'Not specified',
+        weight: session.weight || 70,
+        description: `${session.gender || 'Patient'}, ${session.age || 23}y — ${session.chronicDiseases?.join(', ') || 'Verified Profile'}`,
+        diseases: session.chronicDiseases || [],
+        allergies: session.allergies || [],
+        medicalHistory: session.medicalHistory || session.notes || 'Registered MediSafe clinical profile.',
+        currentMedicines: session.currentMedicines || []
+      };
+    }
     const initialUsers = getAllUsers();
     const patientUsers = initialUsers.filter(u => u && u.role === 'patient');
     if (patientUsers.length > 0) {
@@ -55,6 +94,7 @@ export function HealthProvider({ children }) {
       return {
         id: p0.id,
         name: p0.name,
+        email: p0.email,
         age: p0.age || 40,
         gender: p0.gender || 'Not specified',
         weight: p0.weight || 70,
@@ -68,6 +108,7 @@ export function HealthProvider({ children }) {
     return {
       id: 'usr-default',
       name: 'Clinical Patient Profile',
+      email: '',
       age: 45,
       gender: 'Male',
       weight: 70,
@@ -81,6 +122,14 @@ export function HealthProvider({ children }) {
 
   // Active view: 'home' | 'dashboard' | 'risk-checker' | 'interactions' | 'ocr' | 'profile' | 'history' | 'report' | 'admin'
   const [activeTab, setActiveTab] = useState('home');
+
+  const handleTabChange = (newTab) => {
+    if (newTab === 'admin' && currentUser?.role !== 'admin') {
+      showToast('No access to Admin Console for patients and doctors.', 'error');
+      return;
+    }
+    setActiveTab(newTab);
+  };
 
   // Pre-computed initial analysis
   const [currentAnalysis, setCurrentAnalysis] = useState(() =>
@@ -172,24 +221,23 @@ export function HealthProvider({ children }) {
     const patientUsers = (users || []).filter(u => u && u.role === 'patient');
 
     if (patientUsers.length > 0) {
-      // 1. If currentUser is a patient, make currentUser the active patient
+      // 1. If currentUser is a patient, strictly lock to the logged-in patient's personal record
       if (currentUser && currentUser.role === 'patient') {
-        const found = patientUsers.find(u => u.email.toLowerCase() === currentUser.email.toLowerCase());
-        if (found) {
-          setPatient({
-            id: found.id,
-            name: found.name,
-            age: found.age || 40,
-            gender: found.gender || 'Not specified',
-            weight: found.weight || 70,
-            description: `${found.gender || 'Patient'}, ${found.age || 40}y — ${found.chronicDiseases?.join(', ') || 'No recorded conditions'}`,
-            diseases: found.chronicDiseases || [],
-            allergies: found.allergies || [],
-            medicalHistory: found.medicalHistory || found.notes || 'Registered MediSafe profile.',
-            currentMedicines: found.currentMedicines || []
-          });
-          return;
-        }
+        const found = patientUsers.find(u => u.email?.toLowerCase() === currentUser.email?.toLowerCase()) || currentUser;
+        setPatient({
+          id: found.id,
+          name: found.name,
+          email: found.email,
+          age: found.age || 23,
+          gender: found.gender || 'Not specified',
+          weight: found.weight || 70,
+          description: `${found.gender || 'Patient'}, ${found.age || 23}y — ${found.chronicDiseases?.join(', ') || 'Personal Profile'}`,
+          diseases: found.chronicDiseases || [],
+          allergies: found.allergies || [],
+          medicalHistory: found.medicalHistory || found.notes || 'Registered MediSafe personal profile.',
+          currentMedicines: found.currentMedicines || []
+        });
+        return;
       }
 
       // 2. Otherwise check if the current active patient still exists in database
@@ -293,6 +341,10 @@ export function HealthProvider({ children }) {
 
   // Admin: Deduplicate user database records
   const deduplicateUsers = () => {
+    if (currentUser?.role !== 'admin') {
+      showToast('No access to Admin Console for patients and doctors.', 'error');
+      return { duplicatesRemovedCount: 0, remainingUsers: visibleUsers };
+    }
     const report = deduplicateUserDatabase();
     refreshUsersAndLogs();
     if (report.duplicatesRemovedCount > 0) {
@@ -305,6 +357,10 @@ export function HealthProvider({ children }) {
 
   // Admin: Toggle or change user status
   const changeUserStatus = (userId, newStatus) => {
+    if (currentUser?.role !== 'admin') {
+      showToast('No access to Admin Console for patients and doctors.', 'error');
+      return;
+    }
     updateUserDetails(userId, { status: newStatus });
     refreshUsersAndLogs();
     showToast(`User status updated to ${newStatus}`, 'success');
@@ -312,6 +368,10 @@ export function HealthProvider({ children }) {
 
   // Admin: Delete user
   const removeUser = (userId) => {
+    if (currentUser?.role !== 'admin') {
+      showToast('No access to Admin Console for patients and doctors.', 'error');
+      return;
+    }
     deleteUserAccount(userId);
     refreshUsersAndLogs();
     showToast('User record permanently removed from database', 'info');
@@ -319,6 +379,10 @@ export function HealthProvider({ children }) {
 
   // Admin: Manually add a user
   const adminAddUser = (userData) => {
+    if (currentUser?.role !== 'admin') {
+      showToast('No access to Admin Console for patients and doctors.', 'error');
+      return { success: false, message: 'No access to Admin Console for patients and doctors.' };
+    }
     try {
       const user = adminCreateUser(userData);
       refreshUsersAndLogs();
@@ -332,6 +396,11 @@ export function HealthProvider({ children }) {
 
   // Swaps patient profile to a pre-configured scenario
   const loadPatientPreset = (presetPatient) => {
+    // If the logged in user is a patient, strictly forbid switching to another patient's data
+    if (currentUser?.role === 'patient' && presetPatient?.email && currentUser?.email && presetPatient.email.toLowerCase() !== currentUser.email.toLowerCase()) {
+      showToast('No access to other patient records.', 'warning');
+      return;
+    }
     setPatient(presetPatient);
     const testMed = presetPatient.recommendedTestDrug || 'Paracetamol (Acetaminophen)';
     const newAnalysis = evaluateMedicationSafety(presetPatient, testMed);
@@ -411,7 +480,7 @@ export function HealthProvider({ children }) {
         login,
         register,
         logout,
-        users,
+        users: visibleUsers,
         activePatients,
         auditLogs,
         refreshUsersAndLogs,
@@ -424,7 +493,7 @@ export function HealthProvider({ children }) {
         loadPatientPreset,
         updatePatient,
         activeTab,
-        setActiveTab,
+        setActiveTab: handleTabChange,
         currentAnalysis,
         setCurrentAnalysis,
         runSafetyCheck,

@@ -64,34 +64,37 @@ export default function AdminDashboardView() {
   const [addAge, setAddAge] = useState('45');
   const [addGender, setAddGender] = useState('Male');
   const [addCondition, setAddCondition] = useState('');
+  const [addAdminToken, setAddAdminToken] = useState('');
 
-  // Access Guard: If current user is not an admin, offer instant 1-click switch to Administrator
+  // Access Guard: The Admin Console is strictly restricted to verified Administrator users
   if (!currentUser || currentUser.role !== 'admin') {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-16 text-center space-y-6 animate-fade-in">
-        <div className="w-16 h-16 rounded-2xl bg-purple-500/10 text-purple-400 border border-purple-500/20 flex items-center justify-center mx-auto shadow-lg">
-          <ShieldCheck className="w-8 h-8" />
+      <div className="max-w-xl mx-auto px-4 py-20 text-center space-y-6 animate-fade-in">
+        <div className="w-16 h-16 rounded-2xl bg-rose-500/15 text-rose-400 border border-rose-500/30 flex items-center justify-center mx-auto shadow-xl shadow-rose-950/40">
+          <Lock className="w-8 h-8" />
         </div>
         <div className="space-y-2">
-          <h1 className="text-2xl font-black text-white">System Administrator Console</h1>
-          <p className="text-sm text-slate-400 max-w-md mx-auto">
-            You are currently signed in as <strong className="text-white">{currentUser?.name || 'Standard User'}</strong> ({currentUser?.role || 'Guest'}).
-            To view all stored user records, run deduplication, or manage accounts, switch to Administrator mode below:
+          <span className="text-[11px] font-bold uppercase tracking-widest text-rose-400 bg-rose-500/10 px-3 py-1 rounded-full border border-rose-500/20">
+            Access Prohibited
+          </span>
+          <h1 className="text-2xl font-black text-white">
+            No access to Admin Console for patients and doctors.
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-400 max-w-md mx-auto leading-relaxed">
+            Patients and doctors are strictly forbidden from accessing the Admin Console. Administrator rights to inspect user databases, alter statuses, or remove records are restricted solely to authorized administrators.
           </p>
         </div>
-        <div className="flex flex-wrap items-center justify-center gap-3">
+        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 text-xs max-w-sm mx-auto space-y-1.5 font-mono text-left text-slate-400">
+          <div><span className="text-slate-500">Current User:</span> <span className="text-white font-bold">{currentUser?.name || 'Guest'}</span></div>
+          <div><span className="text-slate-500">Role:</span> <span className="capitalize font-bold text-amber-400">{currentUser?.role || 'None'}</span></div>
+          <div><span className="text-slate-500">Access Status:</span> <span className="text-rose-400 font-bold">REJECTED (Non-Admin)</span></div>
+        </div>
+        <div className="flex items-center justify-center gap-3">
           <button
-            onClick={() => login('admin@medisafe.ai', 'Admin@123')}
-            className="px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-mediblue-600 hover:from-purple-500 hover:to-mediblue-500 text-white text-xs font-black shadow-xl shadow-purple-500/20 transition flex items-center gap-2 hover:scale-102"
+            onClick={() => setActiveTab(currentUser?.role === 'patient' ? 'profile' : 'dashboard')}
+            className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-mediteal-500 to-mediblue-600 hover:from-mediteal-400 hover:to-mediblue-500 text-slate-950 font-bold text-xs transition shadow-lg shadow-mediteal-500/20"
           >
-            <ShieldCheck className="w-4 h-4" />
-            <span>Switch to System Administrator (1-Click)</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('dashboard')}
-            className="px-5 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition"
-          >
-            Return to Dashboard
+            {currentUser?.role === 'patient' ? 'Go to My Personal Details' : 'Return to My Dashboard'}
           </button>
         </div>
       </div>
@@ -136,11 +139,21 @@ export default function AdminDashboardView() {
   // Handle Add User Submit
   const handleAddUserSubmit = (e) => {
     e.preventDefault();
+
+    if (addRole === 'admin') {
+      const trimmed = (addAdminToken || '').trim().toUpperCase();
+      if (!trimmed || trimmed !== 'MEDI0284517') {
+        showToast('Incorrect Token ID: Only authorized clinical employees can create an Admin account.', 'error');
+        return;
+      }
+    }
+
     const result = adminAddUser({
       name: addName,
       email: addEmail,
       password: addPassword,
       role: addRole,
+      adminToken: addRole === 'admin' ? addAdminToken.trim().toUpperCase() : undefined,
       department: addRole === 'clinician' ? addDepartment : undefined,
       licenseNumber: addRole === 'clinician' ? addLicense : undefined,
       age: addAge ? Number(addAge) : 40,
@@ -154,6 +167,7 @@ export default function AdminDashboardView() {
       setAddName('');
       setAddEmail('');
       setAddPassword('');
+      setAddAdminToken('');
     }
   };
 
@@ -740,6 +754,26 @@ export default function AdminDashboardView() {
                       className="w-full px-2 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white"
                     />
                   </div>
+                </div>
+              )}
+
+              {addRole === 'admin' && (
+                <div className="p-3 rounded-xl bg-purple-950/40 border border-purple-500/40 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-[11px] font-bold text-purple-300">
+                      Admin Authorization Token ID <span className="text-rose-400">*</span>
+                    </label>
+                    <span className="text-[10px] text-purple-400 font-mono">MEDI0284517</span>
+                  </div>
+                  <input
+                    type="text"
+                    required
+                    value={addAdminToken}
+                    onChange={(e) => setAddAdminToken(e.target.value)}
+                    placeholder="Enter Unique Key (e.g. MEDI0284517)"
+                    className="w-full px-2.5 py-2 rounded-lg bg-slate-900 border border-purple-500/50 text-white font-mono text-xs focus:outline-none"
+                  />
+                  <p className="text-[10px] text-slate-400">Required security key for administrator activation</p>
                 </div>
               )}
 

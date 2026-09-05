@@ -8,6 +8,14 @@ const CURRENT_USER_KEY = 'medisafe_active_user';
 const AUDIT_LOGS_KEY = 'medisafe_audit_logs';
 export const STORAGE_SYNC_VERSION = 'medisafe_v3_clean_users';
 
+// Authorized Security Token Key for Administrator Account Creation
+export const ADMIN_REGISTRATION_TOKEN = 'MEDI0284517';
+
+export function verifyAdminToken(token) {
+  if (!token) return false;
+  return token.trim().toUpperCase() === ADMIN_REGISTRATION_TOKEN;
+}
+
 // Explicitly blacklisted dummy/fake emails to ensure they are purged from any teammate's browser
 export const DELETED_FAKE_EMAILS = [
   'robert.jenkins@medisafe.care',
@@ -276,6 +284,13 @@ export function registerNewUser(userData) {
   const existingUser = users.find(u => u.email.toLowerCase() === normalizedEmail);
   if (existingUser) {
     throw new Error(`An account with email "${userData.email}" already exists. Please sign in instead.`);
+  }
+
+  // Security Gate: Administrator account creation requires the unique authorization token
+  if (userData.role === 'admin') {
+    if (!verifyAdminToken(userData.adminToken)) {
+      throw new Error('Incorrect Token ID: The entered security key is invalid or unauthorized. Only authorized clinical employees can register an Admin account.');
+    }
   }
 
   const now = new Date().toISOString();
