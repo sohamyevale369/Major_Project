@@ -3,6 +3,7 @@ import { SAMPLE_PATIENTS } from '../data/samplePatients';
 import { evaluateMedicationSafety } from '../data/mockAI';
 import {
   getAllUsers,
+  sanitizeUsers,
   getActiveUserSession,
   setActiveUserSession,
   authenticateUser,
@@ -39,8 +40,8 @@ export function HealthProvider({ children }) {
       diseases: u.chronicDiseases || [],
       allergies: u.allergies || [],
       medicalHistory: u.medicalHistory || u.notes || 'Registered MediSafe clinical profile.',
-      currentMedicines: u.currentMedicines || (u.name.toLowerCase().includes('robert') ? [{ name: 'Lisinopril', dosage: '10mg', frequency: 'Once daily' }] : []),
-      recommendedTestDrug: u.recommendedTestDrug || (u.name.toLowerCase().includes('robert') ? 'Ibuprofen' : 'Paracetamol (Acetaminophen)'),
+      currentMedicines: u.currentMedicines || (u.chronicDiseases?.length ? [{ name: 'Lisinopril', dosage: '10mg', frequency: 'Once daily' }] : []),
+      recommendedTestDrug: u.recommendedTestDrug || (u.chronicDiseases?.length ? 'Ibuprofen' : 'Paracetamol (Acetaminophen)'),
       testScenarioTitle: `${u.name} Clinical Scenario`,
       testScenarioHighlight: `${u.chronicDiseases?.join(', ') || 'Standard Clinical Monitoring'}`
     }));
@@ -147,6 +148,24 @@ export function HealthProvider({ children }) {
     setUsers(getAllUsers());
     setAuditLogs(getSystemAuditLogs());
   };
+
+  // Synchronize on mount directly from physical disk file src/data/users.json via dev server API
+  useEffect(() => {
+    if (typeof fetch !== 'undefined') {
+      fetch('/api/users')
+        .then(res => res.json())
+        .then(diskUsers => {
+          if (Array.isArray(diskUsers) && diskUsers.length > 0) {
+            const sanitized = sanitizeUsers(diskUsers);
+            setUsers(sanitized);
+            try {
+              localStorage.setItem('medisafe_users', JSON.stringify(sanitized));
+            } catch (e) {}
+          }
+        })
+        .catch(() => {});
+    }
+  }, []);
 
   // Sync active patient profile whenever users or currentUser changes in real-time
   useEffect(() => {

@@ -216,14 +216,14 @@ export default function AuthPortal() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <button
                     type="button"
-                    onClick={() => handleDemoLogin('robert.jenkins@medisafe.care', 'Patient@123')}
+                    onClick={() => handleDemoLogin('sohamyevale624@gmail.com', 'Vnetra@1126')}
                     className="p-2.5 rounded-xl bg-gradient-to-r from-emerald-500/15 to-mediteal-500/15 hover:from-emerald-500/25 hover:to-mediteal-500/25 border border-emerald-500/30 text-left transition group"
                   >
                     <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-300">
                       <HeartPulse className="w-4 h-4 text-emerald-400" />
                       <span>Enter User Dashboard</span>
                     </div>
-                    <div className="text-[10px] text-slate-400 truncate mt-0.5">Patient Safety & Medications</div>
+                    <div className="text-[10px] text-slate-400 truncate mt-0.5">Soham Vikas Yevale (Patient)</div>
                   </button>
 
                   <button
@@ -256,7 +256,7 @@ export default function AuthPortal() {
                     required
                     value={loginEmail}
                     onChange={(e) => setLoginEmail(e.target.value)}
-                    placeholder="e.g. robert.jenkins@medisafe.care"
+                    placeholder="e.g. sohamyevale624@gmail.com"
                     className="w-full pl-10 pr-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs sm:text-sm focus:border-mediteal-400 focus:outline-none transition shadow-inner"
                   />
                   <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
@@ -320,14 +320,14 @@ export default function AuthPortal() {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <button
                     type="button"
-                    onClick={() => handleDemoLogin('robert.jenkins@medisafe.care', 'Patient@123')}
+                    onClick={() => handleDemoLogin('sohamyevale624@gmail.com', 'Vnetra@1126')}
                     className="p-2.5 rounded-xl bg-slate-950 hover:bg-slate-850 border border-slate-800 hover:border-mediteal-500/40 text-left transition group"
                   >
                     <div className="flex items-center gap-1.5 text-xs font-bold text-mediteal-300">
                       <HeartPulse className="w-3.5 h-3.5" />
                       <span>Patient</span>
                     </div>
-                    <div className="text-[10px] text-slate-400 truncate mt-0.5">Robert Jenkins (68y)</div>
+                    <div className="text-[10px] text-slate-400 truncate mt-0.5">Soham Vikas Yevale (Patient)</div>
                   </button>
 
                   <button
@@ -418,7 +418,7 @@ export default function AuthPortal() {
                     required
                     value={regName}
                     onChange={(e) => setRegName(e.target.value)}
-                    placeholder="e.g. John Doe, MD or Eleanor Vance"
+                    placeholder="e.g. Soham Vikas Yevale or Dr. Rajesh Sharma"
                     className="w-full pl-10 pr-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs sm:text-sm focus:border-mediteal-400 focus:outline-none transition"
                   />
                   <User className="w-4 h-4 text-slate-500 absolute left-3.5 top-2.5" />

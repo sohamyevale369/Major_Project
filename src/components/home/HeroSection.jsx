@@ -99,65 +99,7 @@ export default function HeroSection() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
             
-            {/* Demo Card 1: Senior + Kidney Disease + Ibuprofen */}
-            <div className="group relative rounded-2xl border border-rose-500/30 bg-gradient-to-b from-slate-900/90 to-rose-950/20 p-5 hover:border-rose-500/60 transition-all shadow-lg hover:shadow-rose-950/40 flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-rose-400 bg-rose-500/15 px-2.5 py-0.5 rounded-md border border-rose-500/30">
-                    High Risk Conflict
-                  </span>
-                  <RiskBadge level="HIGH" score={85} size="sm" />
-                </div>
-                <h3 className="text-base font-bold text-white group-hover:text-rose-200 transition">
-                  Senior Patient (68y) + Chronic Kidney Disease + Ibuprofen
-                </h3>
-                <p className="text-xs text-slate-300 mt-2 leading-relaxed">
-                  Ibuprofen severely constricts blood flow to impaired kidneys. The AI flags this as <strong className="text-rose-300">85% High Risk</strong> and recommends Paracetamol.
-                </p>
-              </div>
-
-              <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between">
-                <span className="text-[11px] text-slate-400 font-mono">Patient: Robert Jenkins</span>
-                <button
-                  onClick={() => handleQuickDemo('patient-1', 'Ibuprofen', '400mg')}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-xs font-bold border border-rose-500/40 transition group-hover:scale-105"
-                >
-                  <span>Test Case</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-
-            {/* Demo Card 2: Eleanor Vance + Amoxicillin Allergy Conflict */}
-            <div className="group relative rounded-2xl border border-amber-500/30 bg-gradient-to-b from-slate-900/90 to-amber-950/20 p-5 hover:border-amber-500/60 transition-all shadow-lg hover:shadow-amber-950/40 flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-amber-400 bg-amber-500/15 px-2.5 py-0.5 rounded-md border border-amber-500/30">
-                    Allergy Alert
-                  </span>
-                  <RiskBadge level="HIGH" score={89} size="sm" />
-                </div>
-                <h3 className="text-base font-bold text-white group-hover:text-amber-200 transition">
-                  Eleanor (54y) + Penicillin Allergy + Amoxicillin
-                </h3>
-                <p className="text-xs text-slate-300 mt-2 leading-relaxed">
-                  Amoxicillin is in the Penicillin antibiotic family. MediSafe AI detects this cross-reactivity and blocks it with an <strong className="text-amber-300">Emergency Allergy Warning</strong>.
-                </p>
-              </div>
-
-              <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between">
-                <span className="text-[11px] text-slate-400 font-mono">Patient: Eleanor Vance</span>
-                <button
-                  onClick={() => handleQuickDemo('patient-2', 'Amoxicillin', '500mg')}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-xs font-bold border border-amber-500/40 transition group-hover:scale-105"
-                >
-                  <span>Test Case</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-
-            {/* Demo Card 3: Devon Clark + Safe Medication Profile */}
+            {/* Demo Card 1: Soham Vikas Yevale + Routine Safety Check */}
             <div className="group relative rounded-2xl border border-emerald-500/30 bg-gradient-to-b from-slate-900/90 to-emerald-950/20 p-5 hover:border-emerald-500/60 transition-all shadow-lg hover:shadow-emerald-950/40 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between mb-3">
@@ -167,18 +109,76 @@ export default function HeroSection() {
                   <RiskBadge level="LOW" score={15} size="sm" />
                 </div>
                 <h3 className="text-base font-bold text-white group-hover:text-emerald-200 transition">
-                  Young Adult (32y) + Diabetes + Paracetamol
+                  {activePatients[0]?.name || 'Soham Vikas Yevale'} ({activePatients[0]?.age || 23}y) + Paracetamol
                 </h3>
                 <p className="text-xs text-slate-300 mt-2 leading-relaxed">
-                  Standard antipyretic evaluation with no renal, liver, or allergy conflicts. MediSafe assigns a <strong className="text-emerald-300">15% Low Risk</strong> safety score.
+                  Standard antipyretic evaluation with no renal, cardiac, or allergy conflicts. MediSafe assigns a <strong className="text-emerald-300">15% Low Risk</strong> safety score.
                 </p>
               </div>
 
               <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between">
-                <span className="text-[11px] text-slate-400 font-mono">Patient: Devon Clark</span>
+                <span className="text-[11px] text-slate-400 font-mono">Patient: {activePatients[0]?.name || 'Soham Vikas Yevale'}</span>
                 <button
-                  onClick={() => handleQuickDemo('patient-4', 'Paracetamol (Acetaminophen)', '500mg')}
+                  onClick={() => handleQuickDemo(activePatients[0]?.id || 'usr-new-1788590733394', 'Paracetamol (Acetaminophen)', '500mg')}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 text-xs font-bold border border-emerald-500/40 transition group-hover:scale-105"
+                >
+                  <span>Test Case</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Demo Card 2: Mrunali Kadam + Clinical Profile */}
+            <div className="group relative rounded-2xl border border-mediteal-500/30 bg-gradient-to-b from-slate-900/90 to-teal-950/20 p-5 hover:border-mediteal-500/60 transition-all shadow-lg hover:shadow-teal-950/40 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-mediteal-400 bg-mediteal-500/15 px-2.5 py-0.5 rounded-md border border-mediteal-500/30">
+                    Patient Profile
+                  </span>
+                  <RiskBadge level="LOW" score={18} size="sm" />
+                </div>
+                <h3 className="text-base font-bold text-white group-hover:text-mediteal-200 transition">
+                  {activePatients[1]?.name || 'Mrunali Kadam'} ({activePatients[1]?.age || 22}y) + Routine Check
+                </h3>
+                <p className="text-xs text-slate-300 mt-2 leading-relaxed">
+                  Real-time clinical compatibility assessment for registered patient profile. Verifies zero drug-drug clashes.
+                </p>
+              </div>
+
+              <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between">
+                <span className="text-[11px] text-slate-400 font-mono">Patient: {activePatients[1]?.name || 'Mrunali Kadam'}</span>
+                <button
+                  onClick={() => handleQuickDemo(activePatients[1]?.id || 'usr-new-1788596030403', 'Paracetamol (Acetaminophen)', '500mg')}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-mediteal-500/20 hover:bg-mediteal-500/30 text-mediteal-300 text-xs font-bold border border-mediteal-500/40 transition group-hover:scale-105"
+                >
+                  <span>Test Case</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Demo Card 3: Clinical High-Risk Simulation Case */}
+            <div className="group relative rounded-2xl border border-rose-500/30 bg-gradient-to-b from-slate-900/90 to-rose-950/20 p-5 hover:border-rose-500/60 transition-all shadow-lg hover:shadow-rose-950/40 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-rose-400 bg-rose-500/15 px-2.5 py-0.5 rounded-md border border-rose-500/30">
+                    High Risk Simulation
+                  </span>
+                  <RiskBadge level="HIGH" score={85} size="sm" />
+                </div>
+                <h3 className="text-base font-bold text-white group-hover:text-rose-200 transition">
+                  Kidney Disease + Ibuprofen Conflict Test
+                </h3>
+                <p className="text-xs text-slate-300 mt-2 leading-relaxed">
+                  Ibuprofen severely constricts renal blood flow. The AI flags this as <strong className="text-rose-300">85% High Risk</strong> and suggests doctor-approved Paracetamol.
+                </p>
+              </div>
+
+              <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between">
+                <span className="text-[11px] text-slate-400 font-mono">Clinical AI Test Case</span>
+                <button
+                  onClick={() => handleQuickDemo('simulation', 'Ibuprofen', '400mg')}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-xs font-bold border border-rose-500/40 transition group-hover:scale-105"
                 >
                   <span>Test Case</span>
                   <ArrowRight className="w-3.5 h-3.5" />

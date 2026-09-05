@@ -72,7 +72,7 @@ export default function AuthModal() {
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Eleanor Vance"
+                  placeholder="e.g. Soham Vikas Yevale"
                   className="w-full pl-9 pr-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:border-mediteal-400 focus:outline-none"
                 />
                 <User className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-2.5" />

@@ -297,8 +297,8 @@ export const SAMPLE_PRESCRIPTIONS = [
     imageType: 'clinic_printed',
     previewText: 'Rx: Ibuprofen 400mg, Twice Daily for Knee Pain',
     extractedData: {
-      patientName: 'Robert Jenkins',
-      patientAge: '68',
+      patientName: 'Soham Vikas Yevale',
+      patientAge: '23',
       medicines: [
         {
           name: 'Ibuprofen',
@@ -321,7 +321,7 @@ export const SAMPLE_PRESCRIPTIONS = [
     imageType: 'hospital_rx',
     previewText: 'Rx: Aspirin 325mg + Warfarin 5mg (Combination Alert)',
     extractedData: {
-      patientName: 'Marcus Brody',
+      patientName: 'Clinical Patient (Cardiology)',
       patientAge: '58',
       medicines: [
         {
@@ -352,8 +352,8 @@ export const SAMPLE_PRESCRIPTIONS = [
     imageType: 'urgent_care',
     previewText: 'Rx: Amoxicillin 500mg, Three Times Daily (Allergy Conflict)',
     extractedData: {
-      patientName: 'Eleanor Vance',
-      patientAge: '54',
+      patientName: 'Mrunali Kadam',
+      patientAge: '22',
       medicines: [
         {
           name: 'Amoxicillin',
