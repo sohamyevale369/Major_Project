@@ -1,5 +1,23 @@
 [
   {
+    "id": "usr-new-1788795004019",
+    "name": "Vikas",
+    "email": "vikas@gmail.com",
+    "password": "123456",
+    "role": "patient",
+    "department": "",
+    "licenseNumber": "",
+    "age": 53,
+    "gender": "Male",
+    "chronicDiseases": [],
+    "allergies": [],
+    "status": "Active",
+    "isNewUser": true,
+    "registeredAt": "2026-09-07T15:30:04.019Z",
+    "lastLogin": "2026-09-07T15:30:04.019Z",
+    "notes": "Registered through MediSafe AI online portal."
+  },
+  {
     "id": "usr-admin-1",
     "name": "System Administrator",
     "email": "admin@medisafe.ai",
@@ -86,7 +104,7 @@
     "status": "Active",
     "isNewUser": false,
     "registeredAt": "2026-09-05T06:45:33.394Z",
-    "lastLogin": "2026-09-07T15:13:08.112Z",
+    "lastLogin": "2026-09-07T15:22:27.268Z",
     "notes": "Registered through MediSafe AI online portal."
   },
   {
