@@ -127,14 +127,12 @@ export default function Navbar() {
                   onClick={() => handleNavClick(item.id)}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
                     isActive
-                      ? item.adminBadge
-                        ? 'bg-purple-900 text-white shadow-sm'
-                        : 'bg-[#235339] text-white shadow-sm'
+                      ? 'bg-[#235339] text-white shadow-sm'
                       : 'text-[#424C44] hover:text-[#18231C] hover:bg-[#ECE7DC]'
                   }`}
                 >
                   <Icon className={`w-3.5 h-3.5 ${
-                    isActive ? 'text-white' : item.adminBadge ? 'text-purple-700' : 'text-[#5E6860]'
+                    isActive ? 'text-white' : item.adminBadge ? 'text-[#235339]' : 'text-[#5E6860]'
                   }`} />
                   <span>{item.label}</span>
                 </button>
@@ -270,7 +268,7 @@ export default function Navbar() {
                 >
                   <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
                     isAdmin
-                      ? 'bg-purple-100 text-purple-800'
+                      ? 'bg-[#E2EFE7] text-[#1E5034]'
                       : isClinician
                       ? 'bg-sky-100 text-sky-800'
                       : 'bg-[#E2EFE7] text-[#1E5034]'
@@ -295,7 +293,7 @@ export default function Navbar() {
                       <span className="text-[#6A746C] text-[11px] font-mono truncate block">{currentUser.email}</span>
                       <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                         isAdmin
-                          ? 'bg-purple-100 text-purple-800'
+                          ? 'bg-[#E2EFE7] text-[#1E5034] border border-[#C6DDD0]'
                           : isClinician
                           ? 'bg-sky-100 text-sky-800'
                           : 'bg-[#E2EFE7] text-[#1E5034]'
@@ -308,7 +306,7 @@ export default function Navbar() {
                       {isAdmin && (
                         <button
                           onClick={() => handleNavClick('admin')}
-                          className="w-full text-left px-3 py-2 rounded-xl text-purple-700 hover:bg-purple-50 font-semibold flex items-center gap-2 transition"
+                          className="w-full text-left px-3 py-2 rounded-xl text-[#235339] hover:bg-[#EAF3ED] font-semibold flex items-center gap-2 transition"
                         >
                           <ShieldCheck className="w-3.5 h-3.5" />
                           <span>Admin Console</span>
@@ -374,9 +372,7 @@ export default function Navbar() {
                   onClick={() => handleNavClick(item.id)}
                   className={`flex items-center gap-2 px-3 py-2.5 rounded-full text-xs font-semibold text-left transition ${
                     isActive
-                      ? item.adminBadge
-                        ? 'bg-purple-800 text-white'
-                        : 'bg-[#235339] text-white'
+                      ? 'bg-[#235339] text-white'
                       : 'bg-white border border-[#E5DFD1] text-[#424C44] hover:bg-[#ECE7DC]'
                   }`}
                 >

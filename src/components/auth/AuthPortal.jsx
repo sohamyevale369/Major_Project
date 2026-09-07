@@ -325,18 +325,18 @@ export default function AuthPortal() {
                   onClick={() => handleToggleAdminInput('tradersoham.369@gmail.com', 'Vnetra@1126')}
                   className={`w-full py-3 px-4 rounded-2xl border transition-all duration-200 shadow-sm hover:shadow group ${
                     showAdminInput
-                      ? 'bg-purple-50 border-purple-400 text-purple-950 ring-1 ring-purple-300'
-                      : 'bg-[#ECE7DC] hover:bg-[#E3DDD0] border-[#D5CDBF] hover:border-purple-300 text-[#18231C]'
+                      ? 'bg-[#EAF3ED] border-[#235339] text-[#18231C] ring-1 ring-[#235339]/30'
+                      : 'bg-[#ECE7DC] hover:bg-[#E3DDD0] border-[#D5CDBF] hover:border-[#235339]/60 text-[#18231C]'
                   }`}
                 >
                   <div className="flex items-center gap-2.5 text-left">
-                    <div className="w-8 h-8 rounded-xl bg-purple-800 text-white flex items-center justify-center text-xs shadow-sm group-hover:scale-105 transition-transform shrink-0">
+                    <div className="w-8 h-8 rounded-xl bg-[#235339] text-white flex items-center justify-center text-xs shadow-sm group-hover:scale-105 transition-transform shrink-0">
                       <ShieldCheck className="w-4 h-4" />
                     </div>
                     <div>
-                      <div className="text-xs font-bold flex items-center gap-1.5">
+                      <div className="text-xs font-bold flex items-center gap-1.5 text-[#18231C]">
                         <span>Login as Existing Admin</span>
-                        <span className="text-[10px] bg-purple-100 text-purple-800 font-mono px-1.5 py-0.2 rounded font-bold">
+                        <span className="text-[10px] bg-[#E2EFE7] text-[#1E5034] border border-[#C6DDD0] font-mono px-1.5 py-0.2 rounded font-bold">
                           Admin
                         </span>
                       </div>
@@ -347,8 +347,8 @@ export default function AuthPortal() {
                   </div>
                   <div className={`flex items-center gap-1 font-bold text-xs px-2.5 py-1 rounded-full transition-colors shrink-0 ${
                     showAdminInput
-                      ? 'bg-purple-800 text-white'
-                      : 'bg-purple-100 text-purple-900 group-hover:bg-purple-800 group-hover:text-white'
+                      ? 'bg-[#235339] text-white'
+                      : 'bg-[#E2EFE7] text-[#1E5034] border border-[#C6DDD0] group-hover:bg-[#235339] group-hover:text-white'
                   }`}>
                     <span>{showAdminInput ? 'Hide Inputs ▲' : 'Input Credentials ▼'}</span>
                   </div>
@@ -361,7 +361,7 @@ export default function AuthPortal() {
                     <button
                       type="button"
                       onClick={() => handleToggleAdminInput('tradersoham.369@gmail.com', 'Vnetra@1126')}
-                      className="text-purple-800 hover:text-purple-950 font-bold hover:underline"
+                      className="text-[#235339] hover:text-[#1A3E2B] font-bold hover:underline"
                       title="Select Soham Vikas Yevale (Admin)"
                     >
                       Soham Admin
@@ -370,7 +370,7 @@ export default function AuthPortal() {
                     <button
                       type="button"
                       onClick={() => handleToggleAdminInput('admin@medisafe.ai', 'Admin@123')}
-                      className="text-purple-800 hover:text-purple-950 font-bold hover:underline"
+                      className="text-[#235339] hover:text-[#1A3E2B] font-bold hover:underline"
                       title="Select System Administrator (Admin@123)"
                     >
                       System Admin
@@ -380,15 +380,15 @@ export default function AuthPortal() {
 
                 {/* Option to Input User Existing Credentials (NO direct login) */}
                 {showAdminInput && (
-                  <div className="p-4 rounded-2xl bg-purple-50/95 border-2 border-purple-200/90 space-y-3 animate-fade-in text-left mt-2">
+                  <div className="p-4 rounded-2xl bg-[#EAF3ED]/80 border-2 border-[#C6DDD0] space-y-3 animate-fade-in text-left mt-2 shadow-sm">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <KeyRound className="w-4 h-4 text-purple-800" />
-                        <span className="text-xs font-bold text-purple-950">
+                        <KeyRound className="w-4 h-4 text-[#235339]" />
+                        <span className="text-xs font-bold text-[#18231C]">
                           Input Existing Admin Credentials
                         </span>
                       </div>
-                      <span className="text-[10px] uppercase font-bold text-purple-800 bg-purple-100 px-2 py-0.5 rounded-full font-mono">
+                      <span className="text-[10px] uppercase font-bold text-[#1E5034] bg-[#E2EFE7] border border-[#C6DDD0] px-2 py-0.5 rounded-full font-mono">
                         Manual Verification
                       </span>
                     </div>
@@ -410,8 +410,8 @@ export default function AuthPortal() {
                         }}
                         className={`px-2.5 py-1 rounded-full text-[11px] font-bold border transition ${
                           adminInputEmail === 'tradersoham.369@gmail.com'
-                            ? 'bg-purple-800 text-white border-purple-800 shadow-xs'
-                            : 'bg-white text-purple-900 border-purple-200 hover:border-purple-400'
+                            ? 'bg-[#235339] text-white border-[#235339] shadow-xs'
+                            : 'bg-white text-[#235339] border-[#C6DDD0] hover:border-[#235339]'
                         }`}
                       >
                         Soham Admin
@@ -424,8 +424,8 @@ export default function AuthPortal() {
                         }}
                         className={`px-2.5 py-1 rounded-full text-[11px] font-bold border transition ${
                           adminInputEmail === 'admin@medisafe.ai'
-                            ? 'bg-purple-800 text-white border-purple-800 shadow-xs'
-                            : 'bg-white text-purple-900 border-purple-200 hover:border-purple-400'
+                            ? 'bg-[#235339] text-white border-[#235339] shadow-xs'
+                            : 'bg-white text-[#235339] border-[#C6DDD0] hover:border-[#235339]'
                         }`}
                       >
                         System Admin
@@ -436,7 +436,7 @@ export default function AuthPortal() {
                           setAdminInputEmail('');
                           setAdminInputPassword('');
                         }}
-                        className="px-2 py-0.5 rounded-full text-[11px] font-medium text-[#6A746C] hover:text-[#18231C] border border-transparent hover:border-slate-300"
+                        className="px-2 py-0.5 rounded-full text-[11px] font-medium text-[#6A746C] hover:text-[#18231C] border border-transparent hover:border-[#D5CDBF]"
                       >
                         Clear
                       </button>
@@ -445,7 +445,7 @@ export default function AuthPortal() {
                     {/* Manual Input Fields for Credentials */}
                     <div className="space-y-2.5 pt-1">
                       <div>
-                        <label className="block text-[11px] font-bold text-purple-950 mb-1">
+                        <label className="block text-[11px] font-bold text-[#18231C] mb-1">
                           Admin Email Address
                         </label>
                         <div className="relative">
@@ -455,14 +455,14 @@ export default function AuthPortal() {
                             value={adminInputEmail}
                             onChange={(e) => setAdminInputEmail(e.target.value)}
                             placeholder="tradersoham.369@gmail.com or admin@medisafe.ai"
-                            className="ivory-input w-full pl-9 pr-3 py-2 text-xs font-mono"
+                            className="ivory-input w-full pl-9 pr-3 py-2 text-xs font-mono bg-white border-[#C6DDD0] focus:border-[#235339]"
                           />
-                          <Mail className="w-3.5 h-3.5 text-purple-600 absolute left-3 top-2.5" />
+                          <Mail className="w-3.5 h-3.5 text-[#235339] absolute left-3 top-2.5" />
                         </div>
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-bold text-purple-950 mb-1">
+                        <label className="block text-[11px] font-bold text-[#18231C] mb-1">
                           Admin Password
                         </label>
                         <div className="relative">
@@ -472,9 +472,9 @@ export default function AuthPortal() {
                             value={adminInputPassword}
                             onChange={(e) => setAdminInputPassword(e.target.value)}
                             placeholder="Enter previous admin password"
-                            className="ivory-input w-full pl-9 pr-9 py-2 text-xs font-mono"
+                            className="ivory-input w-full pl-9 pr-9 py-2 text-xs font-mono bg-white border-[#C6DDD0] focus:border-[#235339]"
                           />
-                          <Lock className="w-3.5 h-3.5 text-purple-600 absolute left-3 top-2.5" />
+                          <Lock className="w-3.5 h-3.5 text-[#235339] absolute left-3 top-2.5" />
                           <button
                             type="button"
                             onClick={() => setShowAdminPassword(!showAdminPassword)}
@@ -491,7 +491,7 @@ export default function AuthPortal() {
                       type="button"
                       disabled={loading || !adminInputEmail || !adminInputPassword}
                       onClick={handleAdminCredentialsSubmit}
-                      className="pill-btn-primary w-full py-2.5 text-xs font-bold bg-purple-800 hover:bg-purple-900 text-white shadow-sm mt-1 disabled:opacity-50"
+                      className="pill-btn-primary w-full py-2.5 text-xs font-bold shadow-md bg-[#235339] hover:bg-[#1A3E2B] text-white mt-1 disabled:opacity-50"
                     >
                       {loading ? (
                         <span className="flex items-center justify-center gap-2">
@@ -557,7 +557,7 @@ export default function AuthPortal() {
                         : 'bg-[#F3EFE6] text-[#4A554E] border-[#D5CDBF] hover:border-[#235339]'
                     }`}
                   >
-                    <ShieldCheck className={`w-4 h-4 mx-auto mb-1 ${regRole === 'admin' ? 'text-white' : 'text-purple-700'}`} />
+                    <ShieldCheck className={`w-4 h-4 mx-auto mb-1 ${regRole === 'admin' ? 'text-white' : 'text-[#235339]'}`} />
                     <span>Admin</span>
                   </button>
                 </div>
@@ -721,13 +721,13 @@ export default function AuthPortal() {
               )}
 
               {regRole === 'admin' && (
-                <div className="p-4 rounded-2xl bg-purple-50 border border-purple-200 space-y-3">
+                <div className="p-4 rounded-2xl bg-[#EAF3ED]/80 border border-[#C6DDD0] space-y-3">
                   <div className="flex items-center justify-between">
-                    <div className="text-xs font-bold text-purple-900 flex items-center gap-1.5">
-                      <KeyRound className="w-4 h-4 text-purple-700" />
+                    <div className="text-xs font-bold text-[#18231C] flex items-center gap-1.5">
+                      <KeyRound className="w-4 h-4 text-[#235339]" />
                       <span>Admin Security Authorization</span>
                     </div>
-                    <span className="text-[10px] uppercase tracking-wider font-extrabold text-purple-800 bg-purple-100 px-2 py-0.5 rounded-full">
+                    <span className="text-[10px] uppercase tracking-wider font-extrabold text-[#1E5034] bg-[#E2EFE7] border border-[#C6DDD0] px-2 py-0.5 rounded-full">
                       Restricted
                     </span>
                   </div>
@@ -735,7 +735,7 @@ export default function AuthPortal() {
                     System Administrators have full control over user records, database deduplication, and audits. Only authorized clinical employees with a verified security token can register.
                   </p>
                   <div>
-                    <label className="block text-xs font-bold text-purple-950 mb-1.5">
+                    <label className="block text-xs font-bold text-[#18231C] mb-1.5">
                       Authorization Token ID <span className="text-rose-600">*</span>
                     </label>
                     <div className="relative">
@@ -745,9 +745,9 @@ export default function AuthPortal() {
                         value={regAdminToken}
                         onChange={(e) => setRegAdminToken(e.target.value)}
                         placeholder="Enter Unique Key (e.g. MEDI0284517)"
-                        className="ivory-input w-full pl-10 pr-3.5 py-2.5 font-mono font-bold tracking-wider"
+                        className="ivory-input w-full pl-10 pr-3.5 py-2.5 font-mono font-bold tracking-wider bg-white border-[#C6DDD0] focus:border-[#235339]"
                       />
-                      <KeyRound className="w-4 h-4 text-purple-700 absolute left-3.5 top-3" />
+                      <KeyRound className="w-4 h-4 text-[#235339] absolute left-3.5 top-3" />
                     </div>
                     <span className="text-[10px] text-[#6A746C] mt-1 block">
                       Case-insensitive • Required for administrator account activation
@@ -816,7 +816,7 @@ export default function AuthPortal() {
             <div className="p-3.5 rounded-2xl bg-[#F3EFE6] border border-[#D5CDBF] text-left text-xs space-y-1.5 font-mono">
               <div className="flex justify-between text-[#5A645D]">
                 <span>Attempted Role:</span>
-                <span className="text-purple-700 font-bold">SYSTEM ADMIN</span>
+                <span className="text-[#235339] font-bold">SYSTEM ADMIN</span>
               </div>
               <div className="flex justify-between text-[#5A645D]">
                 <span>Security Rule:</span>
