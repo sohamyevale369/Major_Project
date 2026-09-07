@@ -302,6 +302,14 @@ export function HealthProvider({ children }) {
           ? found.currentMedicines
           : [];
 
+        const hasUpdated = Boolean(
+          found.hasUpdatedProfile ||
+          currentUser.hasUpdatedProfile ||
+          userDiseases.length > 0 ||
+          userAllergies.length > 0 ||
+          userMedicines.length > 0
+        );
+
         setPatient({
           id: found.id || currentUser.id,
           name: found.name || currentUser.name,
@@ -314,7 +322,8 @@ export function HealthProvider({ children }) {
           chronicDiseases: userDiseases,
           allergies: userAllergies,
           medicalHistory: found.medicalHistory || found.notes || currentUser.notes || 'Registered MediSafe personal profile.',
-          currentMedicines: userMedicines
+          currentMedicines: userMedicines,
+          hasUpdatedProfile: hasUpdated
         });
         return;
       }
@@ -628,6 +637,7 @@ export function HealthProvider({ children }) {
       allergies,
       currentMedicines,
       medicalHistory,
+      hasUpdatedProfile: true,
       description: `${gender || 'Patient'}, ${age}y — ${diseases.length > 0 ? diseases.join(', ') : 'Personal Profile'}`
     };
 
@@ -649,6 +659,7 @@ export function HealthProvider({ children }) {
           chronicDiseases: diseases,
           allergies,
           currentMedicines,
+          hasUpdatedProfile: true,
           notes: medicalHistory || currentUser.notes
         };
         setActiveUserSession(updatedCurrentUser);
@@ -672,6 +683,7 @@ export function HealthProvider({ children }) {
             chronicDiseases: diseases,
             allergies,
             currentMedicines,
+            hasUpdatedProfile: true,
             notes: medicalHistory || u.notes
           };
         }
@@ -748,6 +760,15 @@ export function HealthProvider({ children }) {
     return analysis;
   };
 
+  // Computed status: Has the active patient updated their personal health profile?
+  const hasUpdatedPersonalDetails = Boolean(
+    currentUser?.hasUpdatedProfile ||
+    patient?.hasUpdatedProfile ||
+    (patient?.diseases && patient.diseases.length > 0) ||
+    (patient?.allergies && patient.allergies.length > 0) ||
+    (patient?.currentMedicines && patient.currentMedicines.length > 0)
+  );
+
   return (
     <HealthContext.Provider
       value={{
@@ -766,6 +787,7 @@ export function HealthProvider({ children }) {
         adminAddUser,
         patient,
         setPatient,
+        hasUpdatedPersonalDetails,
         loadPatientPreset,
         updatePatient,
         activeTab,

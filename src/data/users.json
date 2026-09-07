@@ -1,8 +1,8 @@
 [
   {
-    "id": "usr-new-1788800513481",
-    "name": "netra yevale",
-    "email": "netrayevale@gmail.com",
+    "id": "usr-new-1788801203536",
+    "name": "Netra Vikas Yevale",
+    "email": "netrayevale123@gmail.com",
     "password": "Temp123",
     "role": "patient",
     "department": "",
@@ -13,8 +13,8 @@
     "allergies": [],
     "status": "Active",
     "isNewUser": true,
-    "registeredAt": "2026-09-07T17:01:53.481Z",
-    "lastLogin": "2026-09-07T17:01:53.481Z",
+    "registeredAt": "2026-09-07T17:13:23.536Z",
+    "lastLogin": "2026-09-07T17:13:23.536Z",
     "notes": "Registered through MediSafe AI online portal."
   },
   {
@@ -147,6 +147,31 @@
     "registeredAt": "2024-05-20T11:45:00.000Z",
     "lastLogin": "2025-02-28T16:00:00.000Z",
     "notes": "Cardiology Specialist. Supervises anticoagulant interaction protocols."
+  },
+  {
+    "id": "usr-new-1788800513481",
+    "name": "netra yevale",
+    "email": "netrayevale@gmail.com",
+    "password": "Temp123",
+    "role": "patient",
+    "department": "",
+    "licenseNumber": "",
+    "age": 45,
+    "gender": "Female",
+    "chronicDiseases": [
+      "Chronic Kidney Disease"
+    ],
+    "allergies": [
+      "Sulfa Drugs (Sulfonamides)",
+      "Metformin Allergy"
+    ],
+    "status": "Active",
+    "isNewUser": true,
+    "registeredAt": "2026-09-07T17:01:53.481Z",
+    "lastLogin": "2026-09-07T17:01:53.481Z",
+    "notes": "Registered through MediSafe AI online portal.",
+    "weight": 70,
+    "currentMedicines": []
   },
   {
     "id": "usr-new-1788757764657",

@@ -27,6 +27,7 @@ export default function Navbar() {
     activeTab,
     setActiveTab,
     patient,
+    hasUpdatedPersonalDetails,
     activePatients = [],
     loadPatientPreset,
     setIsChatbotOpen,
@@ -150,24 +151,34 @@ export default function Navbar() {
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs transition-all group ${
                   activeTab === 'profile'
                     ? 'border-[#235339] bg-[#235339] text-white'
-                    : 'border-[#D5CDBF] bg-white hover:border-[#235339] text-[#18231C]'
+                    : hasUpdatedPersonalDetails
+                    ? 'border-[#D5CDBF] bg-white hover:border-[#235339] text-[#18231C]'
+                    : 'border-amber-300 bg-amber-50/80 hover:border-amber-500 text-amber-950'
                 }`}
-                title="View My Personal Details"
+                title={hasUpdatedPersonalDetails ? "View My Health Profile" : "Personal details not updated yet — click to complete"}
                 id="navbar-patient-profile-btn"
               >
                 <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
-                  activeTab === 'profile' ? 'bg-white text-[#235339]' : 'bg-[#E2EFE7] text-[#1E5034]'
+                  activeTab === 'profile'
+                    ? 'bg-white text-[#235339]'
+                    : hasUpdatedPersonalDetails
+                    ? 'bg-[#E2EFE7] text-[#1E5034]'
+                    : 'bg-amber-200 text-amber-900'
                 }`}>
                   {patient?.name ? patient.name.charAt(0) : 'P'}
                 </div>
                 <div className="text-left hidden md:block">
                   <div className="text-[11px] font-bold leading-none">
-                    {patient?.name || currentUser?.name || 'Personal Details'}
+                    Health Profile
                   </div>
                   <div className={`text-[10px] font-semibold leading-none mt-0.5 ${
-                    activeTab === 'profile' ? 'text-emerald-100' : 'text-[#235339]'
+                    activeTab === 'profile'
+                      ? 'text-emerald-100'
+                      : hasUpdatedPersonalDetails
+                      ? 'text-[#235339]'
+                      : 'text-amber-700'
                   }`}>
-                    Personal Details →
+                    {hasUpdatedPersonalDetails ? 'Details Saved ✓' : 'Not Updated Yet ⚠️'}
                   </div>
                 </div>
               </button>

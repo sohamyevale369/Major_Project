@@ -23,7 +23,15 @@ const PIPELINE_STEPS = [
 ];
 
 export default function HeroSection() {
-  const { setActiveTab, loadPatientPreset, runSafetyCheck, activePatients = [], patient, currentUser } = useHealth();
+  const {
+    setActiveTab,
+    loadPatientPreset,
+    runSafetyCheck,
+    activePatients = [],
+    patient,
+    currentUser,
+    hasUpdatedPersonalDetails
+  } = useHealth();
 
   // Live Safety Pipeline: Movable green scanner dot state (0 to 4)
   const [pipelineStep, setPipelineStep] = useState(1);
@@ -249,36 +257,130 @@ export default function HeroSection() {
             </p>
           </div>
 
+          {/* Patient Profile Incomplete Alert Banner */}
+          {currentUser?.role === 'patient' && !hasUpdatedPersonalDetails && (
+            <div className="mb-6 p-4 sm:p-5 rounded-2xl bg-amber-50 border border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-amber-950 shadow-xs">
+              <div className="flex items-start sm:items-center gap-3.5">
+                <div className="w-9 h-9 rounded-xl bg-amber-200 flex items-center justify-center text-amber-900 shrink-0 font-bold">
+                  <AlertTriangle className="w-5 h-5 text-amber-800" />
+                </div>
+                <div>
+                  <div className="text-sm font-black text-amber-900 flex items-center gap-2">
+                    <span>Personal Health Profile Not Updated</span>
+                    <span className="text-[10px] font-mono font-bold bg-amber-200/80 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                      Pending Input
+                    </span>
+                  </div>
+                  <div className="text-xs text-amber-800 mt-0.5">
+                    <strong>{patient?.name || currentUser?.name}</strong> has not added diagnosed medical conditions or drug allergies yet. Complete your health profile to unlock personalized AI safety checks.
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setActiveTab('profile');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className="pill-btn-primary text-xs py-2 px-4 bg-amber-800 hover:bg-amber-900 text-white shrink-0 font-bold"
+              >
+                <span>Complete Health Profile &rarr;</span>
+              </button>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             
-            {/* Demo Card 1: Logged-in Patient Routine Safety Check */}
-            <div className="ivory-card p-6 flex flex-col justify-between hover:border-[#235339] transition-all group">
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#1E5034] bg-[#E2EFE7] px-2.5 py-0.5 rounded-full border border-[#C6DDD0]">
-                    Routine Check
-                  </span>
-                  <RiskBadge level="LOW" score={15} size="sm" />
+            {/* Demo Card 1: Patient Profile Status or Routine Antipyretic Case */}
+            {currentUser?.role === 'patient' && !hasUpdatedPersonalDetails ? (
+              <div className="ivory-card p-6 flex flex-col justify-between border-amber-300 bg-[#FDFBF7] hover:border-amber-500 transition-all group">
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-900 bg-amber-100 px-2.5 py-0.5 rounded-full border border-amber-300 flex items-center gap-1">
+                      <AlertTriangle className="w-3 h-3 text-amber-700" />
+                      Details Not Updated
+                    </span>
+                    <span className="text-[10px] font-mono font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                      Profile Incomplete
+                    </span>
+                  </div>
+                  <h3 className="text-base font-bold text-[#18231C] group-hover:text-amber-900 transition">
+                    Personal Health Profile Incomplete
+                  </h3>
+                  <p className="text-xs text-[#5A645D] mt-2 leading-relaxed">
+                    <strong>{patient?.name || currentUser?.name}</strong> has not recorded diagnosed diseases, allergies, or active medications yet. Please complete your profile to enable personalized safety evaluations.
+                  </p>
                 </div>
-                <h3 className="text-base font-bold text-[#18231C] group-hover:text-[#235339] transition">
-                  Routine Antipyretic Case — Paracetamol (500mg)
-                </h3>
-                <p className="text-xs text-[#5A645D] mt-2 leading-relaxed">
-                  Standard antipyretic evaluation with no renal, cardiac, or allergy conflicts. MediSafe assigns a <strong className="text-[#235339]">15% Low Risk</strong> safety score.
-                </p>
-              </div>
 
-              <div className="mt-5 pt-4 border-t border-[#E5DFD1] flex items-center justify-between">
-                <span className="text-[11px] text-[#6A746C] font-mono">Simulated Clinical Case</span>
-                <button
-                  onClick={() => handleQuickDemo(patient?.id || 'usr-default', 'Paracetamol (Acetaminophen)', '500mg')}
-                  className="pill-btn-primary text-xs py-1.5 px-3.5"
-                >
-                  <span>Test Case</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
+                <div className="mt-5 pt-4 border-t border-amber-200/60 flex items-center justify-between">
+                  <span className="text-[11px] text-amber-800 font-mono font-semibold">0 Conditions • 0 Allergies</span>
+                  <button
+                    onClick={() => {
+                      setActiveTab('profile');
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    className="pill-btn-primary text-xs py-1.5 px-3.5 bg-amber-800 hover:bg-amber-900 text-white"
+                  >
+                    <span>Add Details &rarr;</span>
+                  </button>
+                </div>
               </div>
-            </div>
+            ) : currentUser?.role === 'patient' && hasUpdatedPersonalDetails ? (
+              <div className="ivory-card p-6 flex flex-col justify-between hover:border-[#235339] transition-all group">
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#1E5034] bg-[#E2EFE7] px-2.5 py-0.5 rounded-full border border-[#C6DDD0] flex items-center gap-1">
+                      <CheckCircle className="w-3 h-3 text-[#1E5034]" />
+                      Profile Configured
+                    </span>
+                    <RiskBadge level="LOW" score={15} size="sm" />
+                  </div>
+                  <h3 className="text-base font-bold text-[#18231C] group-hover:text-[#235339] transition">
+                    {patient?.name} ({patient?.age}y) — Personalized Check
+                  </h3>
+                  <p className="text-xs text-[#5A645D] mt-2 leading-relaxed">
+                    Active conditions: <strong>{patient.diseases?.join(', ') || 'None recorded'}</strong>. Allergies: <strong>{patient.allergies?.join(', ') || 'None recorded'}</strong>.
+                  </p>
+                </div>
+
+                <div className="mt-5 pt-4 border-t border-[#E5DFD1] flex items-center justify-between">
+                  <span className="text-[11px] text-[#6A746C] font-mono">Patient Profile Active</span>
+                  <button
+                    onClick={() => handleQuickDemo(patient?.id || 'usr-default', 'Paracetamol (Acetaminophen)', '500mg')}
+                    className="pill-btn-primary text-xs py-1.5 px-3.5"
+                  >
+                    <span>Check Drug &rarr;</span>
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="ivory-card p-6 flex flex-col justify-between hover:border-[#235339] transition-all group">
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#1E5034] bg-[#E2EFE7] px-2.5 py-0.5 rounded-full border border-[#C6DDD0]">
+                      Routine Check
+                    </span>
+                    <RiskBadge level="LOW" score={15} size="sm" />
+                  </div>
+                  <h3 className="text-base font-bold text-[#18231C] group-hover:text-[#235339] transition">
+                    Routine Antipyretic Case — Paracetamol (500mg)
+                  </h3>
+                  <p className="text-xs text-[#5A645D] mt-2 leading-relaxed">
+                    Standard antipyretic evaluation with no renal, cardiac, or allergy conflicts. MediSafe assigns a <strong className="text-[#235339]">15% Low Risk</strong> safety score.
+                  </p>
+                </div>
+
+                <div className="mt-5 pt-4 border-t border-[#E5DFD1] flex items-center justify-between">
+                  <span className="text-[11px] text-[#6A746C] font-mono">Simulated Clinical Case</span>
+                  <button
+                    onClick={() => handleQuickDemo(patient?.id || 'usr-default', 'Paracetamol (Acetaminophen)', '500mg')}
+                    className="pill-btn-primary text-xs py-1.5 px-3.5"
+                  >
+                    <span>Test Case</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Demo Card 2: Allergy Simulation */}
             {currentUser?.role === 'patient' || activePatients.length <= 1 ? (
