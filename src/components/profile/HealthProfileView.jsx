@@ -611,7 +611,7 @@ export default function HealthProfileView() {
               className="pill-btn-secondary w-full sm:w-auto py-3.5 text-sm font-bold flex items-center justify-center gap-2"
             >
               <Sparkles className="w-4 h-4 text-[#235339]" />
-              <span>Check Safety for {targetMedicine || 'Medicine'} →</span>
+              <span>Run Medicine Safety Check ({targetMedicine || 'Medicine'}) →</span>
             </button>
           </div>
 

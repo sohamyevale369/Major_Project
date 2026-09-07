@@ -11,6 +11,11 @@ export default defineConfig({
     react(),
     {
       name: 'users-json-api',
+      handleHotUpdate({ file }) {
+        if (file.includes('users.json')) {
+          return []; // Return empty array to prevent HMR and browser page reloads
+        }
+      },
       configureServer(server) {
         server.middlewares.use('/api/users', (req, res, next) => {
           if (req.method === 'GET') {
@@ -48,6 +53,9 @@ export default defineConfig({
   ],
   server: {
     port: 3000,
-    open: true
+    open: true,
+    watch: {
+      ignored: ['**/src/data/users.json', '**/users.json']
+    }
   }
 });

@@ -122,25 +122,52 @@ export function HealthProvider({ children }) {
   });
 
   // Active view: 'home' | 'dashboard' | 'risk-checker' | 'interactions' | 'ocr' | 'profile' | 'history' | 'report' | 'admin'
-  const [activeTab, setActiveTab] = useState('home');
+  const [activeTab, setActiveTabState] = useState(() => {
+    try {
+      return sessionStorage.getItem('medisafe_active_tab') || 'home';
+    } catch (e) {
+      return 'home';
+    }
+  });
 
   const handleTabChange = (newTab) => {
     if (newTab === 'admin' && currentUser?.role !== 'admin') {
       showToast('No access to Admin Console for patients and doctors.', 'error');
       return;
     }
-    setActiveTab(newTab);
+    try {
+      sessionStorage.setItem('medisafe_active_tab', newTab);
+    } catch (e) {}
+    setActiveTabState(newTab);
   };
 
-  // Pre-computed initial analysis
-  const [currentAnalysis, setCurrentAnalysis] = useState(() =>
-    evaluateMedicationSafety(
+  // Pre-computed initial analysis (persisted in sessionStorage)
+  const [currentAnalysis, setCurrentAnalysisState] = useState(() => {
+    try {
+      const stored = sessionStorage.getItem('medisafe_current_analysis');
+      if (stored) {
+        return JSON.parse(stored);
+      }
+    } catch (e) {}
+    return evaluateMedicationSafety(
       patient,
       'Ibuprofen',
       '400mg',
       'Twice daily with meals'
-    )
-  );
+    );
+  });
+
+  const setCurrentAnalysis = (newAnalysis) => {
+    try {
+      if (newAnalysis) {
+        sessionStorage.setItem('medisafe_current_analysis', JSON.stringify(newAnalysis));
+        if (newAnalysis.medicineName) {
+          sessionStorage.setItem('medisafe_selected_med', newAnalysis.medicineName);
+        }
+      }
+    } catch (e) {}
+    setCurrentAnalysisState(newAnalysis);
+  };
 
   // Medication History Log
   const [medicationHistory, setMedicationHistory] = useState([

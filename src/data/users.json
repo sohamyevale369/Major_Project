@@ -9,13 +9,26 @@
     "licenseNumber": "",
     "age": 53,
     "gender": "Male",
-    "chronicDiseases": [],
-    "allergies": [],
+    "chronicDiseases": [
+      "Chronic Kidney Disease"
+    ],
+    "allergies": [
+      "Sulfa Drugs (Sulfonamides)",
+      "Fluoroquinolones"
+    ],
     "status": "Active",
     "isNewUser": true,
     "registeredAt": "2026-09-07T15:30:04.019Z",
     "lastLogin": "2026-09-07T15:30:04.019Z",
-    "notes": "Registered through MediSafe AI online portal."
+    "notes": "Registered through MediSafe AI online portal.",
+    "weight": 70,
+    "currentMedicines": [
+      {
+        "name": "Paracetamol",
+        "dosage": "50mg",
+        "frequency": "Daily"
+      }
+    ]
   },
   {
     "id": "usr-admin-1",
@@ -99,13 +112,25 @@
     "licenseNumber": "",
     "age": 23,
     "gender": "Male",
-    "chronicDiseases": [],
-    "allergies": [],
+    "chronicDiseases": [
+      "Atrial Fibrillation / Heart Failure"
+    ],
+    "allergies": [
+      "Cephalosporins"
+    ],
     "status": "Active",
     "isNewUser": false,
     "registeredAt": "2026-09-05T06:45:33.394Z",
-    "lastLogin": "2026-09-07T15:22:27.268Z",
-    "notes": "Registered through MediSafe AI online portal."
+    "lastLogin": "2026-09-07T16:15:01.210Z",
+    "notes": "Registered through MediSafe AI online portal.",
+    "weight": 70,
+    "currentMedicines": [
+      {
+        "name": "Paracetamol",
+        "dosage": "50mg",
+        "frequency": "Daily"
+      }
+    ]
   },
   {
     "id": "usr-new-1788596030403",

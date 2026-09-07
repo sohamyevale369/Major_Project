@@ -168,6 +168,7 @@ export default function MedicineRiskView() {
               const isSelected = selectedMedName.toLowerCase() === med.name.toLowerCase();
               return (
                 <button
+                  type="button"
                   key={med.id}
                   onClick={() => handleSelectMedChip(med)}
                   className={`px-3 py-1.5 rounded-full text-xs font-semibold transition flex items-center gap-1.5 ${

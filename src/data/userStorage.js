@@ -1,12 +1,10 @@
 // Persistent User Management & Deduplication Service for MediSafe AI
 // Manages both Existing (Pre-seeded/Legacy) Users and Newly Registered Users
 
-import bundledUsers from './users.json';
-
 const USERS_STORAGE_KEY = 'medisafe_users';
 const CURRENT_USER_KEY = 'medisafe_active_user';
 const AUDIT_LOGS_KEY = 'medisafe_audit_logs';
-export const STORAGE_SYNC_VERSION = 'medisafe_v4_admin_sync';
+export const STORAGE_SYNC_VERSION = 'medisafe_v5_tab_sync';
 
 // Authorized Security Token Key for Administrator Account Creation
 export const ADMIN_REGISTRATION_TOKEN = 'MEDI0284517';
@@ -24,9 +22,25 @@ export const DELETED_FAKE_EMAILS = [
   'devon.clark@medisafe.care'
 ];
 
-export const SEED_USERS = (Array.isArray(bundledUsers) && bundledUsers.length > 0)
-  ? bundledUsers
-  : [
+export const SEED_USERS = [
+  {
+    id: 'usr-new-1788795004019',
+    name: 'Vikas',
+    email: 'vikas@gmail.com',
+    password: '123456',
+    role: 'patient',
+    department: '',
+    licenseNumber: '',
+    age: 53,
+    gender: 'Male',
+    chronicDiseases: [],
+    allergies: [],
+    status: 'Active',
+    isNewUser: true,
+    registeredAt: '2026-09-07T15:30:04.019Z',
+    lastLogin: '2026-09-07T15:30:04.019Z',
+    notes: 'Registered through MediSafe AI online portal.'
+  },
       {
         id: 'usr-new-1788590733394',
         name: 'Soham Vikas Yevale',
