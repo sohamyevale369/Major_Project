@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ShieldCheck,
   Sparkles,
@@ -14,8 +14,28 @@ import {
 import { useHealth } from '../../context/HealthContext';
 import RiskBadge from '../common/RiskBadge';
 
+const PIPELINE_STEPS = [
+  { id: 1, label: '1. Medicine Input / OCR', badge: 'Ingestion Active', detail: 'Prescription text extracted' },
+  { id: 2, label: '2. AI Verified & Scanned', badge: 'Scanning Drugs', detail: 'Pharmacological cross-match' },
+  { id: 3, label: '3. Allergy & Disease Clashes', badge: 'Checking Conflicts', detail: 'Contraindication analysis' },
+  { id: 4, label: '4. SHAP / LIME Explanation', badge: 'Computing Weights', detail: 'Explainable feature importance' },
+  { id: 5, label: '5. Safe Clinical Alternative', badge: 'Ranking Options', detail: 'Safer substitutes verified' }
+];
+
 export default function HeroSection() {
   const { setActiveTab, loadPatientPreset, runSafetyCheck, activePatients = [], patient, currentUser } = useHealth();
+
+  // Live Safety Pipeline: Movable green scanner dot state (0 to 4)
+  const [pipelineStep, setPipelineStep] = useState(1);
+  const [isPaused, setIsPaused] = useState(false);
+
+  useEffect(() => {
+    if (isPaused) return;
+    const interval = setInterval(() => {
+      setPipelineStep((prev) => (prev + 1) % PIPELINE_STEPS.length);
+    }, 2200);
+    return () => clearInterval(interval);
+  }, [isPaused]);
 
   const handleQuickDemo = (patientId, drugName, dosage) => {
     const targetPatient = activePatients.find(p => p.id === patientId || p.name.toLowerCase().includes(patientId.toLowerCase())) || activePatients[0] || patient;
@@ -115,53 +135,100 @@ export default function HeroSection() {
 
           </div>
 
-          {/* Right Column: Live Donation/Medicine Safety Pipeline Card (from Image 1 & 2) */}
+          {/* Right Column: Live Medicine Safety Pipeline Card with Movable Green Dot Scanner */}
           <div className="lg:col-span-5">
-            <div className="ivory-card-tint p-6 sm:p-8 space-y-4 shadow-sm">
+            <div className="ivory-card-tint p-6 sm:p-8 space-y-4 shadow-sm border border-[#D5CDBF] rounded-3xl">
               <div className="flex items-center justify-between pb-2 border-b border-[#D5CDBF]">
-                <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#4A554E]">
-                  LIVE SAFETY PIPELINE
-                </span>
-                <span className="flex items-center gap-1.5 text-[10px] font-bold text-[#235339] bg-[#E2EFE7] px-2.5 py-0.5 rounded-full border border-[#C6DDD0]">
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#4A554E]">
+                    LIVE SAFETY PIPELINE
+                  </span>
+                  <span className="text-[10px] font-mono text-[#6A746C] hidden sm:inline">
+                    • Stage {pipelineStep + 1}/5
+                  </span>
+                </div>
+                <span className="flex items-center gap-1.5 text-[10px] font-bold text-[#235339] bg-[#E2EFE7] px-2.5 py-0.5 rounded-full border border-[#C6DDD0] shadow-xs">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#235339] animate-ping" />
-                  Active Scan
+                  <span>{isPaused ? 'Paused (Hover)' : 'Active Scan'}</span>
                 </span>
               </div>
 
-              {/* Dashed pill steps (identical to Image 1 & 2) */}
-              <div className="space-y-2.5 font-mono text-xs text-[#2D3831]">
-                
-                <div className="border border-dashed border-[#B8B1A0] rounded-full px-4 py-2.5 bg-white/70 flex items-center gap-3">
-                  <span className="w-4 h-4 rounded-full bg-[#C7C3B6] shrink-0" />
-                  <span>1. Medicine Input / OCR</span>
-                </div>
+              {/* Dashed pill steps with dynamic moving green scanner dot */}
+              <div 
+                className="space-y-2.5 font-mono text-xs text-[#2D3831] relative"
+                onMouseEnter={() => setIsPaused(true)}
+                onMouseLeave={() => setIsPaused(false)}
+              >
+                {/* Subtle vertical connecting guideline */}
+                <div className="absolute left-[25px] top-4 bottom-4 w-0.5 border-l-2 border-dashed border-[#D5CDBF] -z-0 pointer-events-none" />
 
-                <div className="border border-[#235339] rounded-full px-4 py-2.5 bg-[#E2EFE7] flex items-center gap-3 font-bold text-[#1E5034] shadow-sm">
-                  <span className="w-4 h-4 rounded-full bg-[#235339] shrink-0" />
-                  <span>2. AI Verified & Scanned</span>
-                </div>
+                {PIPELINE_STEPS.map((step, idx) => {
+                  const isActive = idx === pipelineStep;
+                  const isCompleted = idx < pipelineStep;
 
-                <div className="border border-dashed border-[#B8B1A0] rounded-full px-4 py-2.5 bg-white/70 flex items-center gap-3">
-                  <span className="w-4 h-4 rounded-full bg-[#C7C3B6] shrink-0" />
-                  <span>3. Allergy & Disease Clashes</span>
-                </div>
+                  return (
+                    <button
+                      key={step.id}
+                      type="button"
+                      onClick={() => setPipelineStep(idx)}
+                      title={`Click to inspect stage ${step.id}: ${step.detail}`}
+                      className={`relative z-10 w-full text-left rounded-full px-4 py-2.5 flex items-center justify-between transition-all duration-500 ease-out cursor-pointer ${
+                        isActive
+                          ? 'border-2 border-[#235339] bg-[#E2EFE7] font-bold text-[#1E5034] shadow-md scale-[1.02] ring-2 ring-[#235339]/20'
+                          : isCompleted
+                          ? 'border border-[#A3C7B3] bg-white/90 text-[#2D3831] hover:bg-[#EAF3ED]/60'
+                          : 'border border-dashed border-[#B8B1A0] bg-white/70 text-[#6A746C] hover:bg-white/95 hover:border-[#235339]/40'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        {/* The Movable Green Dot / Completed Check / Idle Circle */}
+                        <div className="relative flex items-center justify-center w-5 h-5 shrink-0">
+                          {isActive ? (
+                            <>
+                              {/* Pulsing radar sonar wave */}
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#235339] opacity-75" />
+                              {/* Soft glowing halo */}
+                              <span className="absolute inline-flex h-4 w-4 rounded-full bg-[#235339]/30 animate-pulse" />
+                              {/* Core vibrant green movable dot */}
+                              <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-[#235339] shadow-sm ring-1 ring-white" />
+                            </>
+                          ) : isCompleted ? (
+                            <span className="flex items-center justify-center w-4 h-4 rounded-full bg-[#E2EFE7] text-[#1E5034] border border-[#A3C7B3]">
+                              <CheckCircle className="w-3 h-3 text-[#235339]" />
+                            </span>
+                          ) : (
+                            <span className="w-3.5 h-3.5 rounded-full bg-[#C7C3B6] transition-colors duration-300" />
+                          )}
+                        </div>
 
-                <div className="border border-dashed border-[#B8B1A0] rounded-full px-4 py-2.5 bg-white/70 flex items-center gap-3">
-                  <span className="w-4 h-4 rounded-full bg-[#C7C3B6] shrink-0" />
-                  <span>4. SHAP / LIME Explanation</span>
-                </div>
+                        <span className="text-xs sm:text-[13px]">{step.label}</span>
+                      </div>
 
-                <div className="border border-dashed border-[#B8B1A0] rounded-full px-4 py-2.5 bg-white/70 flex items-center gap-3">
-                  <span className="w-4 h-4 rounded-full bg-[#C7C3B6] shrink-0" />
-                  <span>5. Safe Clinical Alternative</span>
-                </div>
-
+                      {/* Right-side status tag */}
+                      <div className="flex items-center gap-1.5 shrink-0 pl-2">
+                        {isActive ? (
+                          <span className="flex items-center gap-1 text-[10px] font-mono font-bold uppercase tracking-wider bg-white/90 text-[#1E5034] px-2 py-0.5 rounded-full border border-[#A3C7B3] shadow-xs animate-fade-in">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#235339] animate-ping" />
+                            <span>{step.badge}</span>
+                          </span>
+                        ) : isCompleted ? (
+                          <span className="text-[10px] font-mono text-[#235339] font-bold">
+                            Verified ✓
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-mono text-[#8C8678]">
+                            Queue
+                          </span>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
 
-              <div className="pt-2 text-center">
-                <span className="text-[11px] text-[#6A746C]">
-                  Every medication check follows verified clinical guidelines.
-                </span>
+              <div className="pt-2 text-center flex items-center justify-center gap-1.5 text-[11px] text-[#6A746C]">
+                <Sparkles className="w-3.5 h-3.5 text-[#235339] shrink-0" />
+                <span>Live clinical AI scanner active • Click any stage to inspect</span>
               </div>
             </div>
           </div>
