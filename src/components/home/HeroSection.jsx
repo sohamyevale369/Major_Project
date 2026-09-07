@@ -9,17 +9,87 @@ import {
   Pill,
   CheckCircle,
   FileCheck,
-  Search
+  Search,
+  Activity,
+  Zap,
+  ShieldAlert,
+  CheckCircle2,
+  Play,
+  Pause,
+  ArrowUpRight
 } from 'lucide-react';
 import { useHealth } from '../../context/HealthContext';
 import RiskBadge from '../common/RiskBadge';
 
-const PIPELINE_STEPS = [
-  { id: 1, label: '1. Medicine Input / OCR', badge: 'Ingestion Active', detail: 'Prescription text extracted' },
-  { id: 2, label: '2. AI Verified & Scanned', badge: 'Scanning Drugs', detail: 'Pharmacological cross-match' },
-  { id: 3, label: '3. Allergy & Disease Clashes', badge: 'Checking Conflicts', detail: 'Contraindication analysis' },
-  { id: 4, label: '4. SHAP / LIME Explanation', badge: 'Computing Weights', detail: 'Explainable feature importance' },
-  { id: 5, label: '5. Safe Clinical Alternative', badge: 'Ranking Options', detail: 'Safer substitutes verified' }
+const HERO_DRUG_CASES = [
+  {
+    id: 'paracetamol',
+    name: 'Paracetamol',
+    fullName: 'Paracetamol (Acetaminophen)',
+    dosage: '500mg',
+    category: 'Analgesic & Antipyretic',
+    safetyScore: 94,
+    riskLevel: 'LOW',
+    status: 'Optimal / Safe Match',
+    statusColor: 'emerald',
+    badgeText: 'Low Risk 15%',
+    headline: 'Routine Clinical Check',
+    conflictDetail: 'Zero drug-disease or cross-allergen excipients detected for profile.',
+    shapFactors: [
+      { name: 'Hepatic & Renal Clearance', value: '+45%', positive: true, width: '92%' },
+      { name: 'Allergy Cross-Match (0 Clashes)', value: 'Clear', positive: true, width: '98%' },
+      { name: 'Therapeutic Safety Margin', value: 'Optimal', positive: true, width: '88%' }
+    ],
+    safeAlternative: null
+  },
+  {
+    id: 'ibuprofen',
+    name: 'Ibuprofen',
+    fullName: 'Ibuprofen (NSAID)',
+    dosage: '400mg',
+    category: 'NSAID / Anti-inflammatory',
+    safetyScore: 18,
+    riskLevel: 'HIGH',
+    status: 'Renal Contraindication',
+    statusColor: 'rose',
+    badgeText: 'High Risk 85%',
+    headline: 'Kidney Disease Conflict',
+    conflictDetail: 'Inhibits renal prostaglandins, reducing glomerular filtration rate (GFR).',
+    shapFactors: [
+      { name: 'Renal Perfusion Inhibition', value: '-68%', positive: false, width: '86%' },
+      { name: 'Blood Pressure / ACE-I Clash', value: '-32%', positive: false, width: '64%' },
+      { name: 'Gastric Mucosa Tolerance', value: '-24%', positive: false, width: '48%' }
+    ],
+    safeAlternative: {
+      name: 'Paracetamol (Acetaminophen)',
+      dosage: '500mg',
+      reason: 'Clinician-approved renal-safe substitute'
+    }
+  },
+  {
+    id: 'amoxicillin',
+    name: 'Amoxicillin',
+    fullName: 'Amoxicillin Trihydrate',
+    dosage: '500mg',
+    category: 'Beta-Lactam Antibiotic',
+    safetyScore: 12,
+    riskLevel: 'CRITICAL',
+    status: 'Severe Allergy Clash',
+    statusColor: 'rose',
+    badgeText: 'High Risk 92%',
+    headline: 'Anaphylaxis Cross-Reactivity',
+    conflictDetail: 'Cross-reactive beta-lactam core triggers acute IgE-mediated hypersensitivity.',
+    shapFactors: [
+      { name: 'Beta-Lactam Ring Excipient', value: '-86%', positive: false, width: '94%' },
+      { name: 'Immunological Sensitization', value: '-52%', positive: false, width: '76%' },
+      { name: 'Metabolic Tolerance Margin', value: '+14%', positive: true, width: '42%' }
+    ],
+    safeAlternative: {
+      name: 'Azithromycin (Macrolide)',
+      dosage: '500mg',
+      reason: 'Non-beta-lactam safe antibiotic substitute'
+    }
+  }
 ];
 
 export default function HeroSection() {
@@ -33,17 +103,21 @@ export default function HeroSection() {
     hasUpdatedPersonalDetails
   } = useHealth();
 
-  // Live Safety Pipeline: Movable green scanner dot state (0 to 4)
-  const [pipelineStep, setPipelineStep] = useState(1);
+  // Interactive HUD state with smooth auto-cycle
+  const [activeCaseIndex, setActiveCaseIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
   useEffect(() => {
     if (isPaused) return;
     const interval = setInterval(() => {
-      setPipelineStep((prev) => (prev + 1) % PIPELINE_STEPS.length);
-    }, 2200);
+      setActiveCaseIndex((prev) => (prev + 1) % HERO_DRUG_CASES.length);
+    }, 4000);
     return () => clearInterval(interval);
   }, [isPaused]);
+
+  const activeCase = HERO_DRUG_CASES[activeCaseIndex];
+  const circumference = 226.2; // 2 * Math.PI * 36
+  const strokeDashoffset = circumference - (circumference * activeCase.safetyScore) / 100;
 
   const handleQuickDemo = (patientId, drugName, dosage) => {
     const targetPatient = activePatients.find(p => p.id === patientId || p.name.toLowerCase().includes(patientId.toLowerCase())) || activePatients[0] || patient;
@@ -143,100 +217,254 @@ export default function HeroSection() {
 
           </div>
 
-          {/* Right Column: Live Medicine Safety Pipeline Card with Movable Green Dot Scanner */}
+          {/* Right Column: Live Clinical AI Diagnostic Core HUD */}
           <div className="lg:col-span-5">
-            <div className="ivory-card-tint p-6 sm:p-8 space-y-4 shadow-sm border border-[#D5CDBF] rounded-3xl">
-              <div className="flex items-center justify-between pb-2 border-b border-[#D5CDBF]">
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#4A554E]">
-                    LIVE SAFETY PIPELINE
+            <div 
+              className="ivory-card p-5 sm:p-6 space-y-4 shadow-xl border border-[#D5CDBF] rounded-3xl relative overflow-hidden bg-gradient-to-br from-white via-[#FAF8F3] to-[#F1ECE1]"
+              onMouseEnter={() => setIsPaused(true)}
+              onMouseLeave={() => setIsPaused(false)}
+            >
+              {/* Subtle ambient corner glow */}
+              <div className="absolute -top-16 -right-16 w-44 h-44 bg-[#235339]/10 rounded-full blur-2xl pointer-events-none" />
+
+              {/* HUD Header Bar */}
+              <div className="flex items-center justify-between pb-3 border-b border-[#E5DFD1] relative z-10">
+                <div className="flex items-center gap-2.5">
+                  <span className="flex h-2.5 w-2.5 relative">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#235339] opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#235339]"></span>
                   </span>
-                  <span className="text-[10px] font-mono text-[#6A746C] hidden sm:inline">
-                    • Stage {pipelineStep + 1}/5
+                  <div>
+                    <div className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#18231C] leading-none">
+                      Live Clinical AI HUD
+                    </div>
+                    <div className="text-[10px] font-mono text-[#6A746C] leading-none mt-0.5">
+                      SHAP / LIME Safety Engine • Real-time
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setIsPaused(!isPaused)}
+                    title={isPaused ? "Resume auto-simulation" : "Pause auto-simulation"}
+                    className="flex items-center gap-1 text-[10px] font-mono font-bold text-[#235339] bg-[#E2EFE7] hover:bg-[#D4E8DC] px-2.5 py-1 rounded-full border border-[#C6DDD0] transition shadow-xs cursor-pointer"
+                  >
+                    {isPaused ? <Play className="w-2.5 h-2.5 fill-current" /> : <Pause className="w-2.5 h-2.5 fill-current" />}
+                    <span>{isPaused ? 'Resume' : 'Live'}</span>
+                  </button>
+                  <span className="text-[10px] font-mono text-[#6A746C] hidden sm:inline bg-white/80 px-2 py-1 rounded-full border border-[#E5DFD1]">
+                    ⚡ 38ms
                   </span>
                 </div>
-                <span className="flex items-center gap-1.5 text-[10px] font-bold text-[#235339] bg-[#E2EFE7] px-2.5 py-0.5 rounded-full border border-[#C6DDD0] shadow-xs">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#235339] animate-ping" />
-                  <span>{isPaused ? 'Paused (Hover)' : 'Active Scan'}</span>
-                </span>
               </div>
 
-              {/* Dashed pill steps with dynamic moving green scanner dot */}
-              <div 
-                className="space-y-2.5 font-mono text-xs text-[#2D3831] relative"
-                onMouseEnter={() => setIsPaused(true)}
-                onMouseLeave={() => setIsPaused(false)}
-              >
-                {/* Subtle vertical connecting guideline */}
-                <div className="absolute left-[25px] top-4 bottom-4 w-0.5 border-l-2 border-dashed border-[#D5CDBF] -z-0 pointer-events-none" />
-
-                {PIPELINE_STEPS.map((step, idx) => {
-                  const isActive = idx === pipelineStep;
-                  const isCompleted = idx < pipelineStep;
-
+              {/* Interactive Drug Selector Pills */}
+              <div className="grid grid-cols-3 gap-1.5 p-1 rounded-2xl bg-[#EBE5D8]/70 border border-[#DCD5C5] relative z-10">
+                {HERO_DRUG_CASES.map((item, idx) => {
+                  const isSelected = idx === activeCaseIndex;
                   return (
                     <button
-                      key={step.id}
+                      key={item.id}
                       type="button"
-                      onClick={() => setPipelineStep(idx)}
-                      title={`Click to inspect stage ${step.id}: ${step.detail}`}
-                      className={`relative z-10 w-full text-left rounded-full px-4 py-2.5 flex items-center justify-between transition-all duration-500 ease-out cursor-pointer ${
-                        isActive
-                          ? 'border-2 border-[#235339] bg-[#E2EFE7] font-bold text-[#1E5034] shadow-md scale-[1.02] ring-2 ring-[#235339]/20'
-                          : isCompleted
-                          ? 'border border-[#A3C7B3] bg-white/90 text-[#2D3831] hover:bg-[#EAF3ED]/60'
-                          : 'border border-dashed border-[#B8B1A0] bg-white/70 text-[#6A746C] hover:bg-white/95 hover:border-[#235339]/40'
+                      onClick={() => {
+                        setActiveCaseIndex(idx);
+                        setIsPaused(true);
+                      }}
+                      className={`relative py-2 px-2 rounded-xl text-xs font-mono font-bold transition-all text-center flex flex-col items-center justify-center gap-0.5 cursor-pointer ${
+                        isSelected
+                          ? 'bg-white text-[#18231C] shadow-md scale-[1.02] border border-[#235339]/30 ring-1 ring-[#235339]/20'
+                          : 'text-[#5A645D] hover:text-[#18231C] hover:bg-white/50'
                       }`}
                     >
-                      <div className="flex items-center gap-3">
-                        {/* The Movable Green Dot / Completed Check / Idle Circle */}
-                        <div className="relative flex items-center justify-center w-5 h-5 shrink-0">
-                          {isActive ? (
-                            <>
-                              {/* Pulsing radar sonar wave */}
-                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#235339] opacity-75" />
-                              {/* Soft glowing halo */}
-                              <span className="absolute inline-flex h-4 w-4 rounded-full bg-[#235339]/30 animate-pulse" />
-                              {/* Core vibrant green movable dot */}
-                              <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-[#235339] shadow-sm ring-1 ring-white" />
-                            </>
-                          ) : isCompleted ? (
-                            <span className="flex items-center justify-center w-4 h-4 rounded-full bg-[#E2EFE7] text-[#1E5034] border border-[#A3C7B3]">
-                              <CheckCircle className="w-3 h-3 text-[#235339]" />
-                            </span>
-                          ) : (
-                            <span className="w-3.5 h-3.5 rounded-full bg-[#C7C3B6] transition-colors duration-300" />
-                          )}
-                        </div>
-
-                        <span className="text-xs sm:text-[13px]">{step.label}</span>
+                      <div className="flex items-center gap-1">
+                        <span className={`w-1.5 h-1.5 rounded-full ${
+                          item.statusColor === 'emerald' ? 'bg-[#235339]' : 'bg-rose-600'
+                        }`} />
+                        <span className="truncate text-[11px]">{item.name}</span>
                       </div>
-
-                      {/* Right-side status tag */}
-                      <div className="flex items-center gap-1.5 shrink-0 pl-2">
-                        {isActive ? (
-                          <span className="flex items-center gap-1 text-[10px] font-mono font-bold uppercase tracking-wider bg-white/90 text-[#1E5034] px-2 py-0.5 rounded-full border border-[#A3C7B3] shadow-xs animate-fade-in">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#235339] animate-ping" />
-                            <span>{step.badge}</span>
-                          </span>
-                        ) : isCompleted ? (
-                          <span className="text-[10px] font-mono text-[#235339] font-bold">
-                            Verified ✓
-                          </span>
-                        ) : (
-                          <span className="text-[10px] font-mono text-[#8C8678]">
-                            Queue
-                          </span>
-                        )}
-                      </div>
+                      <span className="text-[9px] font-normal text-[#6A746C] truncate">{item.dosage}</span>
                     </button>
                   );
                 })}
               </div>
 
-              <div className="pt-2 text-center flex items-center justify-center gap-1.5 text-[11px] text-[#6A746C]">
-                <Sparkles className="w-3.5 h-3.5 text-[#235339] shrink-0" />
-                <span>Live clinical AI scanner active • Click any stage to inspect</span>
+              {/* Holographic Diagnostic Center Card */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-white/95 border border-[#E5DFD1] shadow-sm relative overflow-hidden space-y-4">
+                {/* Horizontal Sweeping Laser Line */}
+                <div className="absolute left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-[#235339] to-transparent animate-scanline pointer-events-none opacity-50 z-20" />
+
+                {/* Top Row: Gauge + Drug Telemetry */}
+                <div className="flex items-center justify-between gap-4">
+                  {/* Circular Radial Safety Gauge */}
+                  <div className="relative shrink-0 flex flex-col items-center">
+                    <svg className="w-20 h-20 -rotate-90" viewBox="0 0 84 84">
+                      {/* Background circle */}
+                      <circle
+                        cx="42"
+                        cy="42"
+                        r="36"
+                        fill="none"
+                        stroke="#EBE5D8"
+                        strokeWidth="7"
+                      />
+                      {/* Animated Progress Ring */}
+                      <circle
+                        cx="42"
+                        cy="42"
+                        r="36"
+                        fill="none"
+                        stroke={activeCase.statusColor === 'emerald' ? '#235339' : '#DC2626'}
+                        strokeWidth="7"
+                        strokeLinecap="round"
+                        strokeDasharray={circumference}
+                        strokeDashoffset={strokeDashoffset}
+                        className="transition-all duration-700 ease-out"
+                      />
+                    </svg>
+
+                    {/* Center Score Text */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+                      <span className="text-xl font-black font-mono tracking-tight text-[#18231C] leading-none">
+                        {activeCase.safetyScore}%
+                      </span>
+                      <span className="text-[8px] font-mono font-bold uppercase tracking-wider text-[#6A746C] mt-0.5">
+                        Safety
+                      </span>
+                    </div>
+
+                    <span className={`inline-block mt-1 text-[9px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${
+                      activeCase.statusColor === 'emerald'
+                        ? 'bg-[#E2EFE7] text-[#1E5034] border-[#C6DDD0]'
+                        : 'bg-rose-50 text-rose-800 border-rose-200'
+                    }`}>
+                      {activeCase.riskLevel} Risk
+                    </span>
+                  </div>
+
+                  {/* Telemetry Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-1 mb-1">
+                      <span className="text-[10px] font-mono uppercase tracking-wider text-[#6A746C]">
+                        {activeCase.category}
+                      </span>
+                      <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border ${
+                        activeCase.statusColor === 'emerald'
+                          ? 'bg-[#E2EFE7] text-[#1E5034] border-[#C6DDD0]'
+                          : 'bg-rose-50 text-rose-800 border-rose-200'
+                      }`}>
+                        {activeCase.badgeText}
+                      </span>
+                    </div>
+
+                    <h4 className="text-sm sm:text-base font-black text-[#18231C] truncate">
+                      {activeCase.fullName}
+                    </h4>
+
+                    <p className="text-[11px] text-[#5A645D] line-clamp-2 mt-1 leading-snug">
+                      {activeCase.conflictDetail}
+                    </p>
+
+                    {/* Real-time ECG waveform */}
+                    <div className="pt-2">
+                      <svg className="w-full h-5 overflow-visible" viewBox="0 0 200 24" fill="none">
+                        <path
+                          d="M 0 12 L 40 12 L 48 5 L 56 19 L 64 8 L 72 16 L 80 12 L 130 12 L 138 3 L 146 22 L 154 12 L 200 12"
+                          stroke={activeCase.statusColor === 'emerald' ? '#235339' : '#DC2626'}
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="animate-ecg opacity-75"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Explainable AI (SHAP) Factor Breakdown */}
+                <div className="pt-3 border-t border-[#ECE7DC] space-y-2">
+                  <div className="flex items-center justify-between text-[10px] font-mono text-[#6A746C] font-bold uppercase tracking-wider">
+                    <span>Explainable Feature Weights (SHAP)</span>
+                    <span className="text-[#235339]">Impact</span>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    {activeCase.shapFactors.map((factor, fIdx) => (
+                      <div key={fIdx} className="space-y-0.5">
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="text-[#3E4941] truncate max-w-[70%] font-medium">
+                            {factor.name}
+                          </span>
+                          <span className={`font-mono text-[10px] font-bold ${
+                            factor.positive ? 'text-[#1E5034]' : 'text-rose-700'
+                          }`}>
+                            {factor.value}
+                          </span>
+                        </div>
+                        <div className="h-1.5 w-full bg-[#EBE5D8] rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all duration-700 ease-out ${
+                              factor.positive ? 'bg-[#235339]' : 'bg-rose-600'
+                            }`}
+                            style={{ width: factor.width }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Doctor-Approved Safe Alternative Card (When high risk) */}
+                {activeCase.safeAlternative && (
+                  <div className="p-3 rounded-xl bg-[#E2EFE7] border border-[#C6DDD0] flex items-center justify-between gap-3 text-[#18231C] animate-fade-in">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="w-7 h-7 rounded-lg bg-[#235339] text-white flex items-center justify-center shrink-0">
+                        <ShieldCheck className="w-4 h-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#1E5034] leading-none">
+                          Safe Clinical Alternative
+                        </div>
+                        <div className="text-xs font-bold text-[#18231C] truncate mt-0.5">
+                          {activeCase.safeAlternative.name} ({activeCase.safeAlternative.dosage})
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleQuickDemo(patient?.id || 'usr-default', activeCase.safeAlternative.name, activeCase.safeAlternative.dosage)}
+                      className="pill-btn-primary text-[10px] py-1 px-2.5 whitespace-nowrap shadow-xs cursor-pointer"
+                    >
+                      <span>Test &rarr;</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Bottom Quick Trigger */}
+              <div className="pt-1 flex items-center justify-between gap-2">
+                <button
+                  onClick={() => handleQuickDemo(patient?.id || 'usr-default', activeCase.fullName, activeCase.dosage)}
+                  className="pill-btn-primary flex-1 text-xs py-2.5 px-4 shadow-sm cursor-pointer"
+                >
+                  <Search className="w-3.5 h-3.5" />
+                  <span>Inspect {activeCase.name} in Scanner</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveTab('ocr');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="pill-btn-secondary text-xs py-2 px-3 shrink-0 cursor-pointer"
+                  title="Upload prescription photo to auto-scan"
+                >
+                  <Camera className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              <div className="text-center text-[10px] font-mono text-[#6A746C] pt-0.5">
+                ⚡ Interactive AI Core • Select tabs above to simulate real contraindications
               </div>
             </div>
           </div>

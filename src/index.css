@@ -118,3 +118,37 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #235339;
 }
+
+/* Real-time AI Clinical HUD Animations */
+@keyframes scanline {
+  0% {
+    top: 5%;
+    opacity: 0.4;
+  }
+  50% {
+    top: 92%;
+    opacity: 0.9;
+  }
+  100% {
+    top: 5%;
+    opacity: 0.4;
+  }
+}
+
+.animate-scanline {
+  animation: scanline 3.2s ease-in-out infinite;
+}
+
+@keyframes ecg-flow {
+  0% {
+    stroke-dashoffset: 300;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+.animate-ecg {
+  stroke-dasharray: 150;
+  animation: ecg-flow 3.5s linear infinite;
+}
