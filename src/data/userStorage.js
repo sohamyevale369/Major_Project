@@ -465,3 +465,61 @@ export function adminCreateUser(userData) {
     notes: userData.notes || 'Created directly by System Administrator.'
   });
 }
+
+/**
+ * Returns a stable isolated storage key for a user's tasks & session state
+ */
+export function getUserTasksKey(user) {
+  if (!user) return 'medisafe_tasks_guest';
+  const raw = user.id || (user.email ? user.email.toLowerCase().trim() : 'guest');
+  const safeId = String(raw).replace(/[^a-zA-Z0-9_-]/g, '_');
+  return `medisafe_user_tasks_${safeId}`;
+}
+
+/**
+ * Loads a specific user's saved session tasks (analysis, history, selected med)
+ */
+export function loadUserSessionTasks(user) {
+  if (!user) return null;
+  try {
+    const key = getUserTasksKey(user);
+    if (typeof localStorage !== 'undefined') {
+      const stored = localStorage.getItem(key);
+      if (stored) {
+        return JSON.parse(stored);
+      }
+    }
+  } catch (err) {
+    console.error('Failed reading user task session from storage:', err);
+  }
+  return null;
+}
+
+/**
+ * Saves a specific user's session tasks (analysis, history, selected med) isolated to that user
+ */
+export function saveUserSessionTasks(user, tasks) {
+  if (!user || !tasks) return;
+  try {
+    const key = getUserTasksKey(user);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(key, JSON.stringify(tasks));
+    }
+  } catch (err) {
+    console.error('Failed saving user task session to storage:', err);
+  }
+}
+
+/**
+ * Purges obsolete global session caches so users never inherit other users' state
+ */
+export function clearGlobalTaskCaches() {
+  try {
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.removeItem('medisafe_current_analysis');
+      sessionStorage.removeItem('medisafe_selected_med');
+      sessionStorage.removeItem('medisafe_active_tab');
+    }
+  } catch (e) {}
+}
+

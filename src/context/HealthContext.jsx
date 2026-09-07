@@ -14,8 +14,53 @@ import {
   deleteUserAccount,
   adminCreateUser,
   getSystemAuditLogs,
-  logSystemActivity
+  logSystemActivity,
+  getUserTasksKey,
+  loadUserSessionTasks,
+  saveUserSessionTasks,
+  clearGlobalTaskCaches
 } from '../data/userStorage';
+
+// Pre-seeded tasks for Soham so his previous session is preserved
+function getSohamDefaultTasks(user) {
+  const sohamAnalysis = evaluateMedicationSafety(
+    user,
+    'Diclofenac',
+    '50mg',
+    'If required (SOS)'
+  );
+  const sohamHist = [
+    {
+      id: 'hist-soham-1',
+      date: '2026-09-07',
+      time: '10:15 PM',
+      medicineName: 'Diclofenac',
+      dosage: '50mg',
+      riskScore: 35,
+      riskLevel: 'MEDIUM',
+      primaryAlert: 'Chronic Kidney Disease Caution — Monitor Renal Function',
+      status: 'Evaluated in OCR Session'
+    },
+    {
+      id: 'hist-soham-2',
+      date: '2026-09-07',
+      time: '09:40 PM',
+      medicineName: 'Paracetamol',
+      dosage: '500mg',
+      riskScore: 18,
+      riskLevel: 'LOW',
+      primaryAlert: 'Safe for Kidney Profile with Liver Monitoring',
+      status: 'Evaluated Safe'
+    }
+  ];
+  return {
+    currentAnalysis: sohamAnalysis,
+    selectedMedName: 'Diclofenac',
+    dosage: '50mg',
+    frequency: 'If required (SOS)',
+    medicationHistory: sohamHist
+  };
+}
 
 const HealthContext = createContext();
 
@@ -141,70 +186,65 @@ export function HealthProvider({ children }) {
     setActiveTabState(newTab);
   };
 
-  // Pre-computed initial analysis (persisted in sessionStorage)
+  // User-isolated active analysis & task session
   const [currentAnalysis, setCurrentAnalysisState] = useState(() => {
-    try {
-      const stored = sessionStorage.getItem('medisafe_current_analysis');
-      if (stored) {
-        return JSON.parse(stored);
-      }
-    } catch (e) {}
-    return evaluateMedicationSafety(
-      patient,
-      'Ibuprofen',
-      '400mg',
-      'Twice daily with meals'
-    );
+    const activeUser = getActiveUserSession();
+    if (!activeUser) return null;
+    const tasks = loadUserSessionTasks(activeUser);
+    if (tasks && tasks.currentAnalysis) {
+      return tasks.currentAnalysis;
+    }
+    // Pre-populate Soham's previous session analysis so his previous work is preserved
+    if (activeUser.email?.toLowerCase().includes('soham')) {
+      return getSohamDefaultTasks(activeUser).currentAnalysis;
+    }
+    // Vikas and all other users start with a fresh clean state
+    return null;
   });
 
   const setCurrentAnalysis = (newAnalysis) => {
-    try {
-      if (newAnalysis) {
-        sessionStorage.setItem('medisafe_current_analysis', JSON.stringify(newAnalysis));
-        if (newAnalysis.medicineName) {
-          sessionStorage.setItem('medisafe_selected_med', newAnalysis.medicineName);
-        }
-      }
-    } catch (e) {}
     setCurrentAnalysisState(newAnalysis);
+    if (currentUser) {
+      const existing = loadUserSessionTasks(currentUser) || {};
+      saveUserSessionTasks(currentUser, {
+        ...existing,
+        currentAnalysis: newAnalysis,
+        selectedMedName: newAnalysis?.medicineName || existing.selectedMedName,
+        dosage: newAnalysis?.dosage || existing.dosage,
+        frequency: newAnalysis?.frequency || existing.frequency
+      });
+    }
   };
 
-  // Medication History Log
-  const [medicationHistory, setMedicationHistory] = useState([
-    {
-      id: 'hist-1',
-      date: '2025-03-02',
-      time: '10:30 AM',
-      medicineName: 'Ibuprofen',
-      dosage: '400mg',
-      riskScore: 85,
-      riskLevel: 'HIGH',
-      primaryAlert: 'Kidney Disease + Senior Age (68) Contraindication',
-      status: 'Avoided / Switched to Alternative'
-    },
-    {
-      id: 'hist-2',
-      date: '2025-02-14',
-      time: '02:15 PM',
-      medicineName: 'Paracetamol (Acetaminophen)',
-      dosage: '500mg',
-      riskScore: 18,
-      riskLevel: 'LOW',
-      primaryAlert: 'Safe for Kidney Profile with Liver Monitoring',
-      status: 'Active / Prescribed'
-    },
-    {
-      id: 'hist-3',
-      date: '2025-01-20',
-      time: '09:00 AM',
-      medicineName: 'Lisinopril',
-      dosage: '10mg',
-      riskScore: 28,
-      riskLevel: 'LOW',
-      primaryAlert: 'Routine Antihypertensive — Mild Cough Monitored',
-      status: 'Active / Prescribed'
+  // User-isolated Medication History Log
+  const [medicationHistory, setMedicationHistoryState] = useState(() => {
+    const activeUser = getActiveUserSession();
+    if (!activeUser) return [];
+    const tasks = loadUserSessionTasks(activeUser);
+    if (tasks && Array.isArray(tasks.medicationHistory)) {
+      return tasks.medicationHistory;
     }
-  ]);
+    // Pre-populate Soham's previous evaluation logs
+    if (activeUser.email?.toLowerCase().includes('soham')) {
+      return getSohamDefaultTasks(activeUser).medicationHistory;
+    }
+    // Vikas and other users start with clean 0 logs
+    return [];
+  });
+
+  const setMedicationHistory = (updater) => {
+    setMedicationHistoryState(prev => {
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      if (currentUser) {
+        const existing = loadUserSessionTasks(currentUser) || {};
+        saveUserSessionTasks(currentUser, {
+          ...existing,
+          medicationHistory: next
+        });
+      }
+      return next;
+    });
+  };
 
   // Modals & Floating Tools
   const [emergencyAlert, setEmergencyAlert] = useState(null);
@@ -325,15 +365,42 @@ export function HealthProvider({ children }) {
       return result;
     }
 
-    setCurrentUser(result.user);
+    const loggedUser = result.user;
+
+    // Purge old global caches so another user's session never leaks
+    clearGlobalTaskCaches();
+
+    // 1. Set active user session
+    setCurrentUser(loggedUser);
+
+    // 2. Load isolated task session for this user
+    const userTasks = loadUserSessionTasks(loggedUser);
+    if (userTasks) {
+      setCurrentAnalysisState(userTasks.currentAnalysis || null);
+      setMedicationHistoryState(Array.isArray(userTasks.medicationHistory) ? userTasks.medicationHistory : []);
+    } else {
+      // If user is Soham and hasn't saved tasks yet, pre-populate Soham's previous session
+      if (loggedUser.email?.toLowerCase().includes('soham')) {
+        const defaults = getSohamDefaultTasks(loggedUser);
+        saveUserSessionTasks(loggedUser, defaults);
+        setCurrentAnalysisState(defaults.currentAnalysis);
+        setMedicationHistoryState(defaults.medicationHistory);
+      } else {
+        // Vikas or any other new user starts with a fresh clean session!
+        setCurrentAnalysisState(null);
+        setMedicationHistoryState([]);
+        saveUserSessionTasks(loggedUser, { currentAnalysis: null, medicationHistory: [] });
+      }
+    }
+
     refreshUsersAndLogs();
 
-    if (result.user.role === 'admin') {
+    if (loggedUser.role === 'admin') {
       setActiveTab('admin');
-      showToast(`Welcome Administrator ${result.user.name}`, 'success');
+      showToast(`Welcome Administrator ${loggedUser.name}`, 'success');
     } else {
       setActiveTab('dashboard');
-      showToast(`Signed in successfully as ${result.user.role === 'clinician' ? 'Healthcare Clinician' : 'Patient'}`, 'success');
+      showToast(`Signed in successfully as ${loggedUser.name} (${loggedUser.role === 'clinician' ? 'Healthcare Clinician' : 'Patient'})`, 'success');
     }
 
     return result;
@@ -345,6 +412,13 @@ export function HealthProvider({ children }) {
       const newUser = registerNewUser(userData);
       setActiveUserSession(newUser);
       setCurrentUser(newUser);
+
+      // Clean fresh session for newly registered user
+      setCurrentAnalysisState(null);
+      setMedicationHistoryState([]);
+      saveUserSessionTasks(newUser, { currentAnalysis: null, medicationHistory: [] });
+      clearGlobalTaskCaches();
+
       refreshUsersAndLogs();
 
       if (newUser.role === 'admin') {
@@ -365,9 +439,24 @@ export function HealthProvider({ children }) {
   const logout = () => {
     if (currentUser) {
       logSystemActivity('User Sign Out', `User ended active session`, currentUser);
+      // Persist current session tasks for this user before clearing
+      const currentTasks = loadUserSessionTasks(currentUser) || {};
+      saveUserSessionTasks(currentUser, {
+        ...currentTasks,
+        currentAnalysis,
+        medicationHistory
+      });
     }
+
+    // Reset active session
     setActiveUserSession(null);
     setCurrentUser(null);
+
+    // Refresh & reset task memory so no data leaks to the next user!
+    setCurrentAnalysisState(null);
+    setMedicationHistoryState([]);
+    clearGlobalTaskCaches();
+
     setActiveTab('home');
     refreshUsersAndLogs();
     showToast('Signed out successfully. Task portal is locked until next login.', 'info');
@@ -575,6 +664,17 @@ export function HealthProvider({ children }) {
     setMedicationHistory(prev => [historyEntry, ...prev]);
 
     if (currentUser) {
+      const currentTasks = loadUserSessionTasks(currentUser) || {};
+      const updatedHistory = [historyEntry, ...(currentTasks.medicationHistory || [])];
+      saveUserSessionTasks(currentUser, {
+        ...currentTasks,
+        currentAnalysis: analysis,
+        selectedMedName: medicineName,
+        dosage: analysis.dosage,
+        frequency: analysis.frequency,
+        medicationHistory: updatedHistory
+      });
+
       logSystemActivity(
         'Medicine Risk Evaluated',
         `Evaluated ${medicineName} (${analysis.dosage}). Risk Score: ${analysis.riskScore}% (${analysis.riskLevel}) for ${patientToEvaluate.name}`,

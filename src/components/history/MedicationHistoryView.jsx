@@ -137,7 +137,28 @@ export default function MedicationHistoryView() {
 
       {/* History List (Step 13: Medicine, Risk, Date) */}
       <div className="space-y-3">
-        {filteredHistory.length === 0 ? (
+        {medicationHistory.length === 0 ? (
+          <div className="p-12 text-center rounded-3xl bg-white border border-[#E5DFD1] text-[#6A746C] text-xs space-y-3 shadow-sm">
+            <div className="w-12 h-12 rounded-full bg-[#E2EFE7] text-[#235339] mx-auto flex items-center justify-center">
+              <Pill className="w-6 h-6" />
+            </div>
+            <div className="space-y-1">
+              <strong className="text-sm text-[#18231C] block">No Medication Evaluations Recorded Yet</strong>
+              <p className="max-w-md mx-auto text-[#5A645D]">
+                Each patient's clinical evaluations and tasks are stored separately. Run a medication check in the Risk Scanner to record predictions in your history log.
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                setActiveTab('risk-checker');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className="pill-btn-primary text-xs py-2 px-4 mx-auto cursor-pointer"
+            >
+              <span>Run First Safety Check →</span>
+            </button>
+          </div>
+        ) : filteredHistory.length === 0 ? (
           <div className="p-12 text-center rounded-3xl bg-white border border-[#E5DFD1] text-[#6A746C] text-xs">
             No medication history records found matching your filters.
           </div>

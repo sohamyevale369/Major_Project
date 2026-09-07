@@ -40,7 +40,28 @@ export default function SafetyReportView() {
       </div>
 
       {/* Printable Clinical Document */}
-      <div className="p-8 sm:p-12 rounded-3xl bg-white text-[#18231C] border border-[#E5DFD1] shadow-xl space-y-8 print:border-none print:shadow-none print:p-0">
+      {!currentAnalysis ? (
+        <div className="p-12 text-center rounded-3xl bg-white text-[#18231C] border border-[#E5DFD1] shadow-xl space-y-4">
+          <div className="w-14 h-14 rounded-2xl bg-[#E2EFE7] text-[#235339] mx-auto flex items-center justify-center">
+            <FileText className="w-7 h-7" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-xl font-black uppercase text-[#18231C]">
+              No Active Evaluation Available
+            </h3>
+            <p className="text-xs text-[#5A645D] max-w-md mx-auto">
+              You have not evaluated any medicine in this session yet for {patient.name}. Check a medicine in the Risk Scanner to generate this official clinical safety dossier.
+            </p>
+          </div>
+          <button
+            onClick={() => setActiveTab('risk-checker')}
+            className="pill-btn-primary text-xs py-2.5 px-5 mx-auto cursor-pointer"
+          >
+            <span>Go to Risk Checker →</span>
+          </button>
+        </div>
+      ) : (
+        <div className="p-8 sm:p-12 rounded-3xl bg-white text-[#18231C] border border-[#E5DFD1] shadow-xl space-y-8 print:border-none print:shadow-none print:p-0">
         
         {/* Document Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b-2 border-[#18231C]">
@@ -223,6 +244,7 @@ export default function SafetyReportView() {
         </div>
 
       </div>
+      )}
 
     </div>
   );

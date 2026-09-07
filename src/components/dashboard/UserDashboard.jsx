@@ -27,7 +27,7 @@ export default function UserDashboard() {
     setIsChatbotOpen
   } = useHealth();
 
-  const safetyScore = currentAnalysis ? (100 - currentAnalysis.riskScore) : 82;
+  const safetyScore = currentAnalysis ? (100 - currentAnalysis.riskScore) : (patient.diseases?.length > 0 ? 88 : 98);
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-8 bg-[#F6F4ED] text-[#18231C]">
@@ -48,7 +48,7 @@ export default function UserDashboard() {
               Welcome 👋, {patient.name}
             </h1>
             <p className="text-xs sm:text-sm text-[#5A645D]">
-              Age {patient.age} • {patient.gender} • {patient.diseases.join(', ') || 'No chronic illnesses logged'}
+              Age {patient.age} • {patient.gender} • {patient.diseases?.join(', ') || 'No chronic illnesses logged'}
             </p>
           </div>
         </div>
@@ -78,7 +78,7 @@ export default function UserDashboard() {
         </div>
       </div>
 
-      {/* Metric Cards (Step 5: Medication Safety Score 82%, Medicines 4, Interactions 1, Alerts 0, Reports 5) */}
+      {/* Metric Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
         <div className="ivory-card p-4">
           <span className="text-xs text-[#6A746C] font-bold block">Medication Safety Score</span>
@@ -96,7 +96,7 @@ export default function UserDashboard() {
         <div className="ivory-card p-4">
           <span className="text-xs text-[#6A746C] font-bold block">Medicines</span>
           <div className="text-3xl font-black text-[#18231C] font-mono mt-1">
-            {patient.currentMedicines.length || 4}
+            {patient.currentMedicines?.length ?? 0}
           </div>
           <span className="text-[11px] text-[#5A645D] block mt-1">
             Active prescriptions
@@ -106,7 +106,7 @@ export default function UserDashboard() {
         <div className="ivory-card p-4">
           <span className="text-xs text-[#6A746C] font-bold block">Interactions</span>
           <div className="text-3xl font-black text-amber-600 font-mono mt-1">
-            1
+            {patient.currentMedicines?.length > 1 ? 1 : 0}
           </div>
           <span className="text-[11px] text-[#5A645D] block mt-1">
             Monitored clash
@@ -126,7 +126,7 @@ export default function UserDashboard() {
         <div className="ivory-card p-4 col-span-2 sm:col-span-1">
           <span className="text-xs text-[#6A746C] font-bold block">Reports</span>
           <div className="text-3xl font-black text-[#18231C] font-mono mt-1">
-            {medicationHistory.length || 5}
+            {medicationHistory?.length ?? 0}
           </div>
           <span className="text-[11px] text-[#5A645D] block mt-1">
             Saved clinical scans
@@ -137,74 +137,100 @@ export default function UserDashboard() {
       {/* Main Content: Current Evaluation & Health Profile */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        {/* Left 2 Cols: Evaluation Card styled like Image 5 */}
-        <div className="lg:col-span-2 ivory-card p-6 sm:p-7 space-y-5 shadow-sm">
-          <div className="flex items-center justify-between pb-3 border-b border-[#E5DFD1]">
+        {/* Left 2 Cols: Evaluation Card */}
+        {currentAnalysis ? (
+          <div className="lg:col-span-2 ivory-card p-6 sm:p-7 space-y-5 shadow-sm">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E5DFD1]">
+              <div>
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#6A746C] block">
+                  CURRENT EVALUATION
+                </span>
+                <h2 className="text-lg font-black text-[#18231C] uppercase tracking-tight">
+                  {currentAnalysis.medicineName} ({currentAnalysis.dosage})
+                </h2>
+              </div>
+              <RiskBadge level={currentAnalysis.riskLevel} score={currentAnalysis.riskScore} size="md" />
+            </div>
+
+            {/* Sage Result Box matching Image 5 */}
+            <div className="sage-result-box p-4 text-xs sm:text-sm text-[#1E5034] leading-relaxed">
+              <div className="flex items-center justify-between mb-1.5 font-bold">
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-[#235339]" />
+                  Explainable AI Finding
+                </span>
+                <span className="text-[10px] font-mono uppercase bg-[#C6DDD0] px-2 py-0.5 rounded-full text-[#18231C]">
+                  Trained Clinical Model
+                </span>
+              </div>
+              <p className="text-[#18231C] font-medium">{currentAnalysis.plainEnglishExplanation}</p>
+            </div>
+
+            <div className="space-y-2">
+              <span className="text-xs font-bold text-[#18231C] uppercase tracking-wider block">
+                Contributing Factors (SHAP / LIME):
+              </span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {currentAnalysis.shapFactors?.slice(0, 4).map((f, i) => (
+                  <div key={i} className="p-2.5 rounded-xl bg-[#F3EFE6] border border-[#D5CDBF] text-xs flex items-center justify-between">
+                    <span className="text-[#37423B] font-medium">{f.factor}</span>
+                    <span className={`font-mono font-bold ${f.type === 'risk' ? 'text-rose-700' : 'text-[#235339]'}`}>
+                      {f.impact}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-[#E5DFD1]">
+              <button
+                onClick={() => {
+                  setActiveTab('risk-checker');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className="flex items-center gap-1.5 text-xs font-bold text-[#235339] hover:underline transition"
+              >
+                <span>View Full SHAP Breakdown & Alternatives</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+
+              <button
+                onClick={() => {
+                  setActiveTab('report');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className="flex items-center gap-1.5 text-xs font-semibold text-[#5A645D] hover:text-[#18231C] transition"
+              >
+                <FileText className="w-3.5 h-3.5" />
+                <span>Export Safety Summary</span>
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="lg:col-span-2 ivory-card p-8 text-center space-y-4 shadow-sm border-2 border-dashed border-[#C6DDD0] flex flex-col items-center justify-center">
+            <div className="w-14 h-14 rounded-2xl bg-[#E2EFE7] text-[#235339] flex items-center justify-center">
+              <Pill className="w-7 h-7" />
+            </div>
             <div>
-              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#6A746C] block">
-                CURRENT EVALUATION
-              </span>
-              <h2 className="text-lg font-black text-[#18231C] uppercase tracking-tight">
-                {currentAnalysis?.medicineName} ({currentAnalysis?.dosage})
-              </h2>
+              <h3 className="text-base font-black text-[#18231C] uppercase tracking-wide">
+                No Medication Evaluated Yet
+              </h3>
+              <p className="text-xs text-[#5A645D] mt-1 max-w-md mx-auto">
+                Your session is clean. Run a medication check to see real-time contraindications and personalized side effects for {patient.name}.
+              </p>
             </div>
-            <RiskBadge level={currentAnalysis?.riskLevel} score={currentAnalysis?.riskScore} size="md" />
-          </div>
-
-          {/* Sage Result Box matching Image 5 */}
-          <div className="sage-result-box p-4 text-xs sm:text-sm text-[#1E5034] leading-relaxed">
-            <div className="flex items-center justify-between mb-1.5 font-bold">
-              <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-[#235339]" />
-                Explainable AI Finding
-              </span>
-              <span className="text-[10px] font-mono uppercase bg-[#C6DDD0] px-2 py-0.5 rounded-full text-[#18231C]">
-                Trained Clinical Model
-              </span>
-            </div>
-            <p className="text-[#18231C] font-medium">{currentAnalysis?.plainEnglishExplanation}</p>
-          </div>
-
-          <div className="space-y-2">
-            <span className="text-xs font-bold text-[#18231C] uppercase tracking-wider block">
-              Contributing Factors (SHAP / LIME):
-            </span>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {currentAnalysis?.shapFactors.slice(0, 4).map((f, i) => (
-                <div key={i} className="p-2.5 rounded-xl bg-[#F3EFE6] border border-[#D5CDBF] text-xs flex items-center justify-between">
-                  <span className="text-[#37423B] font-medium">{f.factor}</span>
-                  <span className={`font-mono font-bold ${f.type === 'risk' ? 'text-rose-700' : 'text-[#235339]'}`}>
-                    {f.impact}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-[#E5DFD1]">
             <button
               onClick={() => {
                 setActiveTab('risk-checker');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              className="flex items-center gap-1.5 text-xs font-bold text-[#235339] hover:underline transition"
+              className="pill-btn-primary text-xs py-2.5 px-5 cursor-pointer"
             >
-              <span>View Full SHAP Breakdown & Alternatives</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-
-            <button
-              onClick={() => {
-                setActiveTab('report');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-              className="flex items-center gap-1.5 text-xs font-semibold text-[#5A645D] hover:text-[#18231C] transition"
-            >
-              <FileText className="w-3.5 h-3.5" />
-              <span>Export Safety Summary</span>
+              <Pill className="w-4 h-4" />
+              <span>Evaluate a Medicine</span>
             </button>
           </div>
-        </div>
+        )}
 
         {/* Right Col: Health Profile & Quick Guide */}
         <div className="space-y-6">

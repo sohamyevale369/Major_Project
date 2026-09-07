@@ -36,19 +36,25 @@ export default function MedicineRiskView() {
   } = useHealth();
 
   const [inputOption, setInputOption] = useState('search'); // 'search' | 'manual' | 'ocr'
-  const [selectedMedName, setSelectedMedName] = useState(currentAnalysis?.medicineName || 'Ibuprofen');
-  const [dosage, setDosage] = useState(currentAnalysis?.dosage || '400 mg');
-  const [frequency, setFrequency] = useState(currentAnalysis?.frequency || '2 times/day');
+  const defaultInitialMed = currentAnalysis?.medicineName || patient?.currentMedicines?.[0]?.name || 'Paracetamol (Acetaminophen)';
+  const [selectedMedName, setSelectedMedName] = useState(defaultInitialMed);
+  const [dosage, setDosage] = useState(currentAnalysis?.dosage || patient?.currentMedicines?.[0]?.dosage || '500 mg');
+  const [frequency, setFrequency] = useState(currentAnalysis?.frequency || patient?.currentMedicines?.[0]?.frequency || 'Once daily with meals');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-  // Synchronize inputs whenever currentAnalysis changes (e.g. from Health Profile or preset)
+  // Synchronize inputs whenever currentAnalysis or patient changes
   useEffect(() => {
     if (currentAnalysis?.medicineName) {
       setSelectedMedName(currentAnalysis.medicineName);
       if (currentAnalysis.dosage) setDosage(currentAnalysis.dosage);
       if (currentAnalysis.frequency) setFrequency(currentAnalysis.frequency);
+    } else {
+      const fallbackMed = patient?.currentMedicines?.[0]?.name || patient?.recommendedTestDrug || 'Paracetamol (Acetaminophen)';
+      setSelectedMedName(fallbackMed);
+      setDosage(patient?.currentMedicines?.[0]?.dosage || '500 mg');
+      setFrequency(patient?.currentMedicines?.[0]?.frequency || 'Once daily with meals');
     }
-  }, [currentAnalysis?.medicineName, currentAnalysis?.dosage, currentAnalysis?.frequency]);
+  }, [currentAnalysis, patient]);
 
   const currentMedMeta = COMMON_MEDICATIONS.find(
     m => m.name.toLowerCase() === selectedMedName.toLowerCase() ||
@@ -405,6 +411,40 @@ export default function MedicineRiskView() {
             currentRiskScore={currentAnalysis.riskScore}
           />
 
+        </div>
+      )}
+
+      {/* Pristine Clean State when current user has not evaluated a medicine in this session */}
+      {!currentAnalysis && (
+        <div className="ivory-card p-8 sm:p-10 text-center space-y-4 shadow-sm animate-fade-in border-2 border-dashed border-[#C6DDD0]">
+          <div className="w-14 h-14 rounded-2xl bg-[#E2EFE7] text-[#235339] mx-auto flex items-center justify-center shadow-sm">
+            <Pill className="w-7 h-7" />
+          </div>
+          <div className="space-y-1">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E2EFE7] text-[#1E5034] text-[11px] font-bold font-mono uppercase">
+              <span>● Clean Session Ready</span>
+            </div>
+            <h3 className="text-xl font-black text-[#18231C] uppercase tracking-tight">
+              Ready to Evaluate Medicine Safety for {patient?.name || 'Patient'}
+            </h3>
+            <p className="text-xs sm:text-sm text-[#5A645D] max-w-lg mx-auto">
+              No previous medication evaluated in this session. Select any medicine above or click a quick suggestion below to run a personalized AI risk prediction calibrated for Age {patient.age}y ({patient.gender}, {patient.weight}kg).
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-2.5 pt-3">
+            {COMMON_MEDICATIONS.slice(0, 4).map((med) => (
+              <button
+                key={med.id}
+                onClick={() => handleSelectMedChip(med)}
+                className="px-4 py-2 rounded-full bg-white border border-[#D5CDBF] text-xs font-bold text-[#18231C] hover:border-[#235339] hover:bg-[#E2EFE7] hover:text-[#1E5034] transition flex items-center gap-1.5 shadow-xs cursor-pointer"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-[#235339]" />
+                <span>Evaluate {med.name}</span>
+                <span className="text-[10px] font-mono text-[#6A746C]">({med.defaultDosage})</span>
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
