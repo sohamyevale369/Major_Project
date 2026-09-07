@@ -31,6 +31,60 @@
     ]
   },
   {
+    "id": "usr-new-1788590733394",
+    "name": "Soham Vikas Yevale",
+    "email": "sohamyevale624@gmail.com",
+    "password": "Vnetra@1126",
+    "role": "patient",
+    "department": "",
+    "licenseNumber": "",
+    "age": 23,
+    "gender": "Male",
+    "chronicDiseases": [
+      "Chronic Kidney Disease"
+    ],
+    "allergies": [
+      "Cephalosporins",
+      "Penicillin"
+    ],
+    "status": "Active",
+    "isNewUser": false,
+    "registeredAt": "2026-09-05T06:45:33.394Z",
+    "lastLogin": "2026-09-07T16:15:01.210Z",
+    "notes": "Registered through MediSafe AI online portal.",
+    "weight": 70,
+    "currentMedicines": [
+      {
+        "name": "Paracetamol",
+        "dosage": "50mg",
+        "frequency": "Daily"
+      },
+      {
+        "name": "Aspirin",
+        "dosage": "325Mg",
+        "frequency": "Daily"
+      }
+    ]
+  },
+  {
+    "id": "usr-new-1788596030403",
+    "name": "Mrunali Kadam",
+    "email": "mrunalikadamfake@gmail.com",
+    "password": "Temp123",
+    "role": "patient",
+    "department": "",
+    "licenseNumber": "",
+    "age": 22,
+    "gender": "Female",
+    "chronicDiseases": [],
+    "allergies": [],
+    "status": "Active",
+    "isNewUser": false,
+    "registeredAt": "2026-09-05T08:13:50.403Z",
+    "lastLogin": "2026-09-05T08:13:50.403Z",
+    "notes": "Verified Patient Profile"
+  },
+  {
     "id": "usr-admin-1",
     "name": "System Administrator",
     "email": "admin@medisafe.ai",
@@ -47,6 +101,34 @@
     "registeredAt": "2024-01-10T08:30:00.000Z",
     "lastLogin": "2026-09-07T14:40:00.000Z",
     "notes": "Master administrator with full system audit, user management & deduplication rights."
+  },
+  {
+    "id": "usr-doc-1",
+    "name": "Dr. Rajesh Sharma, MD",
+    "email": "dr.sharma@medisafe.ai",
+    "password": "Doctor@123",
+    "role": "clinician",
+    "department": "Internal Medicine & Pharmacology",
+    "licenseNumber": "MD-98421",
+    "status": "Active",
+    "isNewUser": false,
+    "registeredAt": "2024-03-15T09:00:00.000Z",
+    "lastLogin": "2026-09-05T13:40:27.032Z",
+    "notes": "Chief Attending Physician. Consulted for senior nephrotoxicity alerts."
+  },
+  {
+    "id": "usr-doc-2",
+    "name": "Dr. Helen Adams, FACC",
+    "email": "dr.adams@medisafe.ai",
+    "password": "Doctor@123",
+    "role": "clinician",
+    "department": "Cardiovascular Care Unit",
+    "licenseNumber": "MD-77123",
+    "status": "Active",
+    "isNewUser": false,
+    "registeredAt": "2024-05-20T11:45:00.000Z",
+    "lastLogin": "2025-02-28T16:00:00.000Z",
+    "notes": "Cardiology Specialist. Supervises anticoagulant interaction protocols."
   },
   {
     "id": "usr-new-1788757764657",
@@ -101,81 +183,5 @@
     "registeredAt": "2026-09-05T08:30:45.562Z",
     "lastLogin": "2026-09-07T15:08:23.523Z",
     "notes": "Registered through MediSafe AI online portal."
-  },
-  {
-    "id": "usr-new-1788590733394",
-    "name": "Soham Vikas Yevale",
-    "email": "sohamyevale624@gmail.com",
-    "password": "Vnetra@1126",
-    "role": "patient",
-    "department": "",
-    "licenseNumber": "",
-    "age": 23,
-    "gender": "Male",
-    "chronicDiseases": [
-      "Atrial Fibrillation / Heart Failure"
-    ],
-    "allergies": [
-      "Cephalosporins"
-    ],
-    "status": "Active",
-    "isNewUser": false,
-    "registeredAt": "2026-09-05T06:45:33.394Z",
-    "lastLogin": "2026-09-07T16:15:01.210Z",
-    "notes": "Registered through MediSafe AI online portal.",
-    "weight": 70,
-    "currentMedicines": [
-      {
-        "name": "Paracetamol",
-        "dosage": "50mg",
-        "frequency": "Daily"
-      }
-    ]
-  },
-  {
-    "id": "usr-new-1788596030403",
-    "name": "Mrunali Kadam",
-    "email": "mrunalikadamfake@gmail.com",
-    "password": "Temp123",
-    "role": "patient",
-    "department": "",
-    "licenseNumber": "",
-    "age": 22,
-    "gender": "Female",
-    "chronicDiseases": [],
-    "allergies": [],
-    "status": "Active",
-    "isNewUser": false,
-    "registeredAt": "2026-09-05T08:13:50.403Z",
-    "lastLogin": "2026-09-05T08:13:50.403Z",
-    "notes": "Verified Patient Profile"
-  },
-  {
-    "id": "usr-doc-1",
-    "name": "Dr. Rajesh Sharma, MD",
-    "email": "dr.sharma@medisafe.ai",
-    "password": "Doctor@123",
-    "role": "clinician",
-    "department": "Internal Medicine & Pharmacology",
-    "licenseNumber": "MD-98421",
-    "status": "Active",
-    "isNewUser": false,
-    "registeredAt": "2024-03-15T09:00:00.000Z",
-    "lastLogin": "2026-09-05T13:40:27.032Z",
-    "notes": "Chief Attending Physician. Consulted for senior nephrotoxicity alerts."
-  },
-  {
-    "id": "usr-doc-2",
-    "name": "Dr. Helen Adams, FACC",
-    "email": "dr.adams@medisafe.ai",
-    "password": "Doctor@123",
-    "role": "clinician",
-    "department": "Cardiovascular Care Unit",
-    "licenseNumber": "MD-77123",
-    "status": "Active",
-    "isNewUser": false,
-    "registeredAt": "2024-05-20T11:45:00.000Z",
-    "lastLogin": "2025-02-28T16:00:00.000Z",
-    "notes": "Cardiology Specialist. Supervises anticoagulant interaction protocols."
   }
 ]

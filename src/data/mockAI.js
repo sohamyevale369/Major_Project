@@ -425,6 +425,7 @@ export const SAMPLE_PRESCRIPTIONS = [
     extractedData: {
       patientName: 'Mrunali Kadam',
       patientAge: '22',
+      patientGender: 'Female',
       medicines: [
         {
           name: 'Amoxicillin',
@@ -436,6 +437,43 @@ export const SAMPLE_PRESCRIPTIONS = [
       ],
       physicianAdvice: 'Finish full antibiotic course.',
       confidenceScore: 98.2
+    }
+  },
+  {
+    id: 'rx-4',
+    title: 'Hospital Slip — Dr. Mohit Atray (Fever & Pain)',
+    doctorName: 'Dr. Mohit Atray, MBBS (Reg. REG/123456)',
+    clinicName: 'Dr. Atray General Hospital',
+    date: '06-Feb-2021',
+    imageType: 'hospital_rx',
+    previewText: 'Rx: Tab. Paracetamol 500mg + Tab. Diclofenac (Take if fever/pain)',
+    sampleImagePath: '/sample-prescription.png',
+    extractedData: {
+      patientName: 'Kamal Singh',
+      patientAge: '25',
+      patientGender: 'Male',
+      doctorName: 'Dr. Mohit Atray',
+      clinicName: 'Dr. Atray General Hospital',
+      diagnosis: 'Fever',
+      investigations: 'CBC, Liver Profile',
+      medicines: [
+        {
+          name: 'Paracetamol',
+          dosage: '500mg',
+          frequency: 'After meals if required',
+          duration: 'As prescribed',
+          notes: 'Take if fever occurs'
+        },
+        {
+          name: 'Diclofenac',
+          dosage: '50mg',
+          frequency: 'If required (SOS)',
+          duration: 'As prescribed',
+          notes: 'Take if pain'
+        }
+      ],
+      physicianAdvice: 'Advice for rest. Monitor temperature.',
+      confidenceScore: 99.4
     }
   }
 ];
