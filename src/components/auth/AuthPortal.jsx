@@ -61,6 +61,22 @@ export default function AuthPortal() {
     }, 400);
   };
 
+  // Quick Login for Existing Administrator using previous credentials
+  const handleQuickAdminLogin = (email = 'tradersoham.369@gmail.com', password = 'Vnetra@1126') => {
+    setLoginEmail(email);
+    setLoginPassword(password);
+    setErrorMessage('');
+    setLoading(true);
+
+    setTimeout(() => {
+      const result = login(email, password);
+      setLoading(false);
+      if (!result.success) {
+        setErrorMessage(result.message);
+      }
+    }, 350);
+  };
+
   // Handle Register Submit
   const handleRegisterSubmit = (e) => {
     e.preventDefault();
@@ -274,6 +290,73 @@ export default function AuthPortal() {
                   </>
                 )}
               </button>
+
+              {/* Administrator Quick Access Divider */}
+              <div className="relative flex py-1.5 items-center">
+                <div className="flex-grow border-t border-[#D5CDBF]" />
+                <span className="flex-shrink mx-2.5 text-[10px] font-bold tracking-wider text-[#6A746C] uppercase font-mono">
+                  Administrator Quick Access
+                </span>
+                <div className="flex-grow border-t border-[#D5CDBF]" />
+              </div>
+
+              {/* One Button for Existing Admin to Login with Previous Credentials */}
+              <div className="space-y-1.5">
+                <button
+                  type="button"
+                  id="btn-login-existing-admin"
+                  disabled={loading}
+                  onClick={() => handleQuickAdminLogin('tradersoham.369@gmail.com', 'Vnetra@1126')}
+                  className="w-full py-3 px-4 rounded-2xl bg-[#ECE7DC] hover:bg-[#E3DDD0] border border-[#D5CDBF] hover:border-purple-400/60 text-[#18231C] font-bold text-xs sm:text-sm flex items-center justify-between transition-all duration-200 shadow-sm hover:shadow group disabled:opacity-50"
+                >
+                  <div className="flex items-center gap-2.5 text-left">
+                    <div className="w-8 h-8 rounded-xl bg-purple-800 text-white flex items-center justify-center text-xs shadow-sm group-hover:scale-105 transition-transform shrink-0">
+                      <ShieldCheck className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-[#18231C] flex items-center gap-1.5">
+                        <span>Login as Existing Admin</span>
+                        <span className="text-[10px] bg-purple-100 text-purple-800 font-mono px-1.5 py-0.2 rounded font-bold">
+                          Admin
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-[#5A645D] font-mono">
+                        Use Previous Credentials (1-Click)
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 text-purple-900 font-bold text-xs bg-purple-100 group-hover:bg-purple-800 group-hover:text-white px-2.5 py-1 rounded-full transition-colors shrink-0">
+                    <span>1-Click Sign In</span>
+                    <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                  </div>
+                </button>
+
+                {/* Sub-bar showing previous accounts */}
+                <div className="flex items-center justify-between text-[11px] text-[#6A746C] px-1 font-mono pt-0.5">
+                  <span>Previous ID:</span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      disabled={loading}
+                      onClick={() => handleQuickAdminLogin('tradersoham.369@gmail.com', 'Vnetra@1126')}
+                      className="text-purple-800 hover:text-purple-950 font-bold hover:underline"
+                      title="Soham Vikas Yevale (Admin)"
+                    >
+                      Soham Admin
+                    </button>
+                    <span>•</span>
+                    <button
+                      type="button"
+                      disabled={loading}
+                      onClick={() => handleQuickAdminLogin('admin@medisafe.ai', 'Admin@123')}
+                      className="text-purple-800 hover:text-purple-950 font-bold hover:underline"
+                      title="System Administrator (Admin@123)"
+                    >
+                      System Admin
+                    </button>
+                  </div>
+                </div>
+              </div>
 
             </form>
           )}

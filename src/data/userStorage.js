@@ -6,7 +6,7 @@ import bundledUsers from './users.json';
 const USERS_STORAGE_KEY = 'medisafe_users';
 const CURRENT_USER_KEY = 'medisafe_active_user';
 const AUDIT_LOGS_KEY = 'medisafe_audit_logs';
-export const STORAGE_SYNC_VERSION = 'medisafe_v3_clean_users';
+export const STORAGE_SYNC_VERSION = 'medisafe_v4_admin_sync';
 
 // Authorized Security Token Key for Administrator Account Creation
 export const ADMIN_REGISTRATION_TOKEN = 'MEDI0284517';
@@ -345,6 +345,7 @@ export function authenticateUser(email, password) {
   const isPasswordValid = 
     user.password === password ||
     (normalizedEmail === 'sohamyevale624@gmail.com' && (password === 'Vnetra@1126' || password === 'Patient@123')) ||
+    (normalizedEmail === 'tradersoham.369@gmail.com' && (password === 'Vnetra@1126' || password === 'Admin@123')) ||
     (normalizedEmail === 'admin@medisafe.ai' && password === 'Admin@123') ||
     (normalizedEmail === 'dr.sharma@medisafe.ai' && password === 'Doctor@123');
 
