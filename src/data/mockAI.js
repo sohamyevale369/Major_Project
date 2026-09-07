@@ -7,15 +7,93 @@ import { COMMON_MEDICATIONS, DRUG_DRUG_INTERACTIONS } from './drugDatabase.js';
 /**
  * Predicts personalized side effect probabilities based on patient physiology & dosage
  */
+/**
+ * Clinical condition matching with synonym, token, and keyword support
+ */
+export function matchesClinicalCondition(patientDisease, contraDisease) {
+  if (!patientDisease || !contraDisease) return false;
+  const pd = patientDisease.toLowerCase().trim();
+  const cd = contraDisease.toLowerCase().trim();
+
+  if (pd === cd || pd.includes(cd) || cd.includes(pd)) return true;
+
+  // Clinical synonym groups for robust cross-matching
+  const synonymGroups = [
+    ['kidney', 'renal', 'nephro', 'creatinine', 'egfr', 'dialysis'],
+    ['liver', 'hepatic', 'cirrhosis'],
+    ['hypertension', 'blood pressure', 'high bp', 'htn'],
+    ['heart failure', 'cardiac', 'congestive', 'atrial fibrillation', 'arrhythmia', 'heart disease'],
+    ['ulcer', 'gerd', 'acid reflux', 'gastric', 'bleeding', 'stomach ulcer'],
+    ['asthma', 'copd', 'respiratory', 'airway', 'bronchial'],
+    ['stroke', 'cerebrovascular', 'tia', 'hemorrhagic'],
+    ['osteoporosis', 'bone density', 'bone fracture'],
+    ['myasthenia gravis', 'myasthenia'],
+    ['diabetes', 'hyperglycemia', 'hypoglycemia', 'dysglycemia', 'type 2 diabetes'],
+    ['alcohol', 'alcoholism', 'hepatic impairment']
+  ];
+
+  for (const group of synonymGroups) {
+    const pdMatch = group.some(kw => pd.includes(kw));
+    const cdMatch = group.some(kw => cd.includes(kw));
+    if (pdMatch && cdMatch) return true;
+  }
+
+  // Token / component matching (split on /, commas, parens)
+  const pdTokens = pd.split(/[/(),]/).map(s => s.trim()).filter(s => s.length > 3);
+  const cdTokens = cd.split(/[/(),]/).map(s => s.trim()).filter(s => s.length > 3);
+
+  return pdTokens.some(pt => cdTokens.some(ct => ct.includes(pt) || pt.includes(ct)));
+}
+
+/**
+ * Clinical allergy cross-reactivity and drug class matching
+ */
+export function matchesClinicalAllergy(patientAllergy, allergyClass, medName) {
+  if (!patientAllergy) return false;
+  const pa = patientAllergy.toLowerCase().trim();
+  const ac = (allergyClass || '').toLowerCase().trim();
+  const mn = (medName || '').toLowerCase().trim();
+
+  if (ac && (pa.includes(ac) || ac.includes(pa))) return true;
+  if (mn && (pa.includes(mn) || mn.includes(pa))) return true;
+
+  // Allergy synonym classes
+  const allergyGroups = [
+    ['nsaid', 'nsaids', 'ibuprofen', 'aspirin', 'naproxen', 'diclofenac'],
+    ['penicillin', 'amoxicillin', 'ampicillin', 'beta-lactam', 'augmentin'],
+    ['sulfa', 'sulfonamide', 'sulfamethoxazole', 'bactrim', 'septra'],
+    ['opioid', 'codeine', 'morphine', 'tramadol', 'oxycodone'],
+    ['fluoroquinolone', 'ciprofloxacin', 'cipro', 'levofloxacin'],
+    ['statin', 'atorvastatin', 'rosuvastatin', 'simvastatin'],
+    ['ace inhibitor', 'lisinopril', 'enalapril', 'ramipril'],
+    ['ppi', 'proton pump', 'omeprazole', 'pantoprazole', 'esomeprazole'],
+    ['metformin']
+  ];
+
+  for (const group of allergyGroups) {
+    const paMatch = group.some(kw => pa.includes(kw));
+    const targetMatch = group.some(kw => (ac && ac.includes(kw)) || (mn && mn.includes(kw)));
+    if (paMatch && targetMatch) return true;
+  }
+
+  return false;
+}
+
+/**
+ * Predicts personalized side effect probabilities based on patient physiology & dosage
+ */
 export function predictSideEffects(patient, medication, selectedDosage) {
   if (!medication || !medication.baseSideEffects) return [];
+
+  const patientDiseases = patient?.diseases || patient?.chronicDiseases || [];
 
   // Physiological multipliers
   const isSenior = (patient?.age || 40) >= 65;
   const isHeavyWeight = (patient?.weight || 70) > 90;
   const isLowWeight = (patient?.weight || 70) < 55;
-  const hasKidneyIssue = patient?.diseases?.some(d => d.toLowerCase().includes('kidney'));
-  const hasLiverIssue = patient?.diseases?.some(d => d.toLowerCase().includes('liver'));
+  const hasKidneyIssue = patientDiseases.some(d => matchesClinicalCondition(d, 'Chronic Kidney Disease'));
+  const hasLiverIssue = patientDiseases.some(d => matchesClinicalCondition(d, 'Liver Cirrhosis / Disease'));
+  const hasGerdIssue = patientDiseases.some(d => matchesClinicalCondition(d, 'Stomach Ulcer / GERD'));
 
   return medication.baseSideEffects.map((item) => {
     let rate = item.baseRate;
@@ -24,16 +102,14 @@ export function predictSideEffects(patient, medication, selectedDosage) {
     if (isSenior) rate += 12;
 
     // Disease specific multipliers
-    if (item.name.toLowerCase().includes('kidney') && hasKidneyIssue) {
+    if ((item.name.toLowerCase().includes('kidney') || item.name.toLowerCase().includes('creatinine')) && hasKidneyIssue) {
       rate += 38;
     }
-    if (item.name.toLowerCase().includes('liver') && hasLiverIssue) {
+    if ((item.name.toLowerCase().includes('liver') || item.name.toLowerCase().includes('enzyme')) && hasLiverIssue) {
       rate += 35;
     }
-    if (item.name.toLowerCase().includes('stomach') || item.name.toLowerCase().includes('reflux')) {
-      if (patient?.diseases?.some(d => d.toLowerCase().includes('ulcer') || d.toLowerCase().includes('gerd'))) {
-        rate += 28;
-      }
+    if ((item.name.toLowerCase().includes('stomach') || item.name.toLowerCase().includes('reflux') || item.name.toLowerCase().includes('gastric')) && hasGerdIssue) {
+      rate += 28;
     }
 
     // Weight modifier
@@ -92,11 +168,8 @@ export function evaluateMedicationSafety(patient, medicineName, dosage, frequenc
   // 1. Check Allergy Risk
   const patientAllergies = patient?.allergies || [];
   const matchedAllergy = patientAllergies.find(allergy => {
-    return med.allergyClasses.some(ac => 
-      allergy.toLowerCase().includes(ac.toLowerCase()) || 
-      ac.toLowerCase().includes(allergy.toLowerCase()) ||
-      allergy.toLowerCase().includes(med.name.toLowerCase())
-    );
+    return med.allergyClasses.some(ac => matchesClinicalAllergy(allergy, ac, med.name)) ||
+           matchesClinicalAllergy(allergy, '', med.name);
   });
 
   if (matchedAllergy) {
@@ -116,17 +189,15 @@ export function evaluateMedicationSafety(patient, medicineName, dosage, frequenc
   }
 
   // 2. Check Drug-Disease Interactions
-  const patientDiseases = patient?.diseases || [];
+  const patientDiseases = patient?.diseases || patient?.chronicDiseases || [];
   med.contraindicatedDiseases.forEach(contra => {
-    const matchedDisease = patientDiseases.find(d => 
-      d.toLowerCase().includes(contra.disease.toLowerCase()) ||
-      contra.disease.toLowerCase().includes(d.toLowerCase())
-    );
+    const matchedDisease = patientDiseases.find(d => matchesClinicalCondition(d, contra.disease));
 
     if (matchedDisease) {
       totalRisk += contra.addedRisk;
       diseaseConflicts.push({
         disease: matchedDisease,
+        contraDisease: contra.disease,
         severity: contra.riskSeverity,
         explanation: contra.explanation
       });

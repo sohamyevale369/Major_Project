@@ -4,6 +4,7 @@ import { evaluateMedicationSafety } from '../data/mockAI';
 import {
   getAllUsers,
   sanitizeUsers,
+  saveAllUsers,
   getActiveUserSession,
   setActiveUserSession,
   authenticateUser,
@@ -224,18 +225,24 @@ export function HealthProvider({ children }) {
       // 1. If currentUser is a patient, strictly lock to the logged-in patient's personal record
       if (currentUser && currentUser.role === 'patient') {
         const found = patientUsers.find(u => u.email?.toLowerCase() === currentUser.email?.toLowerCase()) || currentUser;
-        setPatient({
-          id: found.id,
-          name: found.name,
-          email: found.email,
-          age: found.age || 23,
-          gender: found.gender || 'Not specified',
-          weight: found.weight || 70,
-          description: `${found.gender || 'Patient'}, ${found.age || 23}y — ${found.chronicDiseases?.join(', ') || 'Personal Profile'}`,
-          diseases: found.chronicDiseases || [],
-          allergies: found.allergies || [],
-          medicalHistory: found.medicalHistory || found.notes || 'Registered MediSafe personal profile.',
-          currentMedicines: found.currentMedicines || []
+        const chronicList = found.chronicDiseases || found.diseases || [];
+        setPatient(prev => {
+          const diseasesToUse = (chronicList && chronicList.length > 0) ? chronicList : (prev?.diseases || prev?.chronicDiseases || []);
+          const allergiesToUse = (found.allergies && found.allergies.length > 0) ? found.allergies : (prev?.allergies || []);
+          return {
+            id: found.id || prev?.id,
+            name: found.name || prev?.name || currentUser.name,
+            email: found.email || prev?.email || currentUser.email,
+            age: found.age || prev?.age || currentUser.age || 40,
+            gender: found.gender || prev?.gender || currentUser.gender || 'Not specified',
+            weight: found.weight || prev?.weight || currentUser.weight || 70,
+            description: `${found.gender || prev?.gender || 'Patient'}, ${found.age || prev?.age || 40}y — ${diseasesToUse.length > 0 ? diseasesToUse.join(', ') : 'Personal Profile'}`,
+            diseases: diseasesToUse,
+            chronicDiseases: diseasesToUse,
+            allergies: allergiesToUse,
+            medicalHistory: found.medicalHistory || found.notes || prev?.medicalHistory || 'Registered MediSafe personal profile.',
+            currentMedicines: found.currentMedicines || prev?.currentMedicines || []
+          };
         });
         return;
       }
@@ -417,27 +424,102 @@ export function HealthProvider({ children }) {
     showToast(`Loaded profile for ${presetPatient.name} (${presetPatient.description})`, 'success');
   };
 
-  // Update specific patient details
+  // Update specific patient details and persist across storage
   const updatePatient = (updatedFields) => {
-    setPatient(prev => {
-      const updated = { ...prev, ...updatedFields };
-      if (currentAnalysis?.medicineName) {
-        const recheck = evaluateMedicationSafety(
-          updated,
-          currentAnalysis.medicineName,
-          currentAnalysis.dosage,
-          currentAnalysis.frequency
-        );
-        setCurrentAnalysis(recheck);
+    const rawDiseases = updatedFields.diseases !== undefined ? updatedFields.diseases : (updatedFields.chronicDiseases !== undefined ? updatedFields.chronicDiseases : (patient?.diseases || patient?.chronicDiseases || []));
+    const diseases = Array.isArray(rawDiseases) ? rawDiseases : [];
+    const rawAllergies = updatedFields.allergies !== undefined ? updatedFields.allergies : (patient?.allergies || []);
+    const allergies = Array.isArray(rawAllergies) ? rawAllergies : [];
+    const name = updatedFields.name !== undefined ? updatedFields.name : (patient?.name || '');
+    const age = updatedFields.age !== undefined ? Number(updatedFields.age) : (patient?.age || 40);
+    const gender = updatedFields.gender !== undefined ? updatedFields.gender : (patient?.gender || 'Not specified');
+    const weight = updatedFields.weight !== undefined ? Number(updatedFields.weight) : (patient?.weight || 70);
+    const currentMedicines = updatedFields.currentMedicines || patient?.currentMedicines || [];
+    const medicalHistory = updatedFields.medicalHistory || patient?.medicalHistory || '';
+
+    const newPatientData = {
+      ...patient,
+      ...updatedFields,
+      name,
+      age,
+      gender,
+      weight,
+      diseases,
+      chronicDiseases: diseases,
+      allergies,
+      currentMedicines,
+      medicalHistory,
+      description: `${gender || 'Patient'}, ${age}y — ${diseases.length > 0 ? diseases.join(', ') : 'Personal Profile'}`
+    };
+
+    setPatient(newPatientData);
+
+    // Persist to currentUser if active session is patient or matches this patient
+    if (currentUser) {
+      const isCurrentPatient = currentUser.role === 'patient' ||
+        currentUser.id === newPatientData.id ||
+        (currentUser.email && newPatientData.email && currentUser.email.toLowerCase() === newPatientData.email.toLowerCase());
+
+      if (isCurrentPatient) {
+        const updatedCurrentUser = {
+          ...currentUser,
+          name,
+          age,
+          gender,
+          weight,
+          chronicDiseases: diseases,
+          allergies,
+          currentMedicines,
+          notes: medicalHistory || currentUser.notes
+        };
+        setActiveUserSession(updatedCurrentUser);
+        setCurrentUser(updatedCurrentUser);
       }
-      return updated;
-    });
+
+      // Persist to users list (in localStorage and /api/users)
+      const allUsers = getAllUsers();
+      const updatedUsers = allUsers.map(u => {
+        const isTarget = u.id === newPatientData.id ||
+          (u.email && newPatientData.email && u.email.toLowerCase() === newPatientData.email.toLowerCase()) ||
+          (currentUser.role === 'patient' && u.email && currentUser.email && u.email.toLowerCase() === currentUser.email.toLowerCase());
+
+        if (isTarget) {
+          return {
+            ...u,
+            name,
+            age,
+            gender,
+            weight,
+            chronicDiseases: diseases,
+            allergies,
+            currentMedicines,
+            notes: medicalHistory || u.notes
+          };
+        }
+        return u;
+      });
+      saveAllUsers(updatedUsers);
+      setUsers(updatedUsers);
+    }
+
+    if (currentAnalysis?.medicineName) {
+      const recheck = evaluateMedicationSafety(
+        newPatientData,
+        currentAnalysis.medicineName,
+        currentAnalysis.dosage,
+        currentAnalysis.frequency
+      );
+      setCurrentAnalysis(recheck);
+    }
+
     showToast('Health profile updated successfully', 'success');
+    return newPatientData;
   };
 
-  // Run analysis on a new medicine
-  const runSafetyCheck = (medicineName, dosage, frequency) => {
-    const analysis = evaluateMedicationSafety(patient, medicineName, dosage, frequency);
+  // Run analysis on a new medicine (accepts optional targetPatient for immediate synchronous analysis)
+  const runSafetyCheck = (medicineName, dosage, frequency, targetPatient) => {
+    const patientToEvaluate = targetPatient || patient;
+    const analysis = evaluateMedicationSafety(patientToEvaluate, medicineName, dosage, frequency);
     setCurrentAnalysis(analysis);
 
     if (analysis.allergyAlert) {
@@ -448,6 +530,10 @@ export function HealthProvider({ children }) {
       });
     }
 
+    const primaryAlert = analysis.allergyAlert
+      ? `Severe Allergy (${analysis.allergyAlert.detectedAllergy})`
+      : (analysis.diseaseConflicts[0]?.disease ? `${analysis.diseaseConflicts[0].disease} Contraindication` : 'Routine Safety Evaluation');
+
     const historyEntry = {
       id: `hist-${Date.now()}`,
       date: new Date().toISOString().split('T')[0],
@@ -456,7 +542,7 @@ export function HealthProvider({ children }) {
       dosage: analysis.dosage,
       riskScore: analysis.riskScore,
       riskLevel: analysis.riskLevel,
-      primaryAlert: analysis.allergyAlert ? 'Severe Allergy' : (analysis.diseaseConflicts[0]?.disease || 'Routine Safety Evaluation'),
+      primaryAlert,
       status: analysis.riskLevel === 'HIGH' ? 'Flagged High Risk' : 'Evaluated Safe'
     };
     setMedicationHistory(prev => [historyEntry, ...prev]);
@@ -464,7 +550,7 @@ export function HealthProvider({ children }) {
     if (currentUser) {
       logSystemActivity(
         'Medicine Risk Evaluated',
-        `Evaluated ${medicineName} (${dosage || 'standard'}). Risk Score: ${analysis.riskScore}% (${analysis.riskLevel})`,
+        `Evaluated ${medicineName} (${analysis.dosage}). Risk Score: ${analysis.riskScore}% (${analysis.riskLevel}) for ${patientToEvaluate.name}`,
         currentUser
       );
     }

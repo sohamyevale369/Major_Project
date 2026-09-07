@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Pill,
   Search,
@@ -41,6 +41,15 @@ export default function MedicineRiskView() {
   const [frequency, setFrequency] = useState(currentAnalysis?.frequency || '2 times/day');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
+  // Synchronize inputs whenever currentAnalysis changes (e.g. from Health Profile or preset)
+  useEffect(() => {
+    if (currentAnalysis?.medicineName) {
+      setSelectedMedName(currentAnalysis.medicineName);
+      if (currentAnalysis.dosage) setDosage(currentAnalysis.dosage);
+      if (currentAnalysis.frequency) setFrequency(currentAnalysis.frequency);
+    }
+  }, [currentAnalysis?.medicineName, currentAnalysis?.dosage, currentAnalysis?.frequency]);
+
   const currentMedMeta = COMMON_MEDICATIONS.find(
     m => m.name.toLowerCase() === selectedMedName.toLowerCase() ||
          m.brandNames.some(b => b.toLowerCase() === selectedMedName.toLowerCase())
@@ -56,7 +65,7 @@ export default function MedicineRiskView() {
   const executeAnalysis = (medName, medDose, medFreq) => {
     setIsAnalyzing(true);
     setTimeout(() => {
-      runSafetyCheck(medName, medDose, medFreq);
+      runSafetyCheck(medName, medDose, medFreq, patient);
       setIsAnalyzing(false);
       showToast(`Analyzed ${medName} for ${patient.name}`, 'success');
     }, 450);
@@ -82,10 +91,10 @@ export default function MedicineRiskView() {
             <div className="flex items-center gap-2">
               <span className="text-xs text-[#6A746C] font-semibold">Evaluating safety for:</span>
               <strong className="text-[#18231C] text-sm">{patient.name}</strong>
-              <span className="text-xs text-[#6A746C] font-mono">({patient.age}y, {patient.gender})</span>
+              <span className="text-xs text-[#6A746C] font-mono">({patient.age}y, {patient.gender}{patient.weight ? `, ${patient.weight}kg` : ''})</span>
             </div>
             <div className="text-xs text-[#4A554E] mt-0.5">
-              Conditions: <strong className="text-[#18231C]">{patient.diseases.join(', ') || 'None logged'}</strong> • Allergies: <strong className="text-amber-800">{patient.allergies.join(', ') || 'None'}</strong>
+              Conditions: <strong className="text-[#18231C]">{(patient?.diseases || patient?.chronicDiseases || []).join(', ') || 'None logged'}</strong> • Allergies: <strong className="text-amber-800">{(patient?.allergies || []).join(', ') || 'None'}</strong>
             </div>
           </div>
         </div>

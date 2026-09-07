@@ -16,21 +16,35 @@ import {
   FileText
 } from 'lucide-react';
 import { useHealth } from '../../context/HealthContext';
-import { DISEASE_LIST, ALLERGY_LIST } from '../../data/drugDatabase';
+import { DISEASE_LIST, ALLERGY_LIST, COMMON_MEDICATIONS } from '../../data/drugDatabase';
 
 export default function HealthProfileView() {
-  const { patient, updatePatient, loadPatientPreset, setActiveTab, activePatients = [], currentUser, logout, showToast } = useHealth();
+  const {
+    patient,
+    updatePatient,
+    runSafetyCheck,
+    loadPatientPreset,
+    setActiveTab,
+    activePatients = [],
+    currentUser,
+    logout,
+    showToast
+  } = useHealth();
 
   const [formData, setFormData] = useState({
     name: patient.name || '',
     age: patient.age || 45,
     gender: patient.gender || 'Male',
     weight: patient.weight || 70,
-    diseases: patient.diseases || [],
+    diseases: patient.diseases || patient.chronicDiseases || [],
     allergies: patient.allergies || [],
     medicalHistory: patient.medicalHistory || '',
     currentMedicines: patient.currentMedicines || []
   });
+
+  const [targetMedicine, setTargetMedicine] = useState('Ibuprofen');
+  const [targetDosage, setTargetDosage] = useState('400mg');
+  const [targetFrequency, setTargetFrequency] = useState('Twice daily with meals');
 
   const [customDisease, setCustomDisease] = useState('');
   const [customAllergy, setCustomAllergy] = useState('');
@@ -45,7 +59,7 @@ export default function HealthProfileView() {
         age: patient.age || 45,
         gender: patient.gender || 'Male',
         weight: patient.weight || 70,
-        diseases: patient.diseases || [],
+        diseases: patient.diseases || patient.chronicDiseases || [],
         allergies: patient.allergies || [],
         medicalHistory: patient.medicalHistory || '',
         currentMedicines: patient.currentMedicines || []
@@ -120,6 +134,23 @@ export default function HealthProfileView() {
   const handleSave = () => {
     updatePatient(formData);
     showToast('Health Profile saved successfully!', 'success');
+  };
+
+  const handleSaveAndRunCheck = () => {
+    const medToCheck = targetMedicine.trim() || 'Ibuprofen';
+    const doseToCheck = targetDosage.trim() || '400mg';
+    const freqToCheck = targetFrequency.trim() || 'Twice daily with meals';
+
+    // 1. Save and persist updated profile to state and storage
+    const saved = updatePatient(formData);
+
+    // 2. Immediately execute analysis with saved patient data synchronously
+    runSafetyCheck(medToCheck, doseToCheck, freqToCheck, saved);
+
+    // 3. Switch tab to Medication Safety & Risk Scanner
+    setActiveTab('risk-checker');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    showToast(`Safety evaluation ready for ${medToCheck}`, 'success');
   };
 
   return (
@@ -436,7 +467,134 @@ export default function HealthProfileView() {
             />
           </div>
 
-          {/* Save Button Bar */}
+          {/* Section 6: Medicine Safety Evaluation Selection */}
+          <div className="ivory-card p-6 sm:p-7 shadow-sm space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2 className="text-base font-black text-[#18231C] flex items-center gap-2 uppercase tracking-tight">
+                <Sparkles className="w-4 h-4 text-[#235339]" />
+                6. Select Medicine to Evaluate Safety
+              </h2>
+              <span className="text-[10px] font-mono bg-[#E2EFE7] text-[#1E5034] font-bold px-2.5 py-0.5 rounded-full">
+                Direct AI Pipeline Input
+              </span>
+            </div>
+
+            <p className="text-xs text-[#5A645D]">
+              Choose which medicine to test against your personal conditions, allergies, age, and kidney/liver profile.
+            </p>
+
+            {/* Quick Chips for Common Medications */}
+            <div className="space-y-2 pt-1">
+              <span className="text-[11px] font-bold text-[#6A746C] uppercase tracking-wider block font-mono">
+                Quick-Select Common Medication:
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {COMMON_MEDICATIONS.map((med) => {
+                  const isSelected = targetMedicine.toLowerCase() === med.name.toLowerCase();
+                  return (
+                    <button
+                      key={med.id}
+                      type="button"
+                      onClick={() => {
+                        setTargetMedicine(med.name);
+                        setTargetDosage(med.defaultDosage);
+                        setTargetFrequency(med.defaultFrequency);
+                      }}
+                      className={`px-3 py-1.5 rounded-full text-xs font-semibold transition flex items-center gap-1.5 ${
+                        isSelected
+                          ? 'bg-[#235339] text-white border border-[#235339] shadow-sm font-bold'
+                          : 'bg-white text-[#4A554E] border border-[#D5CDBF] hover:border-[#235339]'
+                      }`}
+                    >
+                      <Pill className="w-3 h-3" />
+                      <span>{med.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* If patient has entered current active medications in Section 4 */}
+            {formData.currentMedicines.length > 0 && (
+              <div className="pt-2 border-t border-[#E5DFD1]">
+                <span className="text-[11px] font-bold text-[#6A746C] block mb-1.5">
+                  Or Test One of Your Current Prescriptions:
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {formData.currentMedicines.map((m, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => {
+                        setTargetMedicine(m.name);
+                        if (m.dosage) setTargetDosage(m.dosage);
+                      }}
+                      className="px-3 py-1 rounded-full text-xs bg-[#F3EFE6] hover:bg-[#E2EFE7] text-[#235339] border border-[#C6DDD0] font-medium transition flex items-center gap-1"
+                    >
+                      <span>•</span>
+                      <span>{m.name} ({m.dosage})</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Medicine Input Fields */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+              <div>
+                <label className="block text-xs font-bold text-[#18231C] mb-1">
+                  Medicine Name
+                </label>
+                <input
+                  type="text"
+                  value={targetMedicine}
+                  onChange={(e) => setTargetMedicine(e.target.value)}
+                  placeholder="e.g. Ibuprofen, Paracetamol"
+                  className="ivory-input w-full px-3 py-2 text-xs font-bold text-[#18231C]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-[#18231C] mb-1">
+                  Dosage
+                </label>
+                {COMMON_MEDICATIONS.find(m => m.name.toLowerCase() === targetMedicine.toLowerCase())?.commonDosages ? (
+                  <select
+                    value={targetDosage}
+                    onChange={(e) => setTargetDosage(e.target.value)}
+                    className="ivory-input w-full px-3 py-2 text-xs"
+                  >
+                    {COMMON_MEDICATIONS.find(m => m.name.toLowerCase() === targetMedicine.toLowerCase()).commonDosages.map(d => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    value={targetDosage}
+                    onChange={(e) => setTargetDosage(e.target.value)}
+                    placeholder="e.g. 400mg"
+                    className="ivory-input w-full px-3 py-2 text-xs"
+                  />
+                )}
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-[#18231C] mb-1">
+                  Frequency
+                </label>
+                <input
+                  type="text"
+                  value={targetFrequency}
+                  onChange={(e) => setTargetFrequency(e.target.value)}
+                  placeholder="e.g. Twice daily with meals"
+                  className="ivory-input w-full px-3 py-2 text-xs"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Save & Run Buttons Bar */}
           <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
             <button
               type="button"
@@ -449,14 +607,11 @@ export default function HealthProfileView() {
 
             <button
               type="button"
-              onClick={() => {
-                handleSave();
-                setActiveTab('risk-checker');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-              className="pill-btn-secondary w-full sm:w-auto py-3.5 text-sm font-bold"
+              onClick={handleSaveAndRunCheck}
+              className="pill-btn-secondary w-full sm:w-auto py-3.5 text-sm font-bold flex items-center justify-center gap-2"
             >
-              Run Medicine Safety Check →
+              <Sparkles className="w-4 h-4 text-[#235339]" />
+              <span>Check Safety for {targetMedicine || 'Medicine'} →</span>
             </button>
           </div>
 
