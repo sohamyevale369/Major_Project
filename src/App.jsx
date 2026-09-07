@@ -69,7 +69,7 @@ function MainApp() {
   // After successful validation only, the user is allowed to perform tasks.
   if (!currentUser) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 selection:bg-mediteal-500/30 selection:text-mediteal-300">
+      <div className="min-h-screen bg-[#F6F4ED] text-[#18231C] selection:bg-[#235339]/20 selection:text-[#235339]">
         <AuthPortal />
         <Toast />
       </div>
@@ -77,7 +77,7 @@ function MainApp() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-mediteal-500/30 selection:text-mediteal-300">
+    <div className="min-h-screen bg-[#F6F4ED] text-[#18231C] flex flex-col selection:bg-[#235339]/20 selection:text-[#235339]">
       {/* Navigation Header */}
       <Navbar />
 

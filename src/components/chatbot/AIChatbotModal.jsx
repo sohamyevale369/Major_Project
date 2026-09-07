@@ -69,35 +69,37 @@ export default function AIChatbotModal() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
-      <div className="relative w-full max-w-lg h-[600px] max-h-[90vh] rounded-2xl border border-mediteal-500/40 bg-slate-900 shadow-2xl flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fade-in">
+      <div className="relative w-full max-w-lg h-[600px] max-h-[90vh] rounded-3xl border border-[#E5DFD1] bg-white shadow-2xl flex flex-col overflow-hidden">
         
-        <div className="p-4 border-b border-slate-800 bg-slate-950/90 flex items-center justify-between">
+        {/* Header */}
+        <div className="p-4 border-b border-[#E5DFD1] bg-[#F6F4ED] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-mediteal-400 to-mediblue-600 text-slate-950 shadow-md">
-              <Bot className="w-5 h-5 text-slate-950" />
-              <span className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-400 rounded-full border-2 border-slate-950" />
+            <div className="relative flex items-center justify-center w-10 h-10 rounded-2xl bg-[#235339] text-[#F5F2EA] shadow-xs">
+              <Bot className="w-5 h-5 text-[#F5F2EA]" />
+              <span className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border-2 border-white" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
+              <h3 className="text-sm font-black text-[#18231C] flex items-center gap-1.5">
                 MediSafe AI Assistant
-                <Sparkles className="w-3.5 h-3.5 text-mediteal-400" />
+                <Sparkles className="w-3.5 h-3.5 text-[#235339]" />
               </h3>
-              <p className="text-[11px] text-slate-400">
-                24/7 Explainable Medication Guidance
+              <p className="text-[11px] font-mono text-[#6F7771]">
+                24/7 Clinical Prescription Guide
               </p>
             </div>
           </div>
 
           <button
             onClick={() => setIsChatbotOpen(false)}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+            className="p-2 rounded-full text-[#6F7771] hover:text-[#18231C] hover:bg-[#E5DFD1]/50 transition"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {/* Message Thread */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#FBF9F5]">
           {messages.map((m) => {
             const isAI = m.sender === 'ai';
             return (
@@ -106,19 +108,19 @@ export default function AIChatbotModal() {
                 className={`flex items-start gap-2.5 ${isAI ? 'justify-start' : 'justify-end'}`}
               >
                 {isAI && (
-                  <div className="w-7 h-7 rounded-lg bg-mediteal-500/20 text-mediteal-400 flex items-center justify-center text-xs shrink-0 mt-0.5">
-                    <Bot className="w-4 h-4" />
+                  <div className="w-7 h-7 rounded-xl bg-[#E2EFE7] text-[#235339] flex items-center justify-center text-xs shrink-0 mt-0.5 border border-[#235339]/20 font-bold">
+                    +
                   </div>
                 )}
                 <div
-                  className={`max-w-[85%] rounded-2xl p-3.5 text-xs sm:text-sm leading-relaxed shadow-sm ${
+                  className={`max-w-[85%] rounded-2xl p-3.5 text-xs sm:text-sm leading-relaxed shadow-xs ${
                     isAI
-                      ? 'bg-slate-950 border border-slate-800 text-slate-200'
-                      : 'bg-gradient-to-r from-mediteal-500 to-mediblue-600 text-slate-950 font-medium'
+                      ? 'bg-white border border-[#E5DFD1] text-[#18231C]'
+                      : 'bg-[#235339] text-white font-medium'
                   }`}
                 >
                   <p>{m.text}</p>
-                  <span className={`text-[10px] block mt-1 ${isAI ? 'text-slate-500' : 'text-slate-800 font-mono'}`}>
+                  <span className={`text-[10px] block mt-1 font-mono ${isAI ? 'text-[#8C938D]' : 'text-[#A3C4B2]'}`}>
                     {m.time}
                   </span>
                 </div>
@@ -127,23 +129,24 @@ export default function AIChatbotModal() {
           })}
 
           {isTyping && (
-            <div className="flex items-center gap-2 text-xs text-slate-400">
-              <Bot className="w-4 h-4 text-mediteal-400 animate-spin" />
-              <span>MediSafe AI is formulating guidance...</span>
+            <div className="flex items-center gap-2 text-xs text-[#235339] font-mono">
+              <Bot className="w-4 h-4 animate-spin" />
+              <span>MediSafe AI is calculating response...</span>
             </div>
           )}
         </div>
 
-        <div className="px-4 py-2 border-t border-slate-800/80 bg-slate-950/60 overflow-x-auto">
-          <span className="text-[10px] text-slate-400 font-semibold block mb-1.5">
-            Suggested questions:
+        {/* Suggested Queries */}
+        <div className="px-4 py-2 border-t border-[#E5DFD1] bg-[#F6F4ED] overflow-x-auto">
+          <span className="text-[10px] font-mono uppercase tracking-wider text-[#6F7771] font-bold block mb-1.5">
+            Quick Clinical Queries:
           </span>
           <div className="flex gap-1.5 whitespace-nowrap pb-1">
             {suggestedQuestions.map((q, idx) => (
               <button
                 key={idx}
                 onClick={() => handleSendMessage(q)}
-                className="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-750 hover:border-mediteal-500/50 text-[11px] text-slate-300 hover:text-white transition shrink-0"
+                className="px-3 py-1 rounded-full bg-white border border-[#D5CDBF] hover:border-[#235339] hover:bg-[#E2EFE7] text-[11px] font-semibold text-[#18231C] transition shrink-0 shadow-xs"
               >
                 {q}
               </button>
@@ -151,7 +154,8 @@ export default function AIChatbotModal() {
           </div>
         </div>
 
-        <div className="p-3 border-t border-slate-800 bg-slate-950">
+        {/* Input Bar */}
+        <div className="p-3.5 border-t border-[#E5DFD1] bg-white">
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -164,17 +168,17 @@ export default function AIChatbotModal() {
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               placeholder="Ask about side effects, pills, or food interactions..."
-              className="flex-1 px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs focus:border-mediteal-400 focus:outline-none"
+              className="flex-1 px-4 py-2.5 rounded-full bg-[#F3EFE6] border border-[#D5CDBF] text-[#18231C] text-xs focus:border-[#235339] focus:outline-none placeholder:text-[#8C938D]"
             />
             <button
               type="submit"
               disabled={!inputMessage.trim() || isTyping}
-              className="p-2.5 rounded-xl bg-gradient-to-r from-mediteal-500 to-mediblue-600 hover:from-mediteal-400 hover:to-mediblue-500 text-slate-950 font-bold transition disabled:opacity-40"
+              className="p-2.5 rounded-full bg-[#235339] text-white hover:bg-[#1B432E] transition disabled:opacity-40 shadow-xs"
             >
               <Send className="w-4 h-4" />
             </button>
           </form>
-          <span className="text-[10px] text-slate-500 block text-center mt-1">
+          <span className="text-[10px] font-mono text-[#8C938D] block text-center mt-1.5">
             Decision support only. Consult a doctor for medical emergencies.
           </span>
         </div>

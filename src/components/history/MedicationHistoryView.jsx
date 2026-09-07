@@ -11,7 +11,8 @@ import {
   AlertOctagon,
   Download,
   Calendar,
-  Clock
+  Clock,
+  FileText
 } from 'lucide-react';
 import { useHealth } from '../../context/HealthContext';
 import RiskBadge from '../common/RiskBadge';
@@ -38,19 +39,18 @@ export default function MedicationHistoryView() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-8">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-8 bg-[#F6F4ED] text-[#18231C]">
       
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-mediteal-500/10 border border-mediteal-500/20 text-mediteal-300 text-xs font-semibold mb-2">
-            <History className="w-3.5 h-3.5" />
-            <span>Medication Safety Records</span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+          <span className="section-tag mb-1">
+            13 — HISTORY & ARCHIVE // AUDIT LOGS
+          </span>
+          <h1 className="text-2xl sm:text-3xl font-black text-[#18231C] tracking-tight uppercase">
             Medication History & Prediction Logs
           </h1>
-          <p className="text-xs sm:text-sm text-slate-300 mt-1">
-            Track all previously analyzed prescriptions, risk evaluations, and safety verdicts.
+          <p className="text-xs sm:text-sm text-[#5A645D] mt-1">
+            Review all previously evaluated medications, detected contraindications, and safety verdicts.
           </p>
         </div>
 
@@ -59,61 +59,63 @@ export default function MedicationHistoryView() {
             setActiveTab('report');
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
-          className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-mediteal-500/20 hover:bg-mediteal-500/30 text-mediteal-300 text-xs font-bold border border-mediteal-500/40 transition w-fit"
+          className="pill-btn-primary text-xs py-2.5 px-4 w-fit"
         >
-          <Printer className="w-4 h-4" />
-          <span>Generate Full Safety Report</span>
+          <FileText className="w-4 h-4" />
+          <span>View Safety Summary Report</span>
         </button>
       </div>
 
+      {/* Metrics Row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm">
-          <div className="text-xs font-semibold text-slate-400">Total Checked</div>
-          <div className="text-2xl sm:text-3xl font-black text-white font-mono mt-1">
+        <div className="ivory-card p-4 shadow-sm">
+          <div className="text-xs font-bold text-[#6A746C]">Total Checked</div>
+          <div className="text-2xl sm:text-3xl font-black text-[#18231C] font-mono mt-1">
             {medicationHistory.length}
           </div>
-          <div className="text-[11px] text-slate-400 mt-1">Logged prescriptions</div>
+          <div className="text-[11px] text-[#5A645D] mt-1">Logged prescriptions</div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm">
-          <div className="text-xs font-semibold text-rose-400">High Risk Flagged</div>
-          <div className="text-2xl sm:text-3xl font-black text-rose-400 font-mono mt-1">
+        <div className="ivory-card p-4 shadow-sm">
+          <div className="text-xs font-bold text-rose-800">High Risk Flagged</div>
+          <div className="text-2xl sm:text-3xl font-black text-rose-700 font-mono mt-1">
             {highRiskCount}
           </div>
-          <div className="text-[11px] text-rose-300/80 mt-1">Contraindications blocked</div>
+          <div className="text-[11px] text-rose-800/80 mt-1">Contraindications detected</div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm">
-          <div className="text-xs font-semibold text-emerald-400">Safe Profile Checks</div>
-          <div className="text-2xl sm:text-3xl font-black text-emerald-400 font-mono mt-1">
+        <div className="ivory-card p-4 shadow-sm">
+          <div className="text-xs font-bold text-[#1E5034]">Safe Profile Checks</div>
+          <div className="text-2xl sm:text-3xl font-black text-[#235339] font-mono mt-1">
             {safeCount}
           </div>
-          <div className="text-[11px] text-emerald-300/80 mt-1">Low risk approvals</div>
+          <div className="text-[11px] text-[#235339]/80 mt-1">Low risk approvals</div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm">
-          <div className="text-xs font-semibold text-sky-400">Safety Index</div>
-          <div className="text-2xl sm:text-3xl font-black text-sky-400 font-mono mt-1">
+        <div className="ivory-card p-4 shadow-sm">
+          <div className="text-xs font-bold text-[#1E5034]">Explainability</div>
+          <div className="text-2xl sm:text-3xl font-black text-[#235339] font-mono mt-1">
             100%
           </div>
-          <div className="text-[11px] text-slate-400 mt-1">Explainability coverage</div>
+          <div className="text-[11px] text-[#5A645D] mt-1">SHAP coverage verified</div>
         </div>
       </div>
 
-      <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div className="relative w-full sm:w-72">
+      {/* Search & Filter Toolbar */}
+      <div className="ivory-card p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-sm">
+        <div className="relative w-full sm:w-80">
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by drug name or reason..."
-            className="w-full pl-9 pr-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:border-mediteal-400 focus:outline-none"
+            className="ivory-input w-full pl-9 pr-3.5 py-2 text-xs"
           />
-          <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-2.5" />
+          <Search className="w-3.5 h-3.5 text-[#8D8678] absolute left-3 top-2.5" />
         </div>
 
         <div className="flex items-center gap-1.5 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
-          <span className="text-xs text-slate-400 mr-1 flex items-center gap-1">
+          <span className="text-xs font-bold text-[#6A746C] mr-1 flex items-center gap-1">
             <Filter className="w-3 h-3" />
             Filter:
           </span>
@@ -121,10 +123,10 @@ export default function MedicationHistoryView() {
             <button
               key={lvl}
               onClick={() => setFilterLevel(lvl)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+              className={`px-3 py-1.5 rounded-full text-xs font-bold transition ${
                 filterLevel === lvl
-                  ? 'bg-mediteal-500 text-slate-950 font-bold'
-                  : 'bg-slate-950 text-slate-300 border border-slate-800 hover:border-slate-700'
+                  ? 'bg-[#235339] text-white shadow-sm'
+                  : 'bg-[#F3EFE6] text-[#4A554E] border border-[#D5CDBF] hover:border-[#235339]'
               }`}
             >
               {lvl === 'ALL' ? 'All Records' : `${lvl} Risk`}
@@ -133,43 +135,44 @@ export default function MedicationHistoryView() {
         </div>
       </div>
 
+      {/* History List (Step 13: Medicine, Risk, Date) */}
       <div className="space-y-3">
         {filteredHistory.length === 0 ? (
-          <div className="p-12 text-center rounded-2xl bg-slate-900/60 border border-slate-800 text-slate-400 text-xs">
+          <div className="p-12 text-center rounded-3xl bg-white border border-[#E5DFD1] text-[#6A746C] text-xs">
             No medication history records found matching your filters.
           </div>
         ) : (
           filteredHistory.map((item) => (
             <div
               key={item.id}
-              className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 hover:border-slate-700 transition flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm"
+              className="ivory-card p-5 hover:border-[#235339] transition flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm"
             >
               <div className="space-y-1.5">
                 <div className="flex items-center gap-2.5">
-                  <h3 className="text-base font-bold text-white">
+                  <h3 className="text-base font-black text-[#18231C]">
                     {item.medicineName}
                   </h3>
-                  <span className="text-xs text-slate-400 font-mono">
+                  <span className="text-xs text-[#6A746C] font-mono">
                     ({item.dosage})
                   </span>
                   <RiskBadge level={item.riskLevel} score={item.riskScore} size="sm" />
                 </div>
 
-                <div className="text-xs text-slate-300">
-                  <strong className="text-slate-400 font-normal">Primary Clinical Finding:</strong>{' '}
-                  <span className="font-semibold text-slate-200">{item.primaryAlert}</span>
+                <div className="text-xs text-[#4A554E]">
+                  <strong className="text-[#18231C] font-semibold">Primary Clinical Finding:</strong>{' '}
+                  <span>{item.primaryAlert}</span>
                 </div>
 
-                <div className="flex items-center gap-4 text-[11px] text-slate-400">
-                  <span className="flex items-center gap-1">
-                    <Calendar className="w-3 h-3 text-slate-400" />
+                <div className="flex items-center gap-4 text-[11px] text-[#6A746C]">
+                  <span className="flex items-center gap-1 font-medium">
+                    <Calendar className="w-3 h-3 text-[#235339]" />
                     {item.date}
                   </span>
-                  <span className="flex items-center gap-1">
-                    <Clock className="w-3 h-3 text-slate-400" />
+                  <span className="flex items-center gap-1 font-medium">
+                    <Clock className="w-3 h-3 text-[#235339]" />
                     {item.time}
                   </span>
-                  <span className="px-2 py-0.2 rounded-full bg-slate-800 text-slate-300 font-mono text-[10px]">
+                  <span className="px-2 py-0.2 rounded-full bg-[#ECE7DC] text-[#18231C] font-mono text-[10px] font-bold">
                     Status: {item.status}
                   </span>
                 </div>
@@ -177,7 +180,7 @@ export default function MedicationHistoryView() {
 
               <button
                 onClick={() => handleRecheck(item)}
-                className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition shrink-0"
+                className="pill-btn-primary text-xs py-2 px-4 shrink-0 font-bold"
               >
                 <span>Re-Analyze</span>
                 <ArrowRight className="w-3.5 h-3.5" />

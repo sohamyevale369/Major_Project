@@ -24,36 +24,25 @@ export default function AuthModal() {
     showToast(`Welcome! Signed in as ${role === 'clinician' ? 'Healthcare Professional' : 'Patient'}`, 'success');
   };
 
-  const handleGuest = () => {
-    setCurrentUser({
-      name: 'Guest Explorer',
-      email: 'guest@medisafe.ai',
-      role: 'patient',
-      isGuest: true
-    });
-    setIsAuthModalOpen(false);
-    showToast('Continuing in Guest Demo Mode', 'info');
-  };
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
-      <div className="relative w-full max-w-md rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl p-6 sm:p-8 space-y-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+      <div className="relative w-full max-w-md rounded-3xl border border-[#E5DFD1] bg-white shadow-2xl p-6 sm:p-8 space-y-6 text-[#18231C]">
         
         <button
           onClick={() => setIsAuthModalOpen(false)}
-          className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition"
+          className="absolute top-4 right-4 p-2 text-[#6A746C] hover:text-[#18231C] rounded-full hover:bg-[#F3EFE6] transition"
         >
           <X className="w-5 h-5" />
         </button>
 
         <div className="text-center space-y-1">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-mediteal-400 to-mediblue-600 text-slate-950 font-black flex items-center justify-center mx-auto shadow-md">
-            <Shield className="w-6 h-6 stroke-[2.5]" />
+          <div className="w-12 h-12 rounded-xl bg-[#235339] text-white font-black text-2xl flex items-center justify-center mx-auto shadow-sm">
+            +
           </div>
-          <h3 className="text-xl font-bold text-white mt-3">
-            {mode === 'login' ? 'Sign In to MediSafe AI' : 'Create Your Clinical Profile'}
+          <h3 className="text-xl font-black text-[#18231C] mt-3 uppercase tracking-tight">
+            {mode === 'login' ? 'Sign In to MediSafe AI' : 'Create Clinical Profile'}
           </h3>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-[#5A645D]">
             {mode === 'login'
               ? 'Access your saved medical histories and safety reports'
               : 'Begin monitoring your medication safety with explainable AI'}
@@ -63,7 +52,7 @@ export default function AuthModal() {
         <form onSubmit={handleSubmit} className="space-y-4">
           {mode === 'register' && (
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-[#18231C] mb-1">
                 Full Name
               </label>
               <div className="relative">
@@ -73,15 +62,15 @@ export default function AuthModal() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Soham Vikas Yevale"
-                  className="w-full pl-9 pr-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:border-mediteal-400 focus:outline-none"
+                  className="ivory-input w-full pl-9 pr-3.5 py-2 text-xs"
                 />
-                <User className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-2.5" />
+                <User className="w-3.5 h-3.5 text-[#8D8678] absolute left-3 top-2.5" />
               </div>
             </div>
           )}
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">
+            <label className="block text-xs font-bold text-[#18231C] mb-1">
               Email Address
             </label>
             <div className="relative">
@@ -91,14 +80,14 @@ export default function AuthModal() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@hospital.org or personal email"
-                className="w-full pl-9 pr-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:border-mediteal-400 focus:outline-none"
+                className="ivory-input w-full pl-9 pr-3.5 py-2 text-xs"
               />
-              <Mail className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-2.5" />
+              <Mail className="w-3.5 h-3.5 text-[#8D8678] absolute left-3 top-2.5" />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">
+            <label className="block text-xs font-bold text-[#18231C] mb-1">
               Password
             </label>
             <div className="relative">
@@ -108,24 +97,24 @@ export default function AuthModal() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full pl-9 pr-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:border-mediteal-400 focus:outline-none"
+                className="ivory-input w-full pl-9 pr-3.5 py-2 text-xs"
               />
-              <Lock className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-2.5" />
+              <Lock className="w-3.5 h-3.5 text-[#8D8678] absolute left-3 top-2.5" />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">
+            <label className="block text-xs font-bold text-[#18231C] mb-1">
               Account Role
             </label>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => setRole('patient')}
-                className={`py-2 px-3 rounded-xl text-xs font-semibold border transition ${
+                className={`py-2 px-3 rounded-full text-xs font-bold border transition ${
                   role === 'patient'
-                    ? 'bg-mediteal-500/20 text-mediteal-300 border-mediteal-500/40'
-                    : 'bg-slate-950 text-slate-400 border-slate-800'
+                    ? 'bg-[#235339] text-white border-[#235339]'
+                    : 'bg-[#F3EFE6] text-[#4A554E] border-[#D5CDBF]'
                 }`}
               >
                 Patient / Caregiver
@@ -133,10 +122,10 @@ export default function AuthModal() {
               <button
                 type="button"
                 onClick={() => setRole('clinician')}
-                className={`py-2 px-3 rounded-xl text-xs font-semibold border transition ${
+                className={`py-2 px-3 rounded-full text-xs font-bold border transition ${
                   role === 'clinician'
-                    ? 'bg-mediteal-500/20 text-mediteal-300 border-mediteal-500/40'
-                    : 'bg-slate-950 text-slate-400 border-slate-800'
+                    ? 'bg-[#235339] text-white border-[#235339]'
+                    : 'bg-[#F3EFE6] text-[#4A554E] border-[#D5CDBF]'
                 }`}
               >
                 Doctor / Pharmacist
@@ -146,33 +135,19 @@ export default function AuthModal() {
 
           <button
             type="submit"
-            className="w-full py-2.5 rounded-xl bg-gradient-to-r from-mediteal-500 to-mediblue-600 hover:from-mediteal-400 hover:to-mediblue-500 text-slate-950 font-bold text-xs shadow-lg transition"
+            className="pill-btn-primary w-full py-2.5 text-xs font-bold shadow-md"
           >
             {mode === 'login' ? 'Sign In Securely' : 'Create Account'}
           </button>
         </form>
 
-        <div className="relative border-t border-slate-800 text-center">
-          <span className="bg-slate-900 px-3 text-[10px] uppercase tracking-wider text-slate-500 relative -top-2">
-            Or quick explore
-          </span>
-        </div>
-
-        <button
-          type="button"
-          onClick={handleGuest}
-          className="w-full py-2 rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-200 text-xs font-semibold border border-slate-700 transition"
-        >
-          Explore As Guest (No Signup Required)
-        </button>
-
-        <div className="text-center text-xs text-slate-400">
+        <div className="text-center text-xs text-[#5A645D]">
           {mode === 'login' ? (
             <span>
               Don’t have an account?{' '}
               <button
                 onClick={() => setMode('register')}
-                className="text-mediteal-400 font-semibold hover:underline"
+                className="text-[#235339] font-bold hover:underline"
               >
                 Register here
               </button>
@@ -182,7 +157,7 @@ export default function AuthModal() {
               Already registered?{' '}
               <button
                 onClick={() => setMode('login')}
-                className="text-mediteal-400 font-semibold hover:underline"
+                className="text-[#235339] font-bold hover:underline"
               >
                 Sign In
               </button>

@@ -11,35 +11,32 @@ export default function RiskGauge({ score = 15, level = 'LOW', medicineName = ''
 
   const colorConfigs = {
     LOW: {
-      strokeColor: '#10b981',
-      glowColor: 'rgba(16, 185, 129, 0.3)',
-      textGradient: 'from-emerald-300 to-teal-400',
+      strokeColor: '#235339',
       label: 'Low Safety Risk',
-      summary: 'Safe to take as directed for your profile',
-      bgGlow: 'bg-emerald-500/10 border-emerald-500/30'
+      summary: 'Safe to take as prescribed for your profile',
+      bgGlow: 'bg-[#E2EFE7] border-[#C6DDD0] text-[#1E5034]',
+      badgeText: 'text-[#235339]'
     },
     MEDIUM: {
-      strokeColor: '#f59e0b',
-      glowColor: 'rgba(245, 158, 11, 0.3)',
-      textGradient: 'from-amber-300 to-yellow-400',
+      strokeColor: '#D97706',
       label: 'Moderate Risk Detected',
       summary: 'Caution advised. Monitor for potential side effects',
-      bgGlow: 'bg-amber-500/10 border-amber-500/30'
+      bgGlow: 'bg-amber-50 border-amber-200 text-amber-950',
+      badgeText: 'text-amber-800'
     },
     HIGH: {
-      strokeColor: '#f43f5e',
-      glowColor: 'rgba(244, 63, 94, 0.35)',
-      textGradient: 'from-rose-300 to-red-400',
+      strokeColor: '#C53030',
       label: 'High Risk Hazard',
-      summary: 'Significant safety concern detected. Do not take without doctor review',
-      bgGlow: 'bg-rose-500/15 border-rose-500/40'
+      summary: 'Significant contraindication detected. Do not take without physician review',
+      bgGlow: 'bg-rose-50 border-rose-200 text-rose-950',
+      badgeText: 'text-rose-800'
     }
   };
 
   const current = colorConfigs[level.toUpperCase()] || colorConfigs.LOW;
 
   return (
-    <div className={`p-6 rounded-2xl border ${current.bgGlow} bg-slate-900/90 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-6`}>
+    <div className={`p-6 rounded-2xl border ${current.bgGlow} shadow-sm flex flex-col sm:flex-row items-center justify-between gap-6`}>
       
       <div className="relative flex items-center justify-center shrink-0">
         <svg
@@ -48,7 +45,7 @@ export default function RiskGauge({ score = 15, level = 'LOW', medicineName = ''
           className="transform -rotate-90"
         >
           <circle
-            stroke="rgba(51, 65, 85, 0.4)"
+            stroke="#D5CDBF"
             fill="transparent"
             strokeWidth={stroke}
             r={normalizedRadius}
@@ -69,10 +66,10 @@ export default function RiskGauge({ score = 15, level = 'LOW', medicineName = ''
         </svg>
 
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
-          <span className={`text-3xl font-black bg-gradient-to-br ${current.textGradient} bg-clip-text text-transparent font-mono`}>
+          <span className="text-3xl font-black text-[#18231C] font-mono">
             {score}%
           </span>
-          <span className="text-[10px] uppercase font-extrabold tracking-wider text-slate-400 mt-0.5">
+          <span className="text-[10px] uppercase font-bold tracking-wider text-[#6A746C] mt-0.5">
             Risk Score
           </span>
         </div>
@@ -81,29 +78,29 @@ export default function RiskGauge({ score = 15, level = 'LOW', medicineName = ''
       <div className="flex-1 text-center sm:text-left space-y-2">
         <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
           <RiskBadge level={level} score={score} size="lg" />
-          <span className="text-xs font-mono text-slate-400">
-            Evaluating: <strong className="text-white">{medicineName}</strong>
+          <span className="text-xs font-mono text-[#5A645D]">
+            Evaluating: <strong className="text-[#18231C]">{medicineName}</strong>
           </span>
         </div>
 
-        <h3 className="text-lg font-bold text-white tracking-tight">
+        <h3 className="text-lg font-black text-[#18231C] tracking-tight uppercase">
           {current.label}
         </h3>
-        <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-lg">
+        <p className="text-xs sm:text-sm text-[#4A554E] leading-relaxed max-w-lg">
           {current.summary}
         </p>
 
-        <div className="pt-2 flex items-center justify-center sm:justify-start gap-3 text-[11px] text-slate-400">
+        <div className="pt-2 flex items-center justify-center sm:justify-start gap-3 text-[11px] text-[#6A746C] font-mono">
           <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-emerald-400" />
+            <span className="w-2 h-2 rounded-full bg-[#235339]" />
             0–34% Safe
           </span>
           <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-amber-400" />
+            <span className="w-2 h-2 rounded-full bg-amber-500" />
             35–69% Caution
           </span>
           <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-rose-400" />
+            <span className="w-2 h-2 rounded-full bg-[#C53030]" />
             70–100% Danger
           </span>
         </div>

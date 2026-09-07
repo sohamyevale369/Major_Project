@@ -66,13 +66,13 @@ export default function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-800/80 bg-slate-950/90 backdrop-blur-xl transition-all">
+    <header className="sticky top-0 z-40 border-b border-[#E5DFD1] bg-[#F6F4ED]/95 backdrop-blur-md transition-all">
       {/* Top Emergency & Trust Alert Bar */}
-      <div className="bg-gradient-to-r from-mediteal-950/80 via-slate-900 to-mediblue-950/80 px-4 py-1.5 border-b border-slate-800/50 text-[11px] sm:text-xs text-slate-300 flex items-center justify-between">
+      <div className="bg-[#ECE7DC] border-b border-[#DCD5C5] px-4 py-1.5 text-[11px] sm:text-xs text-[#424C44] flex items-center justify-between">
         <div className="flex items-center gap-2 overflow-hidden text-ellipsis whitespace-nowrap">
-          <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-ping shrink-0" />
-          <span className="font-semibold text-mediteal-300">Explainable AI Safety Engine:</span>
-          <span className="hidden sm:inline text-slate-300">SHAP / LIME Powered Clinical Decision Support</span>
+          <span className="flex h-2 w-2 rounded-full bg-[#235339] animate-ping shrink-0" />
+          <span className="font-semibold text-[#18231C]">Explainable AI Safety Engine:</span>
+          <span className="hidden sm:inline text-[#556157]">SHAP / LIME Powered Clinical Decision Support</span>
         </div>
         <div className="flex items-center gap-3 shrink-0">
           <button
@@ -81,7 +81,7 @@ export default function Navbar() {
               medicine: null,
               details: 'If you or someone else is experiencing an acute allergic reaction, difficulty breathing, or severe chest pain after taking medication, call 911 or visit the nearest emergency room immediately.'
             })}
-            className="text-rose-400 hover:text-rose-300 font-semibold flex items-center gap-1 hover:underline transition"
+            className="text-[#C53030] hover:text-[#9B2C2C] font-semibold flex items-center gap-1 hover:underline transition"
           >
             <AlertCircle className="w-3.5 h-3.5" />
             <span className="hidden md:inline">Emergency? Click here</span>
@@ -93,26 +93,25 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-18">
           
-          {/* Brand Logo */}
+          {/* Brand Logo - Styled as + MEDISAVE from reference image */}
           <button
             onClick={() => handleNavClick('home')}
             className="flex items-center gap-3 group text-left focus:outline-none"
           >
-            <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-mediteal-400 to-mediblue-600 text-slate-950 shadow-md shadow-mediteal-500/20 group-hover:scale-105 transition-transform">
-              <Shield className="w-5 h-5 text-slate-950 stroke-[2.5]" />
-              <Sparkles className="w-3 h-3 text-white absolute -top-1 -right-1" />
+            <div className="relative flex items-center justify-center w-9 h-9 rounded-xl bg-[#235339] text-white shadow-sm group-hover:scale-105 transition-transform">
+              <span className="text-2xl font-black leading-none select-none">+</span>
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="text-lg sm:text-xl font-extrabold tracking-tight text-white group-hover:text-mediteal-300 transition-colors">
-                  MediSafe<span className="text-mediteal-400">.AI</span>
+                <span className="text-lg sm:text-xl font-black tracking-tight text-[#18231C] group-hover:text-[#235339] transition-colors uppercase">
+                  MEDISAVE<span className="text-[#235339]">.AI</span>
                 </span>
-                <span className="text-[10px] px-1.5 py-0.2 font-bold tracking-wider uppercase rounded bg-mediteal-500/20 text-mediteal-300 border border-mediteal-500/40">
+                <span className="text-[10px] px-2 py-0.5 font-mono font-bold tracking-wider uppercase rounded-full bg-[#E2EFE7] text-[#1E5034] border border-[#C6DDD0]">
                   v2.0
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400 font-medium hidden sm:block">
-                Explainable Medicine Safety & Recommendations
+              <p className="text-[11px] text-[#6A746C] font-medium hidden sm:block">
+                Explainable Medicine Safety & Clinical AI
               </p>
             </div>
           </button>
@@ -126,18 +125,16 @@ export default function Navbar() {
                 <button
                   key={item.id}
                   onClick={() => handleNavClick(item.id)}
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
                     isActive
                       ? item.adminBadge
-                        ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40 shadow-sm'
-                        : 'bg-mediteal-500/15 text-mediteal-300 border border-mediteal-500/30 shadow-sm'
-                      : 'text-slate-300 hover:text-white hover:bg-slate-850'
-                  } ${item.highlight && !isActive ? 'ring-1 ring-mediteal-500/20' : ''}`}
+                        ? 'bg-purple-900 text-white shadow-sm'
+                        : 'bg-[#235339] text-white shadow-sm'
+                      : 'text-[#424C44] hover:text-[#18231C] hover:bg-[#ECE7DC]'
+                  }`}
                 >
                   <Icon className={`w-3.5 h-3.5 ${
-                    item.adminBadge
-                      ? 'text-purple-400'
-                      : isActive ? 'text-mediteal-400' : 'text-slate-400'
+                    isActive ? 'text-white' : item.adminBadge ? 'text-purple-700' : 'text-[#5E6860]'
                   }`} />
                   <span>{item.label}</span>
                 </button>
@@ -145,66 +142,68 @@ export default function Navbar() {
             })}
           </nav>
 
-          {/* Right-Hand Controls (Patient Switcher, AI Chatbot, User Account & Sign Out) */}
+          {/* Right-Hand Controls */}
           <div className="flex items-center gap-2 sm:gap-3">
             
-            {/* Patient Profile / Switcher: Single-patient isolation */}
+            {/* Patient Profile / Switcher */}
             {currentUser?.role === 'patient' ? (
-              /* Single Patient Direct Link to Personal Details Page */
               <button
                 onClick={() => handleNavClick('profile')}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs transition-all group ${
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs transition-all group ${
                   activeTab === 'profile'
-                    ? 'border-mediteal-400 bg-mediteal-500/20 text-white ring-1 ring-mediteal-400/30'
-                    : 'border-slate-700/80 bg-slate-900/90 hover:border-mediteal-500/50 text-slate-200'
+                    ? 'border-[#235339] bg-[#235339] text-white'
+                    : 'border-[#D5CDBF] bg-white hover:border-[#235339] text-[#18231C]'
                 }`}
                 title="View My Personal Details"
                 id="navbar-patient-profile-btn"
               >
-                <div className="w-6 h-6 rounded-lg bg-mediteal-500/20 text-mediteal-300 flex items-center justify-center font-bold text-xs">
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
+                  activeTab === 'profile' ? 'bg-white text-[#235339]' : 'bg-[#E2EFE7] text-[#1E5034]'
+                }`}>
                   {patient?.name ? patient.name.charAt(0) : 'P'}
                 </div>
                 <div className="text-left hidden md:block">
-                  <div className="text-[11px] font-bold text-slate-200 group-hover:text-mediteal-300 leading-none">
+                  <div className="text-[11px] font-bold leading-none">
                     {patient?.name || currentUser?.name || 'Personal Details'}
                   </div>
-                  <div className="text-[10px] text-mediteal-400 font-semibold leading-none mt-0.5">
+                  <div className={`text-[10px] font-semibold leading-none mt-0.5 ${
+                    activeTab === 'profile' ? 'text-emerald-100' : 'text-[#235339]'
+                  }`}>
                     Personal Details →
                   </div>
                 </div>
               </button>
             ) : (
-              /* Clinician / Admin Clinical Preset Switcher */
               <div className="relative">
                 <button
                   onClick={() => setPatientDropdownOpen(!patientDropdownOpen)}
-                  className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl border border-slate-700/80 bg-slate-900/90 hover:border-mediteal-500/50 text-xs text-slate-200 transition-all group"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#D5CDBF] bg-white hover:border-[#235339] text-xs text-[#18231C] transition-all group"
                   title="Switch Clinical Patient Case"
                 >
-                  <div className="w-6 h-6 rounded-lg bg-mediteal-500/20 text-mediteal-300 flex items-center justify-center font-bold text-xs">
+                  <div className="w-6 h-6 rounded-full bg-[#E2EFE7] text-[#1E5034] flex items-center justify-center font-bold text-xs">
                     {patient?.name ? patient.name.charAt(0) : 'P'}
                   </div>
                   <div className="text-left hidden md:block">
-                    <div className="text-[11px] font-bold text-slate-200 group-hover:text-mediteal-300 leading-none">
+                    <div className="text-[11px] font-bold text-[#18231C] leading-none">
                       {patient?.name || 'No Patient Selected'}
                     </div>
-                    <div className="text-[10px] text-slate-400 leading-none mt-0.5">
+                    <div className="text-[10px] text-[#6A746C] leading-none mt-0.5">
                       {patient?.age ? `Age ${patient.age}` : 'Profile'} • {patient?.diseases?.[0] ? patient.diseases[0].slice(0, 15) + '…' : 'Active'}
                     </div>
                   </div>
-                  <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                  <ChevronDown className="w-3.5 h-3.5 text-[#6A746C]" />
                 </button>
 
                 {/* Patient Dropdown Menu */}
                 {patientDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-72 rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl p-2 z-50 animate-fade-in">
-                    <div className="px-3 py-2 border-b border-slate-800 text-xs">
-                      <span className="font-bold text-white block">Clinical Patients ({activePatients.length})</span>
-                      <span className="text-slate-400 text-[11px]">Real-time synchronized with User Database</span>
+                  <div className="absolute right-0 mt-2 w-72 rounded-2xl bg-white border border-[#E5DFD1] shadow-2xl p-2 z-50 animate-fade-in text-[#18231C]">
+                    <div className="px-3 py-2 border-b border-[#ECE7DC] text-xs">
+                      <span className="font-bold text-[#18231C] block">Clinical Patients ({activePatients.length})</span>
+                      <span className="text-[#6A746C] text-[11px]">Synchronized with User Database</span>
                     </div>
                     <div className="py-1 space-y-1">
                       {activePatients.length === 0 ? (
-                        <div className="px-3 py-4 text-center text-slate-400 text-xs">
+                        <div className="px-3 py-4 text-center text-[#6A746C] text-xs">
                           No patient records currently in database.
                         </div>
                       ) : (
@@ -217,28 +216,28 @@ export default function Navbar() {
                             }}
                             className={`w-full text-left px-3 py-2 rounded-xl text-xs transition flex items-start gap-2.5 ${
                               patient?.id === p.id || patient?.name === p.name
-                                ? 'bg-mediteal-500/20 text-mediteal-300 font-semibold border border-mediteal-500/30'
-                                : 'text-slate-300 hover:bg-slate-800'
+                                ? 'bg-[#E2EFE7] text-[#1E5034] font-semibold border border-[#C6DDD0]'
+                                : 'text-[#424C44] hover:bg-[#F6F4ED]'
                             }`}
                           >
-                            <span className="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5 text-mediteal-400">
+                            <span className="w-6 h-6 rounded-full bg-[#ECE7DC] flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5 text-[#235339]">
                               {p.name.charAt(0)}
                             </span>
                             <div>
-                              <div className="font-semibold text-white">{p.name} ({p.age}y)</div>
-                              <div className="text-[11px] text-slate-400 line-clamp-1">{p.description}</div>
+                              <div className="font-semibold text-[#18231C]">{p.name} ({p.age}y)</div>
+                              <div className="text-[11px] text-[#6A746C] line-clamp-1">{p.description}</div>
                             </div>
                           </button>
                         ))
                       )}
                     </div>
-                    <div className="pt-2 mt-1 border-t border-slate-800 text-center">
+                    <div className="pt-2 mt-1 border-t border-[#ECE7DC] text-center">
                       <button
                         onClick={() => {
                           setActiveTab('profile');
                           setPatientDropdownOpen(false);
                         }}
-                        className="text-xs text-mediteal-400 hover:underline font-semibold"
+                        className="text-xs text-[#235339] hover:underline font-bold"
                       >
                         Customize Profile Manually →
                       </button>
@@ -251,13 +250,13 @@ export default function Navbar() {
             {/* AI Assistant Button */}
             <button
               onClick={() => setIsChatbotOpen(true)}
-              className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-mediteal-500/20 to-mediblue-500/20 hover:from-mediteal-500/30 hover:to-mediblue-500/30 border border-mediteal-500/40 text-xs font-semibold text-mediteal-300 transition-all shadow-sm group"
+              className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#E2EFE7] hover:bg-[#D4E8DC] border border-[#C6DDD0] text-xs font-semibold text-[#1E5034] transition-all shadow-sm group"
             >
-              <Bot className="w-4 h-4 text-mediteal-400 group-hover:rotate-12 transition-transform" />
+              <Bot className="w-4 h-4 text-[#235339] group-hover:rotate-12 transition-transform" />
               <span className="hidden sm:inline">AI Guide</span>
               <span className="flex h-2 w-2 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-mediteal-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-mediteal-500"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#235339] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#235339]"></span>
               </span>
             </button>
 
@@ -266,40 +265,40 @@ export default function Navbar() {
               <div className="relative">
                 <button
                   onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                  className="flex items-center gap-2 p-1.5 sm:px-3 sm:py-1.5 rounded-xl border border-slate-700 bg-slate-900 hover:border-slate-600 text-xs text-slate-200 transition"
+                  className="flex items-center gap-2 p-1.5 sm:px-3 sm:py-1.5 rounded-full border border-[#D5CDBF] bg-white hover:border-[#235339] text-xs text-[#18231C] transition shadow-sm"
                   title="User Profile & Account"
                 >
-                  <div className={`w-6 h-6 rounded-lg flex items-center justify-center font-bold text-xs ${
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
                     isAdmin
-                      ? 'bg-purple-500/20 text-purple-300'
+                      ? 'bg-purple-100 text-purple-800'
                       : isClinician
-                      ? 'bg-sky-500/20 text-sky-300'
-                      : 'bg-emerald-500/20 text-emerald-300'
+                      ? 'bg-sky-100 text-sky-800'
+                      : 'bg-[#E2EFE7] text-[#1E5034]'
                   }`}>
                     {currentUser.name ? currentUser.name.charAt(0) : 'U'}
                   </div>
                   <div className="text-left hidden lg:block">
-                    <div className="text-[11px] font-bold text-white leading-none">
+                    <div className="text-[11px] font-bold text-[#18231C] leading-none">
                       {currentUser.name}
                     </div>
-                    <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold mt-0.5 leading-none">
+                    <div className="text-[10px] text-[#6A746C] uppercase tracking-wider font-semibold mt-0.5 leading-none">
                       {currentUser.role}
                     </div>
                   </div>
-                  <ChevronDown className="w-3.5 h-3.5 text-slate-400 hidden sm:block" />
+                  <ChevronDown className="w-3.5 h-3.5 text-[#6A746C] hidden sm:block" />
                 </button>
 
                 {userDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl p-2 z-50 animate-fade-in text-xs">
-                    <div className="px-3 py-2 border-b border-slate-800">
-                      <span className="font-bold text-white block">{currentUser.name}</span>
-                      <span className="text-slate-400 text-[11px] font-mono truncate block">{currentUser.email}</span>
-                      <span className={`inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                  <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white border border-[#E5DFD1] shadow-2xl p-2 z-50 animate-fade-in text-xs text-[#18231C]">
+                    <div className="px-3 py-2 border-b border-[#ECE7DC]">
+                      <span className="font-bold text-[#18231C] block">{currentUser.name}</span>
+                      <span className="text-[#6A746C] text-[11px] font-mono truncate block">{currentUser.email}</span>
+                      <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                         isAdmin
-                          ? 'bg-purple-500/20 text-purple-300'
+                          ? 'bg-purple-100 text-purple-800'
                           : isClinician
-                          ? 'bg-sky-500/20 text-sky-300'
-                          : 'bg-emerald-500/20 text-emerald-300'
+                          ? 'bg-sky-100 text-sky-800'
+                          : 'bg-[#E2EFE7] text-[#1E5034]'
                       }`}>
                         {currentUser.role} Account
                       </span>
@@ -309,7 +308,7 @@ export default function Navbar() {
                       {isAdmin && (
                         <button
                           onClick={() => handleNavClick('admin')}
-                          className="w-full text-left px-3 py-2 rounded-xl text-purple-300 hover:bg-purple-500/10 font-semibold flex items-center gap-2 transition"
+                          className="w-full text-left px-3 py-2 rounded-xl text-purple-700 hover:bg-purple-50 font-semibold flex items-center gap-2 transition"
                         >
                           <ShieldCheck className="w-3.5 h-3.5" />
                           <span>Admin Console</span>
@@ -318,28 +317,28 @@ export default function Navbar() {
 
                       <button
                         onClick={() => handleNavClick('profile')}
-                        className="w-full text-left px-3 py-2 rounded-xl text-slate-300 hover:bg-slate-800 flex items-center gap-2 transition"
+                        className="w-full text-left px-3 py-2 rounded-xl text-[#424C44] hover:bg-[#F6F4ED] flex items-center gap-2 transition"
                       >
-                        <User className="w-3.5 h-3.5 text-slate-400" />
+                        <User className="w-3.5 h-3.5 text-[#6A746C]" />
                         <span>Health Profile</span>
                       </button>
 
                       <button
                         onClick={() => handleNavClick('dashboard')}
-                        className="w-full text-left px-3 py-2 rounded-xl text-slate-300 hover:bg-slate-800 flex items-center gap-2 transition"
+                        className="w-full text-left px-3 py-2 rounded-xl text-[#424C44] hover:bg-[#F6F4ED] flex items-center gap-2 transition"
                       >
-                        <Activity className="w-3.5 h-3.5 text-slate-400" />
+                        <Activity className="w-3.5 h-3.5 text-[#6A746C]" />
                         <span>My Dashboard</span>
                       </button>
                     </div>
 
-                    <div className="pt-1 border-t border-slate-800">
+                    <div className="pt-1 border-t border-[#ECE7DC]">
                       <button
                         onClick={() => {
                           setUserDropdownOpen(false);
                           logout();
                         }}
-                        className="w-full text-left px-3 py-2 rounded-xl text-rose-400 hover:bg-rose-500/10 font-semibold flex items-center gap-2 transition"
+                        className="w-full text-left px-3 py-2 rounded-xl text-[#C53030] hover:bg-rose-50 font-bold flex items-center gap-2 transition"
                       >
                         <LogOut className="w-3.5 h-3.5" />
                         <span>Sign Out (Lock Tasks)</span>
@@ -353,7 +352,7 @@ export default function Navbar() {
             {/* Mobile Menu Toggle Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="xl:hidden p-2 rounded-xl border border-slate-700 bg-slate-900 text-slate-300 hover:text-white"
+              className="xl:hidden p-2 rounded-xl border border-[#D5CDBF] bg-white text-[#18231C] hover:bg-[#F6F4ED]"
               aria-label="Toggle Navigation Menu"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -364,7 +363,7 @@ export default function Navbar() {
 
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="xl:hidden border-t border-slate-800 bg-slate-950/98 px-4 pt-3 pb-6 space-y-2 animate-fade-in shadow-2xl">
+        <div className="xl:hidden border-t border-[#E5DFD1] bg-[#F6F4ED] px-4 pt-3 pb-6 space-y-2 animate-fade-in shadow-xl">
           <div className="grid grid-cols-2 gap-2 mb-3">
             {navItems.map((item) => {
               const Icon = item.icon;
@@ -373,15 +372,15 @@ export default function Navbar() {
                 <button
                   key={item.id}
                   onClick={() => handleNavClick(item.id)}
-                  className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-medium text-left transition ${
+                  className={`flex items-center gap-2 px-3 py-2.5 rounded-full text-xs font-semibold text-left transition ${
                     isActive
                       ? item.adminBadge
-                        ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40'
-                        : 'bg-mediteal-500/20 text-mediteal-300 border border-mediteal-500/40'
-                      : 'bg-slate-900/60 text-slate-300 hover:bg-slate-800'
+                        ? 'bg-purple-800 text-white'
+                        : 'bg-[#235339] text-white'
+                      : 'bg-white border border-[#E5DFD1] text-[#424C44] hover:bg-[#ECE7DC]'
                   }`}
                 >
-                  <Icon className={`w-4 h-4 shrink-0 ${item.adminBadge ? 'text-purple-400' : 'text-mediteal-400'}`} />
+                  <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-[#6A746C]'}`} />
                   <span>{item.label}</span>
                 </button>
               );
@@ -389,18 +388,18 @@ export default function Navbar() {
           </div>
 
           {currentUser && (
-            <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-xs flex items-center justify-between">
+            <div className="p-3 rounded-2xl bg-white border border-[#E5DFD1] text-xs flex items-center justify-between">
               <div>
-                <span className="text-slate-400 text-[10px] block">Signed in as:</span>
-                <span className="font-bold text-white block">{currentUser.name}</span>
-                <span className="text-mediteal-300 text-[11px] font-mono">{currentUser.email}</span>
+                <span className="text-[#6A746C] text-[10px] block">Signed in as:</span>
+                <span className="font-bold text-[#18231C] block">{currentUser.name}</span>
+                <span className="text-[#235339] text-[11px] font-mono">{currentUser.email}</span>
               </div>
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);
                   logout();
                 }}
-                className="px-3 py-1.5 rounded-lg bg-rose-500/10 text-rose-300 border border-rose-500/30 text-xs font-bold"
+                className="px-3 py-1.5 rounded-full bg-rose-50 text-[#C53030] border border-rose-200 text-xs font-bold"
               >
                 Sign Out
               </button>
@@ -409,16 +408,16 @@ export default function Navbar() {
 
           <button
             onClick={() => handleNavClick('profile')}
-            className="w-full text-left p-3 rounded-xl bg-slate-900 border border-slate-800 text-xs hover:border-mediteal-500/50 transition block"
+            className="w-full text-left p-3 rounded-2xl bg-white border border-[#E5DFD1] text-xs hover:border-[#235339] transition block"
           >
             <div className="flex items-center justify-between mb-1">
-              <span className="text-slate-400 text-[10px] uppercase font-bold tracking-wider">
+              <span className="text-[#6A746C] text-[10px] uppercase font-bold tracking-wider">
                 {currentUser?.role === 'patient' ? 'My Personal Profile' : 'Active Patient Case'}
               </span>
-              <span className="text-[10px] text-mediteal-400 font-semibold">View Details →</span>
+              <span className="text-[10px] text-[#235339] font-bold">View Details →</span>
             </div>
-            <span className="font-bold text-white block">{patient.name} ({patient.age}y, {patient.gender})</span>
-            <span className="text-mediteal-300 text-[11px] block mt-0.5">{patient.diseases.join(', ') || 'No recorded conditions'}</span>
+            <span className="font-bold text-[#18231C] block">{patient.name} ({patient.age}y, {patient.gender})</span>
+            <span className="text-[#235339] text-[11px] block mt-0.5">{patient.diseases.join(', ') || 'No recorded conditions'}</span>
           </button>
         </div>
       )}
