@@ -261,7 +261,7 @@ export default function HeroSection() {
                   <RiskBadge level="LOW" score={15} size="sm" />
                 </div>
                 <h3 className="text-base font-bold text-[#18231C] group-hover:text-[#235339] transition">
-                  {patient?.name || currentUser?.name || 'Personal Profile'} ({patient?.age || 23}y) + Paracetamol
+                  Routine Antipyretic Case — Paracetamol (500mg)
                 </h3>
                 <p className="text-xs text-[#5A645D] mt-2 leading-relaxed">
                   Standard antipyretic evaluation with no renal, cardiac, or allergy conflicts. MediSafe assigns a <strong className="text-[#235339]">15% Low Risk</strong> safety score.
@@ -269,7 +269,7 @@ export default function HeroSection() {
               </div>
 
               <div className="mt-5 pt-4 border-t border-[#E5DFD1] flex items-center justify-between">
-                <span className="text-[11px] text-[#6A746C] font-mono">Patient: {patient?.name || currentUser?.name || 'You'}</span>
+                <span className="text-[11px] text-[#6A746C] font-mono">Simulated Clinical Case</span>
                 <button
                   onClick={() => handleQuickDemo(patient?.id || 'usr-default', 'Paracetamol (Acetaminophen)', '500mg')}
                   className="pill-btn-primary text-xs py-1.5 px-3.5"

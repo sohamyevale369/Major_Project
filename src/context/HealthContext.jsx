@@ -292,24 +292,29 @@ export function HealthProvider({ children }) {
       // 1. If currentUser is a patient, strictly lock to the logged-in patient's personal record
       if (currentUser && currentUser.role === 'patient') {
         const found = patientUsers.find(u => u.email?.toLowerCase() === currentUser.email?.toLowerCase()) || currentUser;
-        const chronicList = found.chronicDiseases || found.diseases || [];
-        setPatient(prev => {
-          const diseasesToUse = (chronicList && chronicList.length > 0) ? chronicList : (prev?.diseases || prev?.chronicDiseases || []);
-          const allergiesToUse = (found.allergies && found.allergies.length > 0) ? found.allergies : (prev?.allergies || []);
-          return {
-            id: found.id || prev?.id,
-            name: found.name || prev?.name || currentUser.name,
-            email: found.email || prev?.email || currentUser.email,
-            age: found.age || prev?.age || currentUser.age || 40,
-            gender: found.gender || prev?.gender || currentUser.gender || 'Not specified',
-            weight: found.weight || prev?.weight || currentUser.weight || 70,
-            description: `${found.gender || prev?.gender || 'Patient'}, ${found.age || prev?.age || 40}y — ${diseasesToUse.length > 0 ? diseasesToUse.join(', ') : 'Personal Profile'}`,
-            diseases: diseasesToUse,
-            chronicDiseases: diseasesToUse,
-            allergies: allergiesToUse,
-            medicalHistory: found.medicalHistory || found.notes || prev?.medicalHistory || 'Registered MediSafe personal profile.',
-            currentMedicines: found.currentMedicines || prev?.currentMedicines || []
-          };
+        const userDiseases = Array.isArray(found.chronicDiseases)
+          ? found.chronicDiseases
+          : (Array.isArray(found.diseases) ? found.diseases : []);
+        const userAllergies = Array.isArray(found.allergies)
+          ? found.allergies
+          : [];
+        const userMedicines = Array.isArray(found.currentMedicines)
+          ? found.currentMedicines
+          : [];
+
+        setPatient({
+          id: found.id || currentUser.id,
+          name: found.name || currentUser.name,
+          email: found.email || currentUser.email,
+          age: found.age !== undefined ? Number(found.age) : (currentUser.age ? Number(currentUser.age) : 40),
+          gender: found.gender || currentUser.gender || 'Not specified',
+          weight: found.weight !== undefined ? Number(found.weight) : 70,
+          description: `${found.gender || currentUser.gender || 'Patient'}, ${found.age || 40}y — ${userDiseases.length > 0 ? userDiseases.join(', ') : 'No recorded conditions'}`,
+          diseases: userDiseases,
+          chronicDiseases: userDiseases,
+          allergies: userAllergies,
+          medicalHistory: found.medicalHistory || found.notes || currentUser.notes || 'Registered MediSafe personal profile.',
+          currentMedicines: userMedicines
         });
         return;
       }
@@ -393,6 +398,27 @@ export function HealthProvider({ children }) {
       }
     }
 
+    if (loggedUser.role === 'patient') {
+      const uDiseases = Array.isArray(loggedUser.chronicDiseases) ? loggedUser.chronicDiseases : (Array.isArray(loggedUser.diseases) ? loggedUser.diseases : []);
+      const uAllergies = Array.isArray(loggedUser.allergies) ? loggedUser.allergies : [];
+      const uMedicines = Array.isArray(loggedUser.currentMedicines) ? loggedUser.currentMedicines : [];
+
+      setPatient({
+        id: loggedUser.id,
+        name: loggedUser.name,
+        email: loggedUser.email,
+        age: loggedUser.age !== undefined ? Number(loggedUser.age) : 40,
+        gender: loggedUser.gender || 'Not specified',
+        weight: loggedUser.weight !== undefined ? Number(loggedUser.weight) : 70,
+        description: `${loggedUser.gender || 'Patient'}, ${loggedUser.age || 40}y — ${uDiseases.length > 0 ? uDiseases.join(', ') : 'No recorded conditions'}`,
+        diseases: uDiseases,
+        chronicDiseases: uDiseases,
+        allergies: uAllergies,
+        medicalHistory: loggedUser.medicalHistory || loggedUser.notes || 'Registered MediSafe personal profile.',
+        currentMedicines: uMedicines
+      });
+    }
+
     refreshUsersAndLogs();
 
     if (loggedUser.role === 'admin') {
@@ -418,6 +444,27 @@ export function HealthProvider({ children }) {
       setMedicationHistoryState([]);
       saveUserSessionTasks(newUser, { currentAnalysis: null, medicationHistory: [] });
       clearGlobalTaskCaches();
+
+      if (newUser.role === 'patient') {
+        const uDiseases = Array.isArray(newUser.chronicDiseases) ? newUser.chronicDiseases : [];
+        const uAllergies = Array.isArray(newUser.allergies) ? newUser.allergies : [];
+        const uMedicines = Array.isArray(newUser.currentMedicines) ? newUser.currentMedicines : [];
+
+        setPatient({
+          id: newUser.id,
+          name: newUser.name,
+          email: newUser.email,
+          age: newUser.age !== undefined ? Number(newUser.age) : 40,
+          gender: newUser.gender || 'Not specified',
+          weight: newUser.weight !== undefined ? Number(newUser.weight) : 70,
+          description: `${newUser.gender || 'Patient'}, ${newUser.age || 40}y — ${uDiseases.length > 0 ? uDiseases.join(', ') : 'No recorded conditions'}`,
+          diseases: uDiseases,
+          chronicDiseases: uDiseases,
+          allergies: uAllergies,
+          medicalHistory: newUser.medicalHistory || newUser.notes || 'Registered MediSafe personal profile.',
+          currentMedicines: uMedicines
+        });
+      }
 
       refreshUsersAndLogs();
 
@@ -451,6 +498,22 @@ export function HealthProvider({ children }) {
     // Reset active session
     setActiveUserSession(null);
     setCurrentUser(null);
+
+    // Reset patient profile so it doesn't leak into the next session
+    setPatient({
+      id: 'usr-default',
+      name: 'Clinical Patient Profile',
+      email: '',
+      age: 40,
+      gender: 'Not specified',
+      weight: 70,
+      description: 'Active Patient Profile',
+      diseases: [],
+      chronicDiseases: [],
+      allergies: [],
+      medicalHistory: '',
+      currentMedicines: []
+    });
 
     // Refresh & reset task memory so no data leaks to the next user!
     setCurrentAnalysisState(null);

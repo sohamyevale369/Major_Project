@@ -1,5 +1,23 @@
 [
   {
+    "id": "usr-new-1788800513481",
+    "name": "netra yevale",
+    "email": "netrayevale@gmail.com",
+    "password": "Temp123",
+    "role": "patient",
+    "department": "",
+    "licenseNumber": "",
+    "age": 45,
+    "gender": "Female",
+    "chronicDiseases": [],
+    "allergies": [],
+    "status": "Active",
+    "isNewUser": true,
+    "registeredAt": "2026-09-07T17:01:53.481Z",
+    "lastLogin": "2026-09-07T17:01:53.481Z",
+    "notes": "Registered through MediSafe AI online portal."
+  },
+  {
     "id": "usr-new-1788795004019",
     "name": "Vikas",
     "email": "vikas@gmail.com",
@@ -81,7 +99,7 @@
     "status": "Active",
     "isNewUser": false,
     "registeredAt": "2026-09-05T08:13:50.403Z",
-    "lastLogin": "2026-09-05T08:13:50.403Z",
+    "lastLogin": "2026-09-07T16:59:22.054Z",
     "notes": "Verified Patient Profile"
   },
   {
@@ -181,7 +199,7 @@
     "status": "Active",
     "isNewUser": true,
     "registeredAt": "2026-09-05T08:30:45.562Z",
-    "lastLogin": "2026-09-07T15:08:23.523Z",
+    "lastLogin": "2026-09-07T16:58:06.280Z",
     "notes": "Registered through MediSafe AI online portal."
   }
 ]
