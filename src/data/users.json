@@ -1,5 +1,23 @@
 [
   {
+    "id": "usr-new-1788757764657",
+    "name": "Pooja Salunkhe",
+    "email": "poojasalunkhe@gmail.com",
+    "password": "123456",
+    "role": "admin",
+    "department": "",
+    "licenseNumber": "",
+    "age": 45,
+    "gender": "Male",
+    "chronicDiseases": [],
+    "allergies": [],
+    "status": "Active",
+    "isNewUser": true,
+    "registeredAt": "2026-09-07T05:09:24.657Z",
+    "lastLogin": "2026-09-07T05:09:24.657Z",
+    "notes": "Registered through MediSafe AI online portal."
+  },
+  {
     "id": "usr-new-1788598162155",
     "name": "Ovee yevale",
     "email": "oveeyevale@gmail.com",
@@ -50,7 +68,7 @@
     "status": "Active",
     "isNewUser": false,
     "registeredAt": "2026-09-05T06:45:33.394Z",
-    "lastLogin": "2026-09-07T03:24:42.487Z",
+    "lastLogin": "2026-09-07T05:11:18.457Z",
     "notes": "Registered through MediSafe AI online portal."
   },
   {
