@@ -64,6 +64,14 @@ class ErrorBoundary extends React.Component {
 function MainApp() {
   const { activeTab, currentUser } = useHealth();
 
+  React.useEffect(() => {
+    console.log(
+      '%c[MediSafe AI] Build Active: v2.4 (New Vector Logo + Admin Dossier & Isolation)%c',
+      'background: #235339; color: #FFFFFF; font-size: 13px; font-weight: bold; padding: 6px 12px; border-radius: 6px;',
+      ''
+    );
+  }, []);
+
   // Mandatory Authentication Gate:
   // When a user visits the site, they MUST register or sign in first.
   // After successful validation only, the user is allowed to perform tasks.

@@ -183,7 +183,7 @@ export default function AuthPortal() {
                 MEDISAVE<span className="text-[#235339]">.AI</span>
               </h1>
               <span className="px-2 py-0.5 rounded-full bg-[#E2EFE7] text-[#1E5034] border border-[#C6DDD0] text-[10px] font-mono font-bold tracking-wider uppercase">
-                v2.0
+                v2.4
               </span>
             </div>
             <p className="text-xs sm:text-sm text-[#5A645D] mt-1 max-w-md mx-auto">

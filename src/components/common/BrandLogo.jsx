@@ -139,7 +139,7 @@ export default function BrandLogo({
           </span>
           {showVersion && (
             <span className="text-[10px] px-2 py-0.5 font-mono font-bold tracking-wider uppercase rounded-full bg-[#E2EFE7] text-[#1E5034] border border-[#C6DDD0]">
-              v2.0
+              v2.4
             </span>
           )}
         </div>
