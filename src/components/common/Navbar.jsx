@@ -21,6 +21,7 @@ import {
   KeyRound
 } from 'lucide-react';
 import { useHealth } from '../../context/HealthContext';
+import BrandLogo from './BrandLogo';
 
 export default function Navbar() {
   const {
@@ -44,16 +45,31 @@ export default function Navbar() {
   const isAdmin = currentUser?.role === 'admin';
   const isClinician = currentUser?.role === 'clinician';
 
-  const navItems = [
-    { id: 'home', label: 'Home', icon: Shield },
-    { id: 'dashboard', label: 'Dashboard', icon: Activity },
-    { id: 'risk-checker', label: 'Medicine Risk Check', icon: Pill, highlight: true },
-    { id: 'interactions', label: 'Drug Interactions', icon: RefreshCw },
-    { id: 'ocr', label: 'Prescription OCR', icon: Camera },
-    { id: 'profile', label: 'Health Profile', icon: User },
-    { id: 'history', label: 'History & Report', icon: History },
-    ...(isAdmin ? [{ id: 'admin', label: 'Admin Console', icon: ShieldCheck, adminBadge: true }] : [])
-  ];
+  const userGreetingName = (() => {
+    const raw = currentUser?.name?.trim() || patient?.name?.trim() || '';
+    if (!raw) return 'there';
+    const parts = raw.split(/\s+/);
+    if (parts[0].toLowerCase().startsWith('dr') && parts.length > 1) {
+      return `${parts[0]} ${parts[1]}`;
+    }
+    return parts[0];
+  })();
+
+  const navItems = isAdmin
+    ? [
+        { id: 'admin', label: 'Admin Console & Patients', icon: ShieldCheck, adminBadge: true },
+        { id: 'interactions', label: 'Drug Interactions DB', icon: RefreshCw },
+        { id: 'ocr', label: 'Prescription OCR Tool', icon: Camera }
+      ]
+    : [
+        { id: 'home', label: 'Home', icon: Shield },
+        { id: 'dashboard', label: 'Dashboard', icon: Activity },
+        { id: 'risk-checker', label: 'Medicine Risk Check', icon: Pill, highlight: true },
+        { id: 'interactions', label: 'Drug Interactions', icon: RefreshCw },
+        { id: 'ocr', label: 'Prescription OCR', icon: Camera },
+        { id: 'profile', label: 'Health Profile', icon: User },
+        { id: 'history', label: 'History & Report', icon: History }
+      ];
 
   const handleNavClick = (id) => {
     if (id === 'admin' && !isAdmin) {
@@ -72,6 +88,11 @@ export default function Navbar() {
       <div className="bg-[#ECE7DC] border-b border-[#DCD5C5] px-4 py-1.5 text-[11px] sm:text-xs text-[#424C44] flex items-center justify-between">
         <div className="flex items-center gap-2 overflow-hidden text-ellipsis whitespace-nowrap">
           <span className="flex h-2 w-2 rounded-full bg-[#235339] animate-ping shrink-0" />
+          {currentUser && (
+            <span className="font-bold text-[#235339] border-r border-[#D5CDBF] pr-2 mr-0.5 shrink-0">
+              Hello, {userGreetingName} 👋
+            </span>
+          )}
           <span className="font-semibold text-[#18231C]">Explainable AI Safety Engine:</span>
           <span className="hidden sm:inline text-[#556157]">SHAP / LIME Powered Clinical Decision Support</span>
         </div>
@@ -94,28 +115,8 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-18">
           
-          {/* Brand Logo - Styled as + MEDISAVE from reference image */}
-          <button
-            onClick={() => handleNavClick('home')}
-            className="flex items-center gap-3 group text-left focus:outline-none"
-          >
-            <div className="relative flex items-center justify-center w-9 h-9 rounded-xl bg-[#235339] text-white shadow-sm group-hover:scale-105 transition-transform">
-              <span className="text-2xl font-black leading-none select-none">+</span>
-            </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-lg sm:text-xl font-black tracking-tight text-[#18231C] group-hover:text-[#235339] transition-colors uppercase">
-                  MEDISAVE<span className="text-[#235339]">.AI</span>
-                </span>
-                <span className="text-[10px] px-2 py-0.5 font-mono font-bold tracking-wider uppercase rounded-full bg-[#E2EFE7] text-[#1E5034] border border-[#C6DDD0]">
-                  v2.0
-                </span>
-              </div>
-              <p className="text-[11px] text-[#6A746C] font-medium hidden sm:block">
-                Explainable Medicine Safety & Clinical AI
-              </p>
-            </div>
-          </button>
+          {/* Brand Logo - MediSafe AI */}
+          <BrandLogo onClick={() => handleNavClick('home')} size={38} />
 
           {/* Desktop Navigation Links */}
           <nav className="hidden xl:flex items-center space-x-1">
@@ -144,8 +145,26 @@ export default function Navbar() {
           {/* Right-Hand Controls */}
           <div className="flex items-center gap-2 sm:gap-3">
             
-            {/* Patient Profile / Switcher */}
-            {currentUser?.role === 'patient' ? (
+            {/* Patient Profile / Switcher / Admin Control Badge */}
+            {isAdmin ? (
+              <button
+                onClick={() => handleNavClick('admin')}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-purple-200 bg-purple-50 hover:bg-purple-100 text-xs text-purple-950 transition cursor-pointer"
+                title="Administrator Console (Governance & Patient Control Rights)"
+              >
+                <div className="w-6 h-6 rounded-full bg-purple-200 text-purple-900 flex items-center justify-center font-bold text-xs">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                </div>
+                <div className="text-left hidden md:block">
+                  <div className="text-[11px] font-bold text-purple-950 leading-none">
+                    Admin Console
+                  </div>
+                  <div className="text-[10px] text-purple-700 font-mono leading-none mt-0.5">
+                    Control Rights Only
+                  </div>
+                </div>
+              </button>
+            ) : currentUser?.role === 'patient' ? (
               <button
                 onClick={() => handleNavClick('profile')}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs transition-all group ${
@@ -288,7 +307,7 @@ export default function Navbar() {
                   </div>
                   <div className="text-left hidden lg:block">
                     <div className="text-[11px] font-bold text-[#18231C] leading-none">
-                      {currentUser.name}
+                      Hello, {userGreetingName}
                     </div>
                     <div className="text-[10px] text-[#6A746C] uppercase tracking-wider font-semibold mt-0.5 leading-none">
                       {currentUser.role}
@@ -314,31 +333,33 @@ export default function Navbar() {
                     </div>
 
                     <div className="py-1 space-y-0.5">
-                      {isAdmin && (
+                      {isAdmin ? (
                         <button
                           onClick={() => handleNavClick('admin')}
-                          className="w-full text-left px-3 py-2 rounded-xl text-[#235339] hover:bg-[#EAF3ED] font-semibold flex items-center gap-2 transition"
+                          className="w-full text-left px-3 py-2 rounded-xl text-purple-900 hover:bg-purple-50 font-bold flex items-center gap-2 transition"
                         >
-                          <ShieldCheck className="w-3.5 h-3.5" />
-                          <span>Admin Console</span>
+                          <ShieldCheck className="w-3.5 h-3.5 text-purple-700" />
+                          <span>Admin Console & Patients</span>
                         </button>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => handleNavClick('profile')}
+                            className="w-full text-left px-3 py-2 rounded-xl text-[#424C44] hover:bg-[#F6F4ED] flex items-center gap-2 transition"
+                          >
+                            <User className="w-3.5 h-3.5 text-[#6A746C]" />
+                            <span>Health Profile</span>
+                          </button>
+
+                          <button
+                            onClick={() => handleNavClick('dashboard')}
+                            className="w-full text-left px-3 py-2 rounded-xl text-[#424C44] hover:bg-[#F6F4ED] flex items-center gap-2 transition"
+                          >
+                            <Activity className="w-3.5 h-3.5 text-[#6A746C]" />
+                            <span>My Dashboard</span>
+                          </button>
+                        </>
                       )}
-
-                      <button
-                        onClick={() => handleNavClick('profile')}
-                        className="w-full text-left px-3 py-2 rounded-xl text-[#424C44] hover:bg-[#F6F4ED] flex items-center gap-2 transition"
-                      >
-                        <User className="w-3.5 h-3.5 text-[#6A746C]" />
-                        <span>Health Profile</span>
-                      </button>
-
-                      <button
-                        onClick={() => handleNavClick('dashboard')}
-                        className="w-full text-left px-3 py-2 rounded-xl text-[#424C44] hover:bg-[#F6F4ED] flex items-center gap-2 transition"
-                      >
-                        <Activity className="w-3.5 h-3.5 text-[#6A746C]" />
-                        <span>My Dashboard</span>
-                      </button>
                     </div>
 
                     <div className="pt-1 border-t border-[#ECE7DC]">

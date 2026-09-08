@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { useHealth } from '../../context/HealthContext';
 import { DISEASE_LIST } from '../../data/drugDatabase';
+import AdminPatientDetailView from './AdminPatientDetailView';
 
 export default function AdminDashboardView() {
   const {
@@ -42,6 +43,9 @@ export default function AdminDashboardView() {
     setActiveTab,
     showToast
   } = useHealth();
+
+  // Active individual patient record view (redirects to individual dossier page)
+  const [activePatientRecord, setActivePatientRecord] = useState(null);
 
   // Search & Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -103,6 +107,20 @@ export default function AdminDashboardView() {
 
   const safeUsers = Array.isArray(users) ? users : [];
   const safeLogs = Array.isArray(auditLogs) ? auditLogs : [];
+
+  // If viewing an individual patient record, render full-page administrative dossier
+  const currentActivePatient = activePatientRecord
+    ? (safeUsers.find((u) => u.id === activePatientRecord.id) || activePatientRecord)
+    : null;
+
+  if (currentActivePatient) {
+    return (
+      <AdminPatientDetailView
+        patient={currentActivePatient}
+        onBack={() => setActivePatientRecord(null)}
+      />
+    );
+  }
 
   // Filter Users safely
   const filteredUsers = safeUsers.filter((u) => {
@@ -434,9 +452,15 @@ export default function AdminDashboardView() {
                             {user.name.charAt(0)}
                           </div>
                           <div>
-                            <div className="font-bold text-[#18231C] text-xs sm:text-sm group-hover:text-[#235339] transition">
-                              {user.name}
-                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setActivePatientRecord(user)}
+                              className="font-bold text-[#18231C] text-xs sm:text-sm group-hover:text-[#235339] transition hover:underline text-left cursor-pointer inline-flex items-center gap-1.5"
+                              title="Click to view and manage individual patient record"
+                            >
+                              <span>{user.name}</span>
+                              <ExternalLink className="w-3 h-3 text-[#235339] opacity-60 group-hover:opacity-100 transition" />
+                            </button>
                             <div className="text-[11px] text-[#6F7771] font-mono">
                               {user.email}
                             </div>
@@ -499,6 +523,15 @@ export default function AdminDashboardView() {
 
                       {/* Actions */}
                       <td className="py-3 px-4 text-right space-x-1.5 whitespace-nowrap">
+                        <button
+                          type="button"
+                          onClick={() => setActivePatientRecord(user)}
+                          className="px-2.5 py-1 rounded-full bg-[#E2EFE7] hover:bg-[#D4E8DC] text-[#235339] text-xs font-bold border border-[#235339]/40 transition inline-flex items-center gap-1 cursor-pointer"
+                          title="Open Individual Patient Record & Clinical Dossier"
+                        >
+                          <span>Record →</span>
+                        </button>
+
                         <button
                           onClick={() => setSelectedUser(user)}
                           className="px-2.5 py-1 rounded-full bg-white hover:bg-[#F3EFE6] text-[#18231C] text-xs font-bold border border-[#D5CDBF] transition"

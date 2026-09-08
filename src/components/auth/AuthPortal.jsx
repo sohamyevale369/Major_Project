@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { useHealth } from '../../context/HealthContext';
 import { DISEASE_LIST, ALLERGY_LIST } from '../../data/drugDatabase';
+import { MediSafeLogoMark } from '../common/BrandLogo';
 
 export default function AuthPortal() {
   const { login, register } = useHealth();
@@ -173,8 +174,8 @@ export default function AuthPortal() {
 
         {/* Brand Header */}
         <div className="text-center space-y-3">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#235339] text-white shadow-sm mb-1">
-            <span className="text-3xl font-black leading-none">+</span>
+          <div className="flex items-center justify-center mb-1">
+            <MediSafeLogoMark size={58} />
           </div>
           <div>
             <div className="flex items-center justify-center gap-2">

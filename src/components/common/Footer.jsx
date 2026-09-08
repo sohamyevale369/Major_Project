@@ -1,6 +1,7 @@
 import React from 'react';
 import { Shield, Heart, AlertTriangle, Phone, FileCheck, Sparkles } from 'lucide-react';
 import { useHealth } from '../../context/HealthContext';
+import { MediSafeLogoMark } from './BrandLogo';
 
 export default function Footer() {
   const { setActiveTab } = useHealth();
@@ -25,10 +26,8 @@ export default function Footer() {
           
           {/* Brand Info */}
           <div className="space-y-3 md:col-span-1">
-            <div className="flex items-center gap-2">
-              <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-[#235339] text-white font-black text-base">
-                +
-              </div>
+            <div className="flex items-center gap-2.5">
+              <MediSafeLogoMark size={28} />
               <span className="text-base font-black text-[#18231C] uppercase tracking-tight">
                 MEDISAVE<span className="text-[#235339]">.AI</span>
               </span>

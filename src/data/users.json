@@ -40,31 +40,16 @@
     "licenseNumber": "",
     "age": 23,
     "gender": "Male",
-    "chronicDiseases": [
-      "Chronic Kidney Disease"
-    ],
-    "allergies": [
-      "Cephalosporins",
-      "Penicillin"
-    ],
+    "chronicDiseases": [],
+    "allergies": [],
     "status": "Active",
     "isNewUser": false,
     "registeredAt": "2026-09-05T06:45:33.394Z",
-    "lastLogin": "2026-09-07T16:15:01.210Z",
+    "lastLogin": "2026-09-08T12:58:28.103Z",
     "notes": "Registered through MediSafe AI online portal.",
     "weight": 70,
-    "currentMedicines": [
-      {
-        "name": "Paracetamol",
-        "dosage": "50mg",
-        "frequency": "Daily"
-      },
-      {
-        "name": "Aspirin",
-        "dosage": "325Mg",
-        "frequency": "Daily"
-      }
-    ]
+    "currentMedicines": [],
+    "hasUpdatedProfile": true
   },
   {
     "id": "usr-new-1788596030403",
@@ -141,18 +126,29 @@
     "age": 45,
     "gender": "Female",
     "chronicDiseases": [
-      "Hypertension (High Blood Pressure)"
+      "Hypertension (High Blood Pressure)",
+      "Type 2 Diabetes",
+      "Liver Cirrhosis / Disease"
     ],
     "allergies": [
-      "Sulfa Drugs (Sulfonamides)"
+      "Sulfa Drugs (Sulfonamides)",
+      "Aspirin / NSAIDs",
+      "Codeine / Opioids",
+      "Latex / Adhesive"
     ],
     "status": "Active",
-    "isNewUser": true,
+    "isNewUser": false,
     "registeredAt": "2026-09-07T17:13:23.536Z",
     "lastLogin": "2026-09-07T17:13:23.536Z",
     "notes": "Registered through MediSafe AI online portal.",
     "weight": 70,
-    "currentMedicines": [],
+    "currentMedicines": [
+      {
+        "name": "Lisinopril",
+        "dosage": "10mg",
+        "frequency": "Once daily"
+      }
+    ],
     "hasUpdatedProfile": true
   },
   {
@@ -231,7 +227,7 @@
     "status": "Active",
     "isNewUser": true,
     "registeredAt": "2026-09-05T08:30:45.562Z",
-    "lastLogin": "2026-09-07T16:58:06.280Z",
+    "lastLogin": "2026-09-08T14:00:55.452Z",
     "notes": "Registered through MediSafe AI online portal."
   }
 ]

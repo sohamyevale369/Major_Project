@@ -42,9 +42,10 @@ export default function HealthProfileView() {
     currentMedicines: patient.currentMedicines || []
   });
 
-  const [targetMedicine, setTargetMedicine] = useState('Ibuprofen');
-  const [targetDosage, setTargetDosage] = useState('400mg');
-  const [targetFrequency, setTargetFrequency] = useState('Twice daily with meals');
+  // Medicine evaluation selection: start EMPTY with NO autoselection
+  const [targetMedicine, setTargetMedicine] = useState('');
+  const [targetDosage, setTargetDosage] = useState('');
+  const [targetFrequency, setTargetFrequency] = useState('');
 
   const [customDisease, setCustomDisease] = useState('');
   const [customAllergy, setCustomAllergy] = useState('');
@@ -133,18 +134,32 @@ export default function HealthProfileView() {
 
   const handleSave = () => {
     updatePatient(formData);
-    showToast('Health Profile saved successfully!', 'success');
+    showToast('Health Profile saved successfully! (No automatic medicine check was run)', 'success');
   };
 
   const handleSaveAndRunCheck = () => {
-    const medToCheck = targetMedicine.trim() || 'Ibuprofen';
-    const doseToCheck = targetDosage.trim() || '400mg';
-    const freqToCheck = targetFrequency.trim() || 'Twice daily with meals';
+    const medToCheck = targetMedicine.trim();
+    if (!medToCheck) {
+      showToast('No medicine selected. Please choose or enter a medicine in Step 6 to test safety.', 'error');
+      return;
+    }
+
+    const hasProfileDetails = (formData.diseases && formData.diseases.length > 0) ||
+      (formData.allergies && formData.allergies.length > 0) ||
+      (formData.currentMedicines && formData.currentMedicines.length > 0);
+
+    if (!hasProfileDetails) {
+      showToast('Update health profile to generate reports. Please add at least one condition, allergy, or medication.', 'error');
+      return;
+    }
+
+    const doseToCheck = targetDosage.trim() || 'Standard dose';
+    const freqToCheck = targetFrequency.trim() || 'As directed';
 
     // 1. Save and persist updated profile to state and storage
     const saved = updatePatient(formData);
 
-    // 2. Immediately execute analysis with saved patient data synchronously
+    // 2. Only execute analysis when user explicitly selects a medicine and has updated profile
     runSafetyCheck(medToCheck, doseToCheck, freqToCheck, saved);
 
     // 3. Switch tab to Medication Safety & Risk Scanner
@@ -152,6 +167,32 @@ export default function HealthProfileView() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     showToast(`Safety evaluation ready for ${medToCheck}`, 'success');
   };
+
+  // Admin Guard: Admins do not manage a personal health profile
+  if (currentUser?.role === 'admin') {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-20 text-center space-y-5 animate-fade-in">
+        <div className="w-16 h-16 rounded-2xl bg-purple-50 text-purple-700 border border-purple-200 flex items-center justify-center mx-auto shadow-sm">
+          <User className="w-8 h-8" />
+        </div>
+        <div className="space-y-2">
+          <span className="section-tag mb-0">ADMINISTRATIVE NOTICE</span>
+          <h1 className="text-2xl font-black text-[#18231C]">
+            Personal Health Profile Disabled for Admin
+          </h1>
+          <p className="text-xs sm:text-sm text-[#5A645D] max-w-md mx-auto leading-relaxed">
+            Administrators manage patient records through the central directory. To review or modify any individual patient's medical conditions, drug allergies, or active prescriptions, please select them from the Admin Console.
+          </p>
+        </div>
+        <button
+          onClick={() => setActiveTab('admin')}
+          className="pill-btn-primary text-xs py-2.5 px-6 mx-auto cursor-pointer"
+        >
+          Open Admin Console & Patient Records →
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-8 bg-[#F6F4ED] text-[#18231C]">
@@ -486,19 +527,25 @@ export default function HealthProfileView() {
             {/* Quick Chips for Common Medications */}
             <div className="space-y-2 pt-1">
               <span className="text-[11px] font-bold text-[#6A746C] uppercase tracking-wider block font-mono">
-                Quick-Select Common Medication:
+                Quick-Select Common Medication (Click to Select / Deselect):
               </span>
               <div className="flex flex-wrap gap-2">
                 {COMMON_MEDICATIONS.map((med) => {
-                  const isSelected = targetMedicine.toLowerCase() === med.name.toLowerCase();
+                  const isSelected = Boolean(targetMedicine && targetMedicine.toLowerCase() === med.name.toLowerCase());
                   return (
                     <button
                       key={med.id}
                       type="button"
                       onClick={() => {
-                        setTargetMedicine(med.name);
-                        setTargetDosage(med.defaultDosage);
-                        setTargetFrequency(med.defaultFrequency);
+                        if (isSelected) {
+                          setTargetMedicine('');
+                          setTargetDosage('');
+                          setTargetFrequency('');
+                        } else {
+                          setTargetMedicine(med.name);
+                          setTargetDosage(med.defaultDosage);
+                          setTargetFrequency(med.defaultFrequency);
+                        }
                       }}
                       className={`px-3 py-1.5 rounded-full text-xs font-semibold transition flex items-center gap-1.5 ${
                         isSelected
@@ -521,20 +568,32 @@ export default function HealthProfileView() {
                   Or Test One of Your Current Prescriptions:
                 </span>
                 <div className="flex flex-wrap gap-2">
-                  {formData.currentMedicines.map((m, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => {
-                        setTargetMedicine(m.name);
-                        if (m.dosage) setTargetDosage(m.dosage);
-                      }}
-                      className="px-3 py-1 rounded-full text-xs bg-[#F3EFE6] hover:bg-[#E2EFE7] text-[#235339] border border-[#C6DDD0] font-medium transition flex items-center gap-1"
-                    >
-                      <span>•</span>
-                      <span>{m.name} ({m.dosage})</span>
-                    </button>
-                  ))}
+                  {formData.currentMedicines.map((m, idx) => {
+                    const isSelected = Boolean(targetMedicine && targetMedicine.toLowerCase() === m.name.toLowerCase());
+                    return (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => {
+                          if (isSelected) {
+                            setTargetMedicine('');
+                            setTargetDosage('');
+                          } else {
+                            setTargetMedicine(m.name);
+                            if (m.dosage) setTargetDosage(m.dosage);
+                          }
+                        }}
+                        className={`px-3 py-1 rounded-full text-xs border font-medium transition flex items-center gap-1 ${
+                          isSelected
+                            ? 'bg-[#235339] text-white border-[#235339] shadow-sm font-bold'
+                            : 'bg-[#F3EFE6] hover:bg-[#E2EFE7] text-[#235339] border-[#C6DDD0]'
+                        }`}
+                      >
+                        <span>•</span>
+                        <span>{m.name} ({m.dosage})</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -543,13 +602,13 @@ export default function HealthProfileView() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
               <div>
                 <label className="block text-xs font-bold text-[#18231C] mb-1">
-                  Medicine Name
+                  Medicine Name {targetMedicine ? '' : '(Optional)'}
                 </label>
                 <input
                   type="text"
                   value={targetMedicine}
                   onChange={(e) => setTargetMedicine(e.target.value)}
-                  placeholder="e.g. Ibuprofen, Paracetamol"
+                  placeholder="Select chip above or type medicine..."
                   className="ivory-input w-full px-3 py-2 text-xs font-bold text-[#18231C]"
                 />
               </div>
@@ -564,6 +623,7 @@ export default function HealthProfileView() {
                     onChange={(e) => setTargetDosage(e.target.value)}
                     className="ivory-input w-full px-3 py-2 text-xs"
                   >
+                    <option value="">Select dosage...</option>
                     {COMMON_MEDICATIONS.find(m => m.name.toLowerCase() === targetMedicine.toLowerCase()).commonDosages.map(d => (
                       <option key={d} value={d}>{d}</option>
                     ))}
@@ -573,7 +633,7 @@ export default function HealthProfileView() {
                     type="text"
                     value={targetDosage}
                     onChange={(e) => setTargetDosage(e.target.value)}
-                    placeholder="e.g. 400mg"
+                    placeholder="e.g. 500mg, 10mg..."
                     className="ivory-input w-full px-3 py-2 text-xs"
                   />
                 )}
@@ -587,7 +647,7 @@ export default function HealthProfileView() {
                   type="text"
                   value={targetFrequency}
                   onChange={(e) => setTargetFrequency(e.target.value)}
-                  placeholder="e.g. Twice daily with meals"
+                  placeholder="e.g. Once daily, As needed..."
                   className="ivory-input w-full px-3 py-2 text-xs"
                 />
               </div>
@@ -602,16 +662,22 @@ export default function HealthProfileView() {
               className="pill-btn-primary w-full sm:w-auto flex-1 py-3.5 text-sm font-bold shadow-md"
             >
               <Save className="w-4 h-4" />
-              <span>Save & Update Health Profile</span>
+              <span>Save Health Profile</span>
             </button>
 
             <button
               type="button"
               onClick={handleSaveAndRunCheck}
-              className="pill-btn-secondary w-full sm:w-auto py-3.5 text-sm font-bold flex items-center justify-center gap-2"
+              className={`pill-btn-secondary w-full sm:w-auto py-3.5 text-sm font-bold flex items-center justify-center gap-2 ${
+                !targetMedicine.trim() ? 'opacity-70' : ''
+              }`}
             >
               <Sparkles className="w-4 h-4 text-[#235339]" />
-              <span>Run Medicine Safety Check ({targetMedicine || 'Medicine'}) →</span>
+              <span>
+                {targetMedicine.trim()
+                  ? `Run Safety Check on ${targetMedicine} →`
+                  : 'Select a Medicine Above to Run Check →'}
+              </span>
             </button>
           </div>
 

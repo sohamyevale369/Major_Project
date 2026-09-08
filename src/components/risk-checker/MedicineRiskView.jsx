@@ -29,39 +29,64 @@ import RiskBadge from '../common/RiskBadge';
 export default function MedicineRiskView() {
   const {
     patient,
+    currentUser,
     currentAnalysis,
+    hasUpdatedPersonalDetails,
     runSafetyCheck,
     setActiveTab,
     showToast
   } = useHealth();
 
   const [inputOption, setInputOption] = useState('search'); // 'search' | 'manual' | 'ocr'
-  const defaultInitialMed = currentAnalysis?.medicineName || patient?.currentMedicines?.[0]?.name || 'Paracetamol (Acetaminophen)';
-  const [selectedMedName, setSelectedMedName] = useState(defaultInitialMed);
-  const [dosage, setDosage] = useState(currentAnalysis?.dosage || patient?.currentMedicines?.[0]?.dosage || '500 mg');
-  const [frequency, setFrequency] = useState(currentAnalysis?.frequency || patient?.currentMedicines?.[0]?.frequency || 'Once daily with meals');
+  // Start clean and EMPTY by default — no autoselection if profile is incomplete or unselected
+  const [selectedMedName, setSelectedMedName] = useState(
+    hasUpdatedPersonalDetails && currentAnalysis?.medicineName ? currentAnalysis.medicineName : ''
+  );
+  const [dosage, setDosage] = useState(
+    hasUpdatedPersonalDetails && currentAnalysis?.dosage ? currentAnalysis.dosage : ''
+  );
+  const [frequency, setFrequency] = useState(
+    hasUpdatedPersonalDetails && currentAnalysis?.frequency ? currentAnalysis.frequency : ''
+  );
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-  // Synchronize inputs whenever currentAnalysis or patient changes
+  // Synchronize inputs only when currentAnalysis is set and user actually has updated profile
   useEffect(() => {
+    if (!hasUpdatedPersonalDetails) {
+      setSelectedMedName('');
+      setDosage('');
+      setFrequency('');
+      return;
+    }
     if (currentAnalysis?.medicineName) {
       setSelectedMedName(currentAnalysis.medicineName);
       if (currentAnalysis.dosage) setDosage(currentAnalysis.dosage);
       if (currentAnalysis.frequency) setFrequency(currentAnalysis.frequency);
-    } else {
-      const fallbackMed = patient?.currentMedicines?.[0]?.name || patient?.recommendedTestDrug || 'Paracetamol (Acetaminophen)';
-      setSelectedMedName(fallbackMed);
-      setDosage(patient?.currentMedicines?.[0]?.dosage || '500 mg');
-      setFrequency(patient?.currentMedicines?.[0]?.frequency || 'Once daily with meals');
     }
-  }, [currentAnalysis, patient]);
+  }, [currentAnalysis, hasUpdatedPersonalDetails]);
 
   const currentMedMeta = COMMON_MEDICATIONS.find(
-    m => m.name.toLowerCase() === selectedMedName.toLowerCase() ||
-         m.brandNames.some(b => b.toLowerCase() === selectedMedName.toLowerCase())
+    m => selectedMedName && (m.name.toLowerCase() === selectedMedName.toLowerCase() ||
+         m.brandNames.some(b => b.toLowerCase() === selectedMedName.toLowerCase()))
   );
 
   const handleSelectMedChip = (med) => {
+    if (!hasUpdatedPersonalDetails) {
+      showToast('Update health profile to generate reports. Please record conditions or allergies first.', 'error');
+      setActiveTab('profile');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    const isSelected = Boolean(selectedMedName && selectedMedName.toLowerCase() === med.name.toLowerCase());
+    if (isSelected) {
+      // Toggle off / deselect
+      setSelectedMedName('');
+      setDosage('');
+      setFrequency('');
+      return;
+    }
+
     setSelectedMedName(med.name);
     setDosage(med.defaultDosage);
     setFrequency(med.defaultFrequency);
@@ -69,6 +94,10 @@ export default function MedicineRiskView() {
   };
 
   const executeAnalysis = (medName, medDose, medFreq) => {
+    if (!hasUpdatedPersonalDetails) {
+      showToast('Update health profile to generate reports. Please record conditions or allergies first.', 'error');
+      return;
+    }
     setIsAnalyzing(true);
     setTimeout(() => {
       runSafetyCheck(medName, medDose, medFreq, patient);
@@ -79,10 +108,46 @@ export default function MedicineRiskView() {
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
-    if (selectedMedName.trim()) {
-      executeAnalysis(selectedMedName.trim(), dosage, frequency);
+    if (!hasUpdatedPersonalDetails) {
+      showToast('Update health profile to generate reports. Please add at least one condition, allergy, or medication first.', 'error');
+      setActiveTab('profile');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
     }
+
+    if (!selectedMedName.trim()) {
+      showToast('No medicine selected. Please choose or enter a medicine to evaluate.', 'error');
+      return;
+    }
+
+    executeAnalysis(selectedMedName.trim(), dosage || 'Standard dose', frequency || 'As directed');
   };
+
+  // Admin Guard: Admins do not run individual medication risk evaluations
+  if (currentUser?.role === 'admin') {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-20 text-center space-y-5 animate-fade-in">
+        <div className="w-16 h-16 rounded-2xl bg-purple-50 text-purple-700 border border-purple-200 flex items-center justify-center mx-auto shadow-sm">
+          <ShieldCheck className="w-8 h-8" />
+        </div>
+        <div className="space-y-2">
+          <span className="section-tag mb-0">ADMINISTRATIVE NOTICE</span>
+          <h1 className="text-2xl font-black text-[#18231C]">
+            Medicine Risk Checker Disabled for Admin
+          </h1>
+          <p className="text-xs sm:text-sm text-[#5A645D] max-w-md mx-auto leading-relaxed">
+            The Medicine Risk Checker is designed for patients and clinicians evaluating specific clinical prescriptions. Administrators maintain control rights over patient records and system databases.
+          </p>
+        </div>
+        <button
+          onClick={() => setActiveTab('admin')}
+          className="pill-btn-primary text-xs py-2.5 px-6 mx-auto cursor-pointer"
+        >
+          Open Admin Console & Patient Records →
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-8 bg-[#F6F4ED] text-[#18231C]">
@@ -113,6 +178,28 @@ export default function MedicineRiskView() {
           <span>Edit Patient Profile</span>
         </button>
       </div>
+
+      {/* Incomplete Profile Warning Notice */}
+      {!hasUpdatedPersonalDetails && (
+        <div className="p-4 rounded-2xl bg-amber-50 border border-amber-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-amber-950 shadow-xs">
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="w-5 h-5 text-amber-800 shrink-0" />
+            <div className="text-xs text-amber-900">
+              <strong>Health Profile Incomplete:</strong> No medical conditions or allergies logged. Update your health profile to enable medication safety checks and generate reports.
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab('profile');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className="pill-btn-primary text-xs py-1.5 px-3.5 bg-amber-800 hover:bg-amber-900 text-white shrink-0 font-bold cursor-pointer"
+          >
+            <span>Update Health Profile →</span>
+          </button>
+        </div>
+      )}
 
       {/* Main Section: Search & Input Form (Step 7: Option 1, Option 2, Option 3) */}
       <div className="ivory-card p-6 sm:p-8 space-y-6 shadow-sm">
@@ -171,7 +258,7 @@ export default function MedicineRiskView() {
           </span>
           <div className="flex flex-wrap gap-2">
             {COMMON_MEDICATIONS.map((med) => {
-              const isSelected = selectedMedName.toLowerCase() === med.name.toLowerCase();
+              const isSelected = Boolean(selectedMedName && selectedMedName.toLowerCase() === med.name.toLowerCase());
               return (
                 <button
                   type="button"
@@ -251,12 +338,19 @@ export default function MedicineRiskView() {
             <button
               type="submit"
               disabled={isAnalyzing}
-              className="pill-btn-primary w-full py-3.5 text-sm font-bold shadow-md disabled:opacity-50"
+              className={`pill-btn-primary w-full py-3.5 text-sm font-bold shadow-md disabled:opacity-50 ${
+                !hasUpdatedPersonalDetails ? 'bg-amber-800 hover:bg-amber-900 text-white' : ''
+              }`}
             >
               {isAnalyzing ? (
                 <>
                   <RefreshCw className="w-4 h-4 animate-spin text-white" />
                   <span>Computing Explainable AI Safety…</span>
+                </>
+              ) : !hasUpdatedPersonalDetails ? (
+                <>
+                  <AlertTriangle className="w-4 h-4 text-white" />
+                  <span>Update Health Profile to Generate Reports</span>
                 </>
               ) : (
                 <>
@@ -269,8 +363,36 @@ export default function MedicineRiskView() {
         </form>
       </div>
 
-      {/* AI ANALYSIS RESULTS VIEW (Step 8: Medicine Risk Result) */}
-      {currentAnalysis && (
+      {/* If health profile is incomplete, NEVER show results or predictions. Always show: Update Health Profile to Generate Reports */}
+      {!hasUpdatedPersonalDetails ? (
+        <div className="ivory-card p-8 sm:p-12 text-center space-y-4 shadow-sm animate-fade-in border-2 border-dashed border-amber-300 bg-[#FDFBF7]">
+          <div className="w-14 h-14 rounded-2xl bg-amber-100 text-amber-900 mx-auto flex items-center justify-center font-bold">
+            <AlertTriangle className="w-7 h-7 text-amber-800" />
+          </div>
+          <div className="space-y-1.5 max-w-lg mx-auto">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-200/80 text-amber-900 text-[11px] font-bold font-mono uppercase border border-amber-300">
+              <span>⚠ Health Profile Incomplete</span>
+            </span>
+            <h3 className="text-xl sm:text-2xl font-black text-[#18231C] uppercase tracking-tight">
+              Update Health Profile to Generate Reports
+            </h3>
+            <p className="text-xs sm:text-sm text-[#5A645D]">
+              No medical conditions, drug allergies, or active medications are recorded for {patient.name}. To evaluate drug safety, detect interactions, and generate clinical safety reports, please update your health profile first.
+            </p>
+          </div>
+          <div className="pt-2">
+            <button
+              onClick={() => {
+                setActiveTab('profile');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className="pill-btn-primary text-xs sm:text-sm py-3 px-6 bg-amber-800 hover:bg-amber-900 text-white font-bold inline-flex items-center gap-2 cursor-pointer shadow-md"
+            >
+              <span>Update Health Profile to Generate Reports →</span>
+            </button>
+          </div>
+        </div>
+      ) : currentAnalysis ? (
         <div className="space-y-6 animate-fade-in">
           
           {/* Result Card styled like Reference Image 5 */}
@@ -412,11 +534,8 @@ export default function MedicineRiskView() {
           />
 
         </div>
-      )}
-
-      {/* Pristine Clean State when current user has not evaluated a medicine in this session */}
-      {!currentAnalysis && (
-        <div className="ivory-card p-8 sm:p-10 text-center space-y-4 shadow-sm animate-fade-in border-2 border-dashed border-[#C6DDD0]">
+      ) : (
+        <div className="ivory-card p-8 sm:p-10 text-center space-y-3 shadow-sm animate-fade-in border-2 border-dashed border-[#C6DDD0]">
           <div className="w-14 h-14 rounded-2xl bg-[#E2EFE7] text-[#235339] mx-auto flex items-center justify-center shadow-sm">
             <Pill className="w-7 h-7" />
           </div>
@@ -425,25 +544,11 @@ export default function MedicineRiskView() {
               <span>● Clean Session Ready</span>
             </div>
             <h3 className="text-xl font-black text-[#18231C] uppercase tracking-tight">
-              Ready to Evaluate Medicine Safety for {patient?.name || 'Patient'}
+              No Medicine Selected for Evaluation
             </h3>
             <p className="text-xs sm:text-sm text-[#5A645D] max-w-lg mx-auto">
-              No previous medication evaluated in this session. Select any medicine above or click a quick suggestion below to run a personalized AI risk prediction calibrated for Age {patient.age}y ({patient.gender}, {patient.weight}kg).
+              No medication has been selected yet. Choose a medication chip above or enter a medicine name, dosage, and frequency to run safety checks and generate your clinical report.
             </p>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-center gap-2.5 pt-3">
-            {COMMON_MEDICATIONS.slice(0, 4).map((med) => (
-              <button
-                key={med.id}
-                onClick={() => handleSelectMedChip(med)}
-                className="px-4 py-2 rounded-full bg-white border border-[#D5CDBF] text-xs font-bold text-[#18231C] hover:border-[#235339] hover:bg-[#E2EFE7] hover:text-[#1E5034] transition flex items-center gap-1.5 shadow-xs cursor-pointer"
-              >
-                <Sparkles className="w-3.5 h-3.5 text-[#235339]" />
-                <span>Evaluate {med.name}</span>
-                <span className="text-[10px] font-mono text-[#6A746C]">({med.defaultDosage})</span>
-              </button>
-            ))}
           </div>
         </div>
       )}

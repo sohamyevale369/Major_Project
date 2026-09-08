@@ -2,9 +2,10 @@ import React from 'react';
 import { Printer, Shield, FileText, CheckCircle, AlertTriangle, Download, ArrowLeft } from 'lucide-react';
 import { useHealth } from '../../context/HealthContext';
 import RiskBadge from '../common/RiskBadge';
+import { MediSafeLogoMark } from '../common/BrandLogo';
 
 export default function SafetyReportView() {
-  const { patient, currentAnalysis, setActiveTab } = useHealth();
+  const { patient, currentUser, currentAnalysis, hasUpdatedPersonalDetails, setActiveTab } = useHealth();
 
   const handlePrint = () => {
     window.print();
@@ -16,6 +17,32 @@ export default function SafetyReportView() {
     month: 'long',
     day: 'numeric'
   });
+
+  // Admin access guard: Admin does not track health or generate self-reports
+  if (currentUser?.role === 'admin') {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-20 text-center space-y-5 animate-fade-in">
+        <div className="w-16 h-16 rounded-2xl bg-purple-50 text-purple-700 border border-purple-200 flex items-center justify-center mx-auto shadow-sm">
+          <Shield className="w-8 h-8" />
+        </div>
+        <div className="space-y-2">
+          <span className="section-tag mb-0">ADMINISTRATIVE ROLE NOTICE</span>
+          <h1 className="text-2xl font-black text-[#18231C]">
+            Health Reports Disabled for Administrators
+          </h1>
+          <p className="text-xs sm:text-sm text-[#5A645D] max-w-md mx-auto leading-relaxed">
+            Administrators do not track personal health or generate self-reports. Your administrative role gives you control rights to manage patient accounts and inspect individual patient dossiers.
+          </p>
+        </div>
+        <button
+          onClick={() => setActiveTab('admin')}
+          className="pill-btn-primary text-xs py-2.5 px-6 mx-auto cursor-pointer"
+        >
+          Open Admin Console & Patient Records →
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-6">
@@ -40,7 +67,33 @@ export default function SafetyReportView() {
       </div>
 
       {/* Printable Clinical Document */}
-      {!currentAnalysis ? (
+      {(!hasUpdatedPersonalDetails || (patient.diseases?.length === 0 && patient.allergies?.length === 0 && patient.currentMedicines?.length === 0)) ? (
+        <div className="p-12 text-center rounded-3xl bg-white text-[#18231C] border border-[#E5DFD1] shadow-xl space-y-4">
+          <div className="w-14 h-14 rounded-2xl bg-amber-100 text-amber-900 mx-auto flex items-center justify-center font-bold">
+            <AlertTriangle className="w-7 h-7 text-amber-800" />
+          </div>
+          <div className="space-y-1.5 max-w-md mx-auto">
+            <span className="inline-flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase tracking-wider text-amber-900 bg-amber-200/80 px-2.5 py-0.5 rounded-full border border-amber-300">
+              Health Profile Required
+            </span>
+            <h3 className="text-xl font-black uppercase text-[#18231C]">
+              Update Health Profile to Generate Reports
+            </h3>
+            <p className="text-xs text-[#5A645D]">
+              <strong>{patient?.name || 'Your account'}</strong> has not recorded medical conditions, drug allergies, or active prescriptions yet. Clinical safety reports and dossiers require your health profile to evaluate interactions and contraindications.
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              setActiveTab('profile');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className="pill-btn-primary text-xs py-2.5 px-5 mx-auto bg-amber-800 hover:bg-amber-900 text-white font-bold cursor-pointer"
+          >
+            <span>Update Health Profile to Generate Reports →</span>
+          </button>
+        </div>
+      ) : !currentAnalysis ? (
         <div className="p-12 text-center rounded-3xl bg-white text-[#18231C] border border-[#E5DFD1] shadow-xl space-y-4">
           <div className="w-14 h-14 rounded-2xl bg-[#E2EFE7] text-[#235339] mx-auto flex items-center justify-center">
             <FileText className="w-7 h-7" />
@@ -66,9 +119,7 @@ export default function SafetyReportView() {
         {/* Document Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b-2 border-[#18231C]">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-[#235339] text-[#F5F2EA] flex items-center justify-center font-black text-xl shadow-xs">
-              +
-            </div>
+            <MediSafeLogoMark size={46} />
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-mono tracking-widest uppercase text-[#235339] font-bold">

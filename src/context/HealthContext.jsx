@@ -21,44 +21,55 @@ import {
   clearGlobalTaskCaches
 } from '../data/userStorage';
 
-// Pre-seeded tasks for Soham so his previous session is preserved
-function getSohamDefaultTasks(user) {
-  const sohamAnalysis = evaluateMedicationSafety(
-    user,
-    'Diclofenac',
-    '50mg',
-    'If required (SOS)'
+// Pre-seeded tasks for Netra so her verified evaluations (Image 1) are preserved in complete isolation
+function getNetraDefaultTasks(user) {
+  const netraPatient = {
+    ...user,
+    name: user?.name || 'Netra Vikas Yevale',
+    diseases: ['Hypertension (High Blood Pressure)'],
+    chronicDiseases: ['Hypertension (High Blood Pressure)'],
+    allergies: ['Sulfa Drugs (Sulfonamides)'],
+    currentMedicines: [{ name: 'Lisinopril', dosage: '10mg', frequency: 'Once daily' }],
+    age: 45,
+    gender: 'Female',
+    hasUpdatedProfile: true
+  };
+  const netraAnalysis = evaluateMedicationSafety(
+    netraPatient,
+    'Lisinopril',
+    '10mg',
+    'Once daily'
   );
-  const sohamHist = [
+  const netraHist = [
     {
-      id: 'hist-soham-1',
+      id: 'hist-netra-1',
       date: '2026-09-07',
-      time: '10:15 PM',
-      medicineName: 'Diclofenac',
-      dosage: '50mg',
+      time: '10:58 PM',
+      medicineName: 'Amoxicillin Trihydrate',
+      dosage: '',
       riskScore: 35,
       riskLevel: 'MEDIUM',
-      primaryAlert: 'Chronic Kidney Disease Caution — Monitor Renal Function',
-      status: 'Evaluated in OCR Session'
+      primaryAlert: 'Routine Safety Evaluation',
+      status: 'Evaluated Safe'
     },
     {
-      id: 'hist-soham-2',
+      id: 'hist-netra-2',
       date: '2026-09-07',
-      time: '09:40 PM',
-      medicineName: 'Paracetamol',
-      dosage: '500mg',
-      riskScore: 18,
+      time: '10:51 PM',
+      medicineName: 'Lisinopril',
+      dosage: '10mg',
+      riskScore: 12,
       riskLevel: 'LOW',
-      primaryAlert: 'Safe for Kidney Profile with Liver Monitoring',
+      primaryAlert: 'Routine Safety Evaluation',
       status: 'Evaluated Safe'
     }
   ];
   return {
-    currentAnalysis: sohamAnalysis,
-    selectedMedName: 'Diclofenac',
-    dosage: '50mg',
-    frequency: 'If required (SOS)',
-    medicationHistory: sohamHist
+    currentAnalysis: netraAnalysis,
+    selectedMedName: 'Lisinopril',
+    dosage: '10mg',
+    frequency: 'Once daily',
+    medicationHistory: netraHist
   };
 }
 
@@ -169,6 +180,14 @@ export function HealthProvider({ children }) {
   // Active view: 'home' | 'dashboard' | 'risk-checker' | 'interactions' | 'ocr' | 'profile' | 'history' | 'report' | 'admin'
   const [activeTab, setActiveTabState] = useState(() => {
     try {
+      const activeUser = getActiveUserSession();
+      if (activeUser?.role === 'admin') {
+        const stored = sessionStorage.getItem('medisafe_active_tab');
+        if (['dashboard', 'risk-checker', 'profile', 'history', 'report'].includes(stored)) {
+          return 'admin';
+        }
+        return stored || 'admin';
+      }
       return sessionStorage.getItem('medisafe_active_tab') || 'home';
     } catch (e) {
       return 'home';
@@ -180,31 +199,60 @@ export function HealthProvider({ children }) {
       showToast('No access to Admin Console for patients and doctors.', 'error');
       return;
     }
+    // Admin role should only have control rights and not track personal health or generate self-reports
+    if (currentUser?.role === 'admin') {
+      const patientTrackingTabs = ['dashboard', 'risk-checker', 'profile', 'history', 'report'];
+      if (patientTrackingTabs.includes(newTab)) {
+        showToast('Health tracking is for patients only. Admin has governance & patient record access.', 'info');
+        setActiveTabState('admin');
+        try {
+          sessionStorage.setItem('medisafe_active_tab', 'admin');
+        } catch (e) {}
+        return;
+      }
+    }
     try {
       sessionStorage.setItem('medisafe_active_tab', newTab);
     } catch (e) {}
     setActiveTabState(newTab);
   };
 
+  // Helper to check if a user record contains documented clinical health profile data
+  const userHasProfileData = (u) => {
+    if (!u) return false;
+    const d = u.chronicDiseases || u.diseases || [];
+    const a = u.allergies || [];
+    const m = u.currentMedicines || [];
+    return d.length > 0 || a.length > 0 || m.length > 0;
+  };
+
   // User-isolated active analysis & task session
   const [currentAnalysis, setCurrentAnalysisState] = useState(() => {
     const activeUser = getActiveUserSession();
     if (!activeUser) return null;
+
+    // Users with incomplete profiles (empty diseases/allergies/meds) NEVER have reports or analysis!
+    if (!userHasProfileData(activeUser)) {
+      return null;
+    }
+
     const tasks = loadUserSessionTasks(activeUser);
     if (tasks && tasks.currentAnalysis) {
       return tasks.currentAnalysis;
     }
-    // Pre-populate Soham's previous session analysis so his previous work is preserved
-    if (activeUser.email?.toLowerCase().includes('soham')) {
-      return getSohamDefaultTasks(activeUser).currentAnalysis;
+
+    if (activeUser.email?.toLowerCase().includes('netra')) {
+      const def = getNetraDefaultTasks(activeUser);
+      saveUserSessionTasks(activeUser, def);
+      return def.currentAnalysis;
     }
-    // Vikas and all other users start with a fresh clean state
+
     return null;
   });
 
   const setCurrentAnalysis = (newAnalysis) => {
     setCurrentAnalysisState(newAnalysis);
-    if (currentUser) {
+    if (currentUser && userHasProfileData(currentUser)) {
       const existing = loadUserSessionTasks(currentUser) || {};
       saveUserSessionTasks(currentUser, {
         ...existing,
@@ -220,15 +268,23 @@ export function HealthProvider({ children }) {
   const [medicationHistory, setMedicationHistoryState] = useState(() => {
     const activeUser = getActiveUserSession();
     if (!activeUser) return [];
+
+    // Users with incomplete profiles (empty diseases/allergies/meds) NEVER have prediction logs!
+    if (!userHasProfileData(activeUser)) {
+      return [];
+    }
+
     const tasks = loadUserSessionTasks(activeUser);
     if (tasks && Array.isArray(tasks.medicationHistory)) {
       return tasks.medicationHistory;
     }
-    // Pre-populate Soham's previous evaluation logs
-    if (activeUser.email?.toLowerCase().includes('soham')) {
-      return getSohamDefaultTasks(activeUser).medicationHistory;
+
+    if (activeUser.email?.toLowerCase().includes('netra')) {
+      const def = getNetraDefaultTasks(activeUser);
+      saveUserSessionTasks(activeUser, def);
+      return def.medicationHistory;
     }
-    // Vikas and other users start with clean 0 logs
+
     return [];
   });
 
@@ -302,13 +358,18 @@ export function HealthProvider({ children }) {
           ? found.currentMedicines
           : [];
 
-        const hasUpdated = Boolean(
-          found.hasUpdatedProfile ||
-          currentUser.hasUpdatedProfile ||
+        const hasClinicalData = Boolean(
           userDiseases.length > 0 ||
           userAllergies.length > 0 ||
           userMedicines.length > 0
         );
+
+        if (!hasClinicalData) {
+          setCurrentAnalysisState(null);
+          setMedicationHistoryState([]);
+        }
+
+        const hasUpdated = Boolean(hasClinicalData && found.hasUpdatedProfile !== false);
 
         setPatient({
           id: found.id || currentUser.id,
@@ -388,19 +449,22 @@ export function HealthProvider({ children }) {
     setCurrentUser(loggedUser);
 
     // 2. Load isolated task session for this user
-    const userTasks = loadUserSessionTasks(loggedUser);
-    if (userTasks) {
-      setCurrentAnalysisState(userTasks.currentAnalysis || null);
-      setMedicationHistoryState(Array.isArray(userTasks.medicationHistory) ? userTasks.medicationHistory : []);
+    if (!userHasProfileData(loggedUser)) {
+      // User with empty conditions/allergies: NO report generated!
+      setCurrentAnalysisState(null);
+      setMedicationHistoryState([]);
+      saveUserSessionTasks(loggedUser, { currentAnalysis: null, medicationHistory: [] });
     } else {
-      // If user is Soham and hasn't saved tasks yet, pre-populate Soham's previous session
-      if (loggedUser.email?.toLowerCase().includes('soham')) {
-        const defaults = getSohamDefaultTasks(loggedUser);
+      const userTasks = loadUserSessionTasks(loggedUser);
+      if (userTasks && userTasks.currentAnalysis) {
+        setCurrentAnalysisState(userTasks.currentAnalysis);
+        setMedicationHistoryState(Array.isArray(userTasks.medicationHistory) ? userTasks.medicationHistory : []);
+      } else if (loggedUser.email?.toLowerCase().includes('netra')) {
+        const defaults = getNetraDefaultTasks(loggedUser);
         saveUserSessionTasks(loggedUser, defaults);
         setCurrentAnalysisState(defaults.currentAnalysis);
         setMedicationHistoryState(defaults.medicationHistory);
       } else {
-        // Vikas or any other new user starts with a fresh clean session!
         setCurrentAnalysisState(null);
         setMedicationHistoryState([]);
         saveUserSessionTasks(loggedUser, { currentAnalysis: null, medicationHistory: [] });
@@ -424,7 +488,8 @@ export function HealthProvider({ children }) {
         chronicDiseases: uDiseases,
         allergies: uAllergies,
         medicalHistory: loggedUser.medicalHistory || loggedUser.notes || 'Registered MediSafe personal profile.',
-        currentMedicines: uMedicines
+        currentMedicines: uMedicines,
+        hasUpdatedProfile: Boolean(loggedUser.hasUpdatedProfile || uDiseases.length > 0 || uAllergies.length > 0 || uMedicines.length > 0)
       });
     }
 
@@ -471,7 +536,8 @@ export function HealthProvider({ children }) {
           chronicDiseases: uDiseases,
           allergies: uAllergies,
           medicalHistory: newUser.medicalHistory || newUser.notes || 'Registered MediSafe personal profile.',
-          currentMedicines: uMedicines
+          currentMedicines: uMedicines,
+          hasUpdatedProfile: Boolean(newUser.hasUpdatedProfile || uDiseases.length > 0 || uAllergies.length > 0 || uMedicines.length > 0)
         });
       }
 
@@ -589,6 +655,19 @@ export function HealthProvider({ children }) {
     }
   };
 
+  // Admin: Update individual patient record (demographics, chronic diseases, drug allergies, active medicines)
+  const adminUpdatePatientRecord = (userId, updates) => {
+    if (currentUser?.role !== 'admin') {
+      showToast('No access to Admin Console for patients and doctors.', 'error');
+      return;
+    }
+    updateUserDetails(userId, updates);
+    if (patient?.id === userId) {
+      setPatient(prev => ({ ...prev, ...updates }));
+    }
+    refreshUsersAndLogs();
+  };
+
   // Swaps patient profile to a pre-configured scenario
   const loadPatientPreset = (presetPatient) => {
     // If the logged in user is a patient, strictly forbid switching to another patient's data
@@ -693,7 +772,14 @@ export function HealthProvider({ children }) {
       setUsers(updatedUsers);
     }
 
-    if (currentAnalysis?.medicineName) {
+    const hasProfileNow = Boolean(diseases.length > 0 || allergies.length > 0 || currentMedicines.length > 0);
+    if (!hasProfileNow) {
+      setCurrentAnalysisState(null);
+      setMedicationHistoryState([]);
+      if (currentUser) {
+        saveUserSessionTasks(currentUser, { currentAnalysis: null, medicationHistory: [] });
+      }
+    } else if (currentAnalysis?.medicineName) {
       const recheck = evaluateMedicationSafety(
         newPatientData,
         currentAnalysis.medicineName,
@@ -710,6 +796,18 @@ export function HealthProvider({ children }) {
   // Run analysis on a new medicine (accepts optional targetPatient for immediate synchronous analysis)
   const runSafetyCheck = (medicineName, dosage, frequency, targetPatient) => {
     const patientToEvaluate = targetPatient || patient;
+    const hasProfile = Boolean(
+      (patientToEvaluate?.diseases && patientToEvaluate.diseases.length > 0) ||
+      (patientToEvaluate?.chronicDiseases && patientToEvaluate.chronicDiseases.length > 0) ||
+      (patientToEvaluate?.allergies && patientToEvaluate.allergies.length > 0) ||
+      (patientToEvaluate?.currentMedicines && patientToEvaluate.currentMedicines.length > 0)
+    );
+
+    if (!hasProfile) {
+      showToast('Update health profile to generate reports. Please add at least one condition, allergy, or medication first.', 'error');
+      return null;
+    }
+
     const analysis = evaluateMedicationSafety(patientToEvaluate, medicineName, dosage, frequency);
     setCurrentAnalysis(analysis);
 
@@ -761,12 +859,14 @@ export function HealthProvider({ children }) {
   };
 
   // Computed status: Has the active patient updated their personal health profile?
+  // An updated profile strictly requires documented clinical details (conditions, allergies, or active medications)
   const hasUpdatedPersonalDetails = Boolean(
-    currentUser?.hasUpdatedProfile ||
-    patient?.hasUpdatedProfile ||
     (patient?.diseases && patient.diseases.length > 0) ||
     (patient?.allergies && patient.allergies.length > 0) ||
-    (patient?.currentMedicines && patient.currentMedicines.length > 0)
+    (patient?.currentMedicines && patient.currentMedicines.length > 0) ||
+    (currentUser?.chronicDiseases && currentUser.chronicDiseases.length > 0) ||
+    (currentUser?.allergies && currentUser.allergies.length > 0) ||
+    (currentUser?.currentMedicines && currentUser.currentMedicines.length > 0)
   );
 
   return (
@@ -785,6 +885,7 @@ export function HealthProvider({ children }) {
         changeUserStatus,
         removeUser,
         adminAddUser,
+        adminUpdatePatientRecord,
         patient,
         setPatient,
         hasUpdatedPersonalDetails,

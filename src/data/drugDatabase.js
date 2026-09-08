@@ -483,6 +483,58 @@ export const COMMON_MEDICATIONS = [
         doctorNote: 'Effective step-down therapy for heartburn without prolonged PPI adverse profiles.'
       }
     ]
+  },
+  {
+    id: 'med-11',
+    name: 'Sulfamethoxazole',
+    brandNames: ['Bactrim', 'Septra', 'Cotrimoxazole', 'Sulfamethoxazole-Trimethoprim'],
+    category: 'Sulfonamide Antibacterial',
+    commonDosages: ['400mg', '800mg'],
+    defaultDosage: '800mg',
+    defaultFrequency: 'Twice daily with full glass of water',
+    frequencies: ['Once daily', 'Twice daily with full glass of water'],
+    primaryUse: 'Urinary tract infections, respiratory infections, and bronchitis',
+    contraindicatedDiseases: [
+      {
+        disease: 'Severe Renal Impairment / Kidney Disease',
+        riskSeverity: 'HIGH',
+        explanation: 'Sulfonamide metabolites can crystallize in urine, causing tubular obstruction and renal stone formation.',
+        addedRisk: 35
+      },
+      {
+        disease: 'Severe Hepatic Impairment',
+        riskSeverity: 'HIGH',
+        explanation: 'Extensively metabolized by the liver; accumulation of toxic intermediates impairs hepatic clearance.',
+        addedRisk: 30
+      }
+    ],
+    allergyClasses: ['Sulfa Drugs (Sulfonamides)', 'Sulfonamides', 'Sulfa'],
+    baseSideEffects: [
+      { name: 'Nausea & Vomiting', baseRate: 28, severe: false },
+      { name: 'Severe Allergic Skin Rash / Hives', baseRate: 38, severe: true },
+      { name: 'Photosensitivity / Sunburn Reaction', baseRate: 24, severe: false },
+      { name: 'Hyperkalemia (Elevated Potassium)', baseRate: 18, severe: true }
+    ],
+    alternatives: [
+      {
+        name: 'Nitrofurantoin (Macrobid)',
+        dosage: '100mg twice daily',
+        category: 'Non-Sulfa Urinary Anti-Infective',
+        whySafer: 'Contains zero sulfonamide rings; safe for patients with severe sulfa drug hypersensitivity.',
+        projectedRiskScore: 14,
+        riskLevel: 'LOW',
+        doctorNote: 'Clinician-approved first-line alternative for urinary infections in patients with documented sulfa allergy.'
+      },
+      {
+        name: 'Amoxicillin Trihydrate',
+        dosage: '500mg three times daily',
+        category: 'Beta-Lactam Antibiotic',
+        whySafer: 'Completely different chemical class from sulfonamides, eliminating cross-allergen excitation.',
+        projectedRiskScore: 16,
+        riskLevel: 'LOW',
+        doctorNote: 'Recommended non-sulfa substitute if culture confirms beta-lactam susceptibility.'
+      }
+    ]
   }
 ];
 

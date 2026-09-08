@@ -4,7 +4,7 @@
 const USERS_STORAGE_KEY = 'medisafe_users';
 const CURRENT_USER_KEY = 'medisafe_active_user';
 const AUDIT_LOGS_KEY = 'medisafe_audit_logs';
-export const STORAGE_SYNC_VERSION = 'medisafe_v5_tab_sync';
+export const STORAGE_SYNC_VERSION = 'medisafe_v6_tab_sync';
 
 // Authorized Security Token Key for Administrator Account Creation
 export const ADMIN_REGISTRATION_TOKEN = 'MEDI0284517';
@@ -320,8 +320,15 @@ export function registerNewUser(userData) {
     gender: userData.gender || 'Not Specified',
     chronicDiseases: userData.chronicDiseases || [],
     allergies: userData.allergies || [],
+    currentMedicines: userData.currentMedicines || [],
     status: 'Active',
     isNewUser: true, // Marked as newly registered
+    hasUpdatedProfile: Boolean(
+      userData.hasUpdatedProfile ||
+      (Array.isArray(userData.chronicDiseases) && userData.chronicDiseases.length > 0) ||
+      (Array.isArray(userData.allergies) && userData.allergies.length > 0) ||
+      (Array.isArray(userData.currentMedicines) && userData.currentMedicines.length > 0)
+    ),
     registeredAt: now,
     lastLogin: now,
     notes: userData.notes || 'Registered through MediSafe AI online portal.'
@@ -471,16 +478,41 @@ export function adminCreateUser(userData) {
  */
 export function getUserTasksKey(user) {
   if (!user) return 'medisafe_tasks_guest';
-  const raw = user.id || (user.email ? user.email.toLowerCase().trim() : 'guest');
+  let email = user.email ? String(user.email).toLowerCase().trim() : '';
+  let id = user.id ? String(user.id).trim() : '';
+
+  // If email is missing, lookup user by id in database
+  if (!email && id) {
+    try {
+      const all = getAllUsers();
+      const found = all.find(u => u.id === id);
+      if (found && found.email) {
+        email = String(found.email).toLowerCase().trim();
+      }
+    } catch (e) {}
+  }
+
+  // Prioritize unique normalized email, fallback to id
+  const raw = email || id || 'guest';
   const safeId = String(raw).replace(/[^a-zA-Z0-9_-]/g, '_');
   return `medisafe_user_tasks_${safeId}`;
 }
 
 /**
  * Loads a specific user's saved session tasks (analysis, history, selected med)
+ * Strictly returns null if user has not updated their health profile!
  */
 export function loadUserSessionTasks(user) {
   if (!user) return null;
+  const hasProfileData = Boolean(
+    (user.chronicDiseases && user.chronicDiseases.length > 0) ||
+    (user.diseases && user.diseases.length > 0) ||
+    (user.allergies && user.allergies.length > 0) ||
+    (user.currentMedicines && user.currentMedicines.length > 0)
+  );
+  if (!hasProfileData) {
+    return null;
+  }
   try {
     const key = getUserTasksKey(user);
     if (typeof localStorage !== 'undefined') {
@@ -500,9 +532,19 @@ export function loadUserSessionTasks(user) {
  */
 export function saveUserSessionTasks(user, tasks) {
   if (!user || !tasks) return;
+  const hasProfileData = Boolean(
+    (user.chronicDiseases && user.chronicDiseases.length > 0) ||
+    (user.diseases && user.diseases.length > 0) ||
+    (user.allergies && user.allergies.length > 0) ||
+    (user.currentMedicines && user.currentMedicines.length > 0)
+  );
   try {
     const key = getUserTasksKey(user);
     if (typeof localStorage !== 'undefined') {
+      if (!hasProfileData) {
+        localStorage.removeItem(key);
+        return;
+      }
       localStorage.setItem(key, JSON.stringify(tasks));
     }
   } catch (err) {
