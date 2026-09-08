@@ -4,7 +4,7 @@
 const USERS_STORAGE_KEY = 'medisafe_users';
 const CURRENT_USER_KEY = 'medisafe_active_user';
 const AUDIT_LOGS_KEY = 'medisafe_audit_logs';
-export const STORAGE_SYNC_VERSION = 'medisafe_v6_tab_sync';
+export const STORAGE_SYNC_VERSION = 'medisafe_v7_logo_and_admin_sync';
 
 // Authorized Security Token Key for Administrator Account Creation
 export const ADMIN_REGISTRATION_TOKEN = 'MEDI0284517';
