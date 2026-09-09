@@ -5,8 +5,6 @@ import Footer from './components/common/Footer';
 import EmergencyModal from './components/common/EmergencyModal';
 import Toast from './components/common/Toast';
 import HeroSection from './components/home/HeroSection';
-import HowItWorks from './components/home/HowItWorks';
-import FeatureGrid from './components/home/FeatureGrid';
 import HealthProfileView from './components/profile/HealthProfileView';
 import MedicineRiskView from './components/risk-checker/MedicineRiskView';
 import DrugInteractionView from './components/interactions/DrugInteractionView';
@@ -62,27 +60,18 @@ class ErrorBoundary extends React.Component {
 }
 
 function MainApp() {
-  const { activeTab, currentUser } = useHealth();
+  const { activeTab, currentUser, isAuthModalOpen, setIsAuthModalOpen } = useHealth();
 
   React.useEffect(() => {
     console.log(
-      '%c[MediSafe AI] Build Active: v2.4 (New Vector Logo + Admin Dossier & Isolation)%c',
+      '%c[MediSafe AI] Build Active: v2.4 (Guest Landing + Action-Gated Auth)%c',
       'background: #235339; color: #FFFFFF; font-size: 13px; font-weight: bold; padding: 6px 12px; border-radius: 6px;',
       ''
     );
   }, []);
 
-  // Mandatory Authentication Gate:
-  // When a user visits the site, they MUST register or sign in first.
-  // After successful validation only, the user is allowed to perform tasks.
-  if (!currentUser) {
-    return (
-      <div className="min-h-screen bg-[#F6F4ED] text-[#18231C] selection:bg-[#235339]/20 selection:text-[#235339]">
-        <AuthPortal />
-        <Toast />
-      </div>
-    );
-  }
+  // When not logged in, the active tab displayed is always the 'home' landing page
+  const effectiveTab = !currentUser ? 'home' : activeTab;
 
   return (
     <div className="min-h-screen bg-[#F6F4ED] text-[#18231C] flex flex-col selection:bg-[#235339]/20 selection:text-[#235339]">
@@ -91,22 +80,16 @@ function MainApp() {
 
       {/* Main Content Area */}
       <main className="flex-1">
-        {activeTab === 'home' && (
-          <>
-            <HeroSection />
-            <HowItWorks />
-            <FeatureGrid />
-          </>
-        )}
+        {effectiveTab === 'home' && <HeroSection />}
 
-        {activeTab === 'dashboard' && <UserDashboard />}
-        {activeTab === 'risk-checker' && <MedicineRiskView />}
-        {activeTab === 'interactions' && <DrugInteractionView />}
-        {activeTab === 'ocr' && <PrescriptionOCRView />}
-        {activeTab === 'profile' && <HealthProfileView />}
-        {activeTab === 'history' && <MedicationHistoryView />}
-        {activeTab === 'report' && <SafetyReportView />}
-        {activeTab === 'admin' && <AdminDashboardView />}
+        {effectiveTab === 'dashboard' && <UserDashboard />}
+        {effectiveTab === 'risk-checker' && <MedicineRiskView />}
+        {effectiveTab === 'interactions' && <DrugInteractionView />}
+        {effectiveTab === 'ocr' && <PrescriptionOCRView />}
+        {effectiveTab === 'profile' && <HealthProfileView />}
+        {effectiveTab === 'history' && <MedicationHistoryView />}
+        {effectiveTab === 'report' && <SafetyReportView />}
+        {effectiveTab === 'admin' && <AdminDashboardView />}
       </main>
 
       {/* Footer (hidden when printing) */}
@@ -117,6 +100,9 @@ function MainApp() {
       {/* Modals & Overlays */}
       <EmergencyModal />
       <AIChatbotModal />
+      {isAuthModalOpen && (
+        <AuthPortal isModal={true} onClose={() => setIsAuthModalOpen(false)} />
+      )}
       <Toast />
     </div>
   );

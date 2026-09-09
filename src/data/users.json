@@ -1,5 +1,47 @@
 [
   {
+    "id": "usr-new-1788963353734",
+    "name": "Pranav namdeo kamble",
+    "email": "pranavkamble6877@gmail.com",
+    "password": "panya@6877",
+    "role": "patient",
+    "department": "",
+    "licenseNumber": "",
+    "age": 25,
+    "gender": "Male",
+    "chronicDiseases": [
+      "Hypertension (High Blood Pressure)"
+    ],
+    "allergies": [],
+    "currentMedicines": [],
+    "status": "Active",
+    "isNewUser": true,
+    "hasUpdatedProfile": true,
+    "registeredAt": "2026-09-09T14:15:53.728Z",
+    "lastLogin": "2026-09-09T14:15:53.728Z",
+    "notes": "Registered through MediSafe AI online portal."
+  },
+  {
+    "id": "usr-new-1788962951614",
+    "name": "Demo3",
+    "email": "demo3@gmail.com",
+    "password": "Temp1234",
+    "role": "patient",
+    "department": "",
+    "licenseNumber": "",
+    "age": 45,
+    "gender": "Male",
+    "chronicDiseases": [],
+    "allergies": [],
+    "currentMedicines": [],
+    "status": "Active",
+    "isNewUser": true,
+    "hasUpdatedProfile": false,
+    "registeredAt": "2026-09-09T14:09:11.610Z",
+    "lastLogin": "2026-09-09T14:09:11.610Z",
+    "notes": "Registered through MediSafe AI online portal."
+  },
+  {
     "id": "usr-new-1788795004019",
     "name": "Vikas",
     "email": "vikas@gmail.com",
@@ -34,7 +76,7 @@
     "id": "usr-new-1788590733394",
     "name": "Soham Vikas Yevale",
     "email": "sohamyevale624@gmail.com",
-    "password": "Vnetra@1126",
+    "password": "Temp1234",
     "role": "patient",
     "department": "",
     "licenseNumber": "",
@@ -45,11 +87,12 @@
     "status": "Active",
     "isNewUser": false,
     "registeredAt": "2026-09-05T06:45:33.394Z",
-    "lastLogin": "2026-09-08T12:58:28.103Z",
+    "lastLogin": "2026-09-09T13:47:26.678Z",
     "notes": "Registered through MediSafe AI online portal.",
     "weight": 70,
     "currentMedicines": [],
-    "hasUpdatedProfile": true
+    "hasUpdatedProfile": true,
+    "updatedAt": "2026-09-09T13:42:28.168Z"
   },
   {
     "id": "usr-new-1788596030403",
@@ -98,7 +141,7 @@
     "status": "Active",
     "isNewUser": false,
     "registeredAt": "2024-03-15T09:00:00.000Z",
-    "lastLogin": "2026-09-05T13:40:27.032Z",
+    "lastLogin": "2026-09-09T14:21:04.254Z",
     "notes": "Chief Attending Physician. Consulted for senior nephrotoxicity alerts."
   },
   {
@@ -114,6 +157,46 @@
     "registeredAt": "2024-05-20T11:45:00.000Z",
     "lastLogin": "2025-02-28T16:00:00.000Z",
     "notes": "Cardiology Specialist. Supervises anticoagulant interaction protocols."
+  },
+  {
+    "id": "usr-new-1788961763834",
+    "name": "Demo",
+    "email": "demoadmin@gmail.com",
+    "password": "Temp1234",
+    "role": "admin",
+    "department": "",
+    "licenseNumber": "",
+    "age": 45,
+    "gender": "Male",
+    "chronicDiseases": [],
+    "allergies": [],
+    "currentMedicines": [],
+    "status": "Active",
+    "isNewUser": true,
+    "hasUpdatedProfile": false,
+    "registeredAt": "2026-09-09T13:49:23.834Z",
+    "lastLogin": "2026-09-09T13:49:23.834Z",
+    "notes": "Registered through MediSafe AI online portal."
+  },
+  {
+    "id": "usr-new-1788961531008",
+    "name": "Demo",
+    "email": "demo@gmail.com",
+    "password": "Temp123",
+    "role": "patient",
+    "department": "",
+    "licenseNumber": "",
+    "age": 45,
+    "gender": "Male",
+    "chronicDiseases": [],
+    "allergies": [],
+    "currentMedicines": [],
+    "status": "Active",
+    "isNewUser": true,
+    "hasUpdatedProfile": false,
+    "registeredAt": "2026-09-09T13:45:31.008Z",
+    "lastLogin": "2026-09-09T13:45:31.008Z",
+    "notes": "Registered through MediSafe AI online portal."
   },
   {
     "id": "usr-new-1788801203536",
@@ -195,24 +278,6 @@
     "notes": "Registered through MediSafe AI online portal."
   },
   {
-    "id": "usr-new-1788598162155",
-    "name": "Ovee yevale",
-    "email": "oveeyevale@gmail.com",
-    "password": "Temp123",
-    "role": "admin",
-    "department": "",
-    "licenseNumber": "",
-    "age": 45,
-    "gender": "Male",
-    "chronicDiseases": [],
-    "allergies": [],
-    "status": "Active",
-    "isNewUser": true,
-    "registeredAt": "2026-09-05T08:49:22.155Z",
-    "lastLogin": "2026-09-05T08:49:22.155Z",
-    "notes": "Registered through MediSafe AI online portal."
-  },
-  {
     "id": "usr-new-1788597045562",
     "name": "Soham Vikas Yevale",
     "email": "tradersoham.369@gmail.com",
@@ -227,7 +292,7 @@
     "status": "Active",
     "isNewUser": true,
     "registeredAt": "2026-09-05T08:30:45.562Z",
-    "lastLogin": "2026-09-08T14:00:55.452Z",
+    "lastLogin": "2026-09-09T14:19:12.556Z",
     "notes": "Registered through MediSafe AI online portal."
   }
 ]

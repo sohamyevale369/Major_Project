@@ -209,7 +209,7 @@ export function getAllUsers() {
 /**
  * Saves users list to storage & syncs to local file
  */
-export function saveAllUsers(users) {
+export function saveAllUsers(users, isExplicitReplace = false) {
   try {
     localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
   } catch (err) {
@@ -220,7 +220,10 @@ export function saveAllUsers(users) {
   if (typeof fetch !== 'undefined') {
     fetch('/api/users', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(isExplicitReplace ? { 'x-replace-database': 'true' } : {})
+      },
       body: JSON.stringify(users)
     }).catch(() => {});
   }
@@ -416,7 +419,7 @@ export function deduplicateUserDatabase() {
   }
 
   if (duplicatesFound.length > 0) {
-    saveAllUsers(uniqueUsers);
+    saveAllUsers(uniqueUsers, true);
     logSystemActivity(
       'Duplicate Records Removed',
       `Identified & removed ${duplicatesFound.length} duplicate user record(s): ${duplicatesFound.map(d => d.email).join(', ')}`,
@@ -455,7 +458,7 @@ export function deleteUserAccount(userId) {
   const users = getAllUsers();
   const target = users.find(u => u.id === userId);
   const filtered = users.filter(u => u.id !== userId);
-  saveAllUsers(filtered);
+  saveAllUsers(filtered, true);
   if (target) {
     logSystemActivity('User Record Deleted', `Removed user: ${target.name} (${target.email})`, 'Admin');
   }
@@ -564,4 +567,50 @@ export function clearGlobalTaskCaches() {
     }
   } catch (e) {}
 }
+
+/**
+ * Updates a user's password following verified OTP confirmation
+ */
+export function updateUserPassword(email, newPassword) {
+  if (!email || !newPassword) {
+    return { success: false, message: 'Email and new password are required.' };
+  }
+  const users = getAllUsers();
+  const normalizedEmail = email.trim().toLowerCase();
+  const userIndex = users.findIndex(u => u.email && u.email.toLowerCase().trim() === normalizedEmail);
+
+  if (userIndex === -1) {
+    return { success: false, message: `No registered account found with email "${email}".` };
+  }
+
+  const user = users[userIndex];
+  const updatedUser = {
+    ...user,
+    password: newPassword,
+    updatedAt: new Date().toISOString()
+  };
+
+  const updatedUsers = [...users];
+  updatedUsers[userIndex] = updatedUser;
+  saveAllUsers(updatedUsers);
+
+  // If current active session belongs to this user, update it
+  const activeSession = getActiveUserSession();
+  if (activeSession && activeSession.email?.toLowerCase().trim() === normalizedEmail) {
+    setActiveUserSession({ ...activeSession, password: newPassword });
+  }
+
+  logSystemActivity(
+    'Password Reset Complete',
+    `User password successfully changed via 6-digit OTP verification.`,
+    updatedUser
+  );
+
+  return {
+    success: true,
+    message: 'Password has been successfully updated. You can now sign in with your new password.',
+    user: updatedUser
+  };
+}
+
 

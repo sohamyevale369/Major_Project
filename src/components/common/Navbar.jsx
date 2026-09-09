@@ -18,7 +18,8 @@ import {
   LogOut,
   Stethoscope,
   HeartPulse,
-  KeyRound
+  KeyRound,
+  LogIn
 } from 'lucide-react';
 import { useHealth } from '../../context/HealthContext';
 import BrandLogo from './BrandLogo';
@@ -35,7 +36,9 @@ export default function Navbar() {
     currentUser,
     logout,
     setEmergencyAlert,
-    showToast
+    showToast,
+    setIsAuthModalOpen,
+    requireAuth
   } = useHealth();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -74,6 +77,11 @@ export default function Navbar() {
   const handleNavClick = (id) => {
     if (id === 'admin' && !isAdmin) {
       showToast('No access to Admin Console for patients and doctors.', 'error');
+      return;
+    }
+    if (id !== 'home' && !currentUser) {
+      requireAuth(() => setActiveTab(id), 'Please sign in or register to access this clinical safety feature.');
+      setMobileMenuOpen(false);
       return;
     }
     setActiveTab(id);
@@ -146,7 +154,17 @@ export default function Navbar() {
           <div className="flex items-center gap-2 sm:gap-3">
             
             {/* Patient Profile / Switcher / Admin Control Badge */}
-            {isAdmin ? (
+            {!currentUser ? (
+              <button
+                onClick={() => setIsAuthModalOpen(true)}
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#235339] hover:bg-[#1e5034] text-white text-xs font-bold transition shadow-sm"
+                title="Sign In or Create an Account"
+                id="navbar-signin-register-btn"
+              >
+                <LogIn className="w-3.5 h-3.5" />
+                <span>Sign In / Register</span>
+              </button>
+            ) : isAdmin ? (
               <button
                 onClick={() => handleNavClick('admin')}
                 className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-purple-200 bg-purple-50 hover:bg-purple-100 text-xs text-purple-950 transition cursor-pointer"
@@ -277,7 +295,13 @@ export default function Navbar() {
 
             {/* AI Assistant Button */}
             <button
-              onClick={() => setIsChatbotOpen(true)}
+              onClick={() => {
+                if (!currentUser) {
+                  requireAuth(() => setIsChatbotOpen(true), 'Please sign in or register to consult the AI Clinical Guide.');
+                  return;
+                }
+                setIsChatbotOpen(true);
+              }}
               className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#E2EFE7] hover:bg-[#D4E8DC] border border-[#C6DDD0] text-xs font-semibold text-[#1E5034] transition-all shadow-sm group"
             >
               <Bot className="w-4 h-4 text-[#235339] group-hover:rotate-12 transition-transform" />
@@ -415,38 +439,56 @@ export default function Navbar() {
             })}
           </div>
 
-          {currentUser && (
+          {!currentUser ? (
             <div className="p-3 rounded-2xl bg-white border border-[#E5DFD1] text-xs flex items-center justify-between">
               <div>
-                <span className="text-[#6A746C] text-[10px] block">Signed in as:</span>
-                <span className="font-bold text-[#18231C] block">{currentUser.name}</span>
-                <span className="text-[#235339] text-[11px] font-mono">{currentUser.email}</span>
+                <span className="font-bold text-[#18231C] block">Welcome to MediSafe AI</span>
+                <span className="text-[#6A746C] text-[11px]">Sign in to access personalized clinical checks</span>
               </div>
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);
-                  logout();
+                  setIsAuthModalOpen(true);
                 }}
-                className="px-3 py-1.5 rounded-full bg-rose-50 text-[#C53030] border border-rose-200 text-xs font-bold"
+                className="px-3.5 py-1.5 rounded-full bg-[#235339] text-white text-xs font-bold shadow-sm"
               >
-                Sign Out
+                Sign In
               </button>
             </div>
-          )}
+          ) : (
+            <>
+              <div className="p-3 rounded-2xl bg-white border border-[#E5DFD1] text-xs flex items-center justify-between">
+                <div>
+                  <span className="text-[#6A746C] text-[10px] block">Signed in as:</span>
+                  <span className="font-bold text-[#18231C] block">{currentUser.name}</span>
+                  <span className="text-[#235339] text-[11px] font-mono">{currentUser.email}</span>
+                </div>
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    logout();
+                  }}
+                  className="px-3 py-1.5 rounded-full bg-rose-50 text-[#C53030] border border-rose-200 text-xs font-bold"
+                >
+                  Sign Out
+                </button>
+              </div>
 
-          <button
-            onClick={() => handleNavClick('profile')}
-            className="w-full text-left p-3 rounded-2xl bg-white border border-[#E5DFD1] text-xs hover:border-[#235339] transition block"
-          >
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-[#6A746C] text-[10px] uppercase font-bold tracking-wider">
-                {currentUser?.role === 'patient' ? 'My Personal Profile' : 'Active Patient Case'}
-              </span>
-              <span className="text-[10px] text-[#235339] font-bold">View Details →</span>
-            </div>
-            <span className="font-bold text-[#18231C] block">{patient.name} ({patient.age}y, {patient.gender})</span>
-            <span className="text-[#235339] text-[11px] block mt-0.5">{patient.diseases.join(', ') || 'No recorded conditions'}</span>
-          </button>
+              <button
+                onClick={() => handleNavClick('profile')}
+                className="w-full text-left p-3 rounded-2xl bg-white border border-[#E5DFD1] text-xs hover:border-[#235339] transition block"
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[#6A746C] text-[10px] uppercase font-bold tracking-wider">
+                    {currentUser?.role === 'patient' ? 'My Personal Profile' : 'Active Patient Case'}
+                  </span>
+                  <span className="text-[10px] text-[#235339] font-bold">View Details →</span>
+                </div>
+                <span className="font-bold text-[#18231C] block">{patient.name} ({patient.age}y, {patient.gender})</span>
+                <span className="text-[#235339] text-[11px] block mt-0.5">{patient.diseases.join(', ') || 'No recorded conditions'}</span>
+              </button>
+            </>
+          )}
         </div>
       )}
     </header>

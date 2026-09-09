@@ -18,8 +18,15 @@ import {
   getUserTasksKey,
   loadUserSessionTasks,
   saveUserSessionTasks,
-  clearGlobalTaskCaches
+  clearGlobalTaskCaches,
+  updateUserPassword
 } from '../data/userStorage';
+import {
+  dispatchPasswordResetOtp,
+  verifyEnteredOtp,
+  clearOtpState,
+  SENDER_EMAIL
+} from '../utils/otpService';
 
 // Pre-seeded tasks for Netra so her verified evaluations (Image 1) are preserved in complete isolation
 function getNetraDefaultTasks(user) {
@@ -181,6 +188,7 @@ export function HealthProvider({ children }) {
   const [activeTab, setActiveTabState] = useState(() => {
     try {
       const activeUser = getActiveUserSession();
+      if (!activeUser) return 'home';
       if (activeUser?.role === 'admin') {
         const stored = sessionStorage.getItem('medisafe_active_tab');
         if (['dashboard', 'risk-checker', 'profile', 'history', 'report'].includes(stored)) {
@@ -194,7 +202,26 @@ export function HealthProvider({ children }) {
     }
   });
 
+  const requireAuth = (callback, message = 'Please sign in or register to perform this task.') => {
+    if (!currentUser) {
+      showToast(message, 'info');
+      setIsAuthModalOpen(true);
+      return false;
+    }
+    if (typeof callback === 'function') {
+      callback();
+    }
+    return true;
+  };
+
   const handleTabChange = (newTab) => {
+    // Gate any clinical feature behind authentication:
+    // Visiting guests can view the 'home' page freely, but any task/tab requires login.
+    if (newTab !== 'home' && !currentUser) {
+      showToast('Please sign in or register to access this clinical safety feature.', 'info');
+      setIsAuthModalOpen(true);
+      return;
+    }
     if (newTab === 'admin' && currentUser?.role !== 'admin') {
       showToast('No access to Admin Console for patients and doctors.', 'error');
       return;
@@ -322,22 +349,40 @@ export function HealthProvider({ children }) {
     setAuditLogs(getSystemAuditLogs());
   };
 
-  // Synchronize on mount directly from physical disk file src/data/users.json via dev server API
+  const syncUsersWithServer = async () => {
+    try {
+      if (typeof fetch === 'undefined') return;
+      const res = await fetch('/api/users');
+      if (res.ok) {
+        const diskUsers = await res.json();
+        if (Array.isArray(diskUsers) && diskUsers.length > 0) {
+          const sanitized = sanitizeUsers(diskUsers);
+          setUsers(prev => {
+            const prevStr = JSON.stringify(prev);
+            const nextStr = JSON.stringify(sanitized);
+            if (prevStr !== nextStr) {
+              return sanitized;
+            }
+            return prev;
+          });
+          try {
+            localStorage.setItem('medisafe_users', JSON.stringify(sanitized));
+          } catch (e) {}
+        }
+      }
+    } catch (e) {}
+  };
+
+  // Automated live polling every 3 seconds + window focus listener:
+  // Ensures any user registered on another device/browser appears in real-time!
   useEffect(() => {
-    if (typeof fetch !== 'undefined') {
-      fetch('/api/users')
-        .then(res => res.json())
-        .then(diskUsers => {
-          if (Array.isArray(diskUsers) && diskUsers.length > 0) {
-            const sanitized = sanitizeUsers(diskUsers);
-            setUsers(sanitized);
-            try {
-              localStorage.setItem('medisafe_users', JSON.stringify(sanitized));
-            } catch (e) {}
-          }
-        })
-        .catch(() => {});
-    }
+    syncUsersWithServer();
+    const interval = setInterval(syncUsersWithServer, 3000);
+    window.addEventListener('focus', syncUsersWithServer);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', syncUsersWithServer);
+    };
   }, []);
 
   // Sync active patient profile whenever users or currentUser changes in real-time
@@ -494,6 +539,7 @@ export function HealthProvider({ children }) {
     }
 
     refreshUsersAndLogs();
+    setIsAuthModalOpen(false);
 
     if (loggedUser.role === 'admin') {
       setActiveTab('admin');
@@ -506,51 +552,174 @@ export function HealthProvider({ children }) {
     return result;
   };
 
-  // Authentication: Register new user
-  const register = (userData) => {
+  // Authentication: Register new user (persists directly to disk server first)
+  const register = async (userData) => {
     try {
-      const newUser = registerNewUser(userData);
-      setActiveUserSession(newUser);
-      setCurrentUser(newUser);
+      let createdUser = null;
+      let allUsers = null;
+
+      // 1. Direct server registration to /api/users/register (ensures immediate persistence on disk)
+      try {
+        const now = new Date().toISOString();
+        const payload = {
+          id: `usr-new-${Date.now()}`,
+          name: userData.name.trim(),
+          email: userData.email.trim().toLowerCase(),
+          password: userData.password,
+          role: userData.role || 'patient',
+          department: userData.department || (userData.role === 'clinician' ? 'General Medicine' : ''),
+          licenseNumber: userData.licenseNumber || (userData.role === 'clinician' ? 'LIC-PENDING' : ''),
+          age: userData.age ? Number(userData.age) : 35,
+          gender: userData.gender || 'Not Specified',
+          chronicDiseases: userData.chronicDiseases || [],
+          allergies: userData.allergies || [],
+          currentMedicines: userData.currentMedicines || [],
+          status: 'Active',
+          isNewUser: true,
+          hasUpdatedProfile: Boolean(
+            userData.hasUpdatedProfile ||
+            (Array.isArray(userData.chronicDiseases) && userData.chronicDiseases.length > 0) ||
+            (Array.isArray(userData.allergies) && userData.allergies.length > 0)
+          ),
+          registeredAt: now,
+          lastLogin: now,
+          notes: userData.notes || 'Registered through MediSafe AI online portal.'
+        };
+
+        const response = await fetch('/api/users/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+        if (!response.ok || !data.success) {
+          throw new Error(data.message || 'Server rejected registration');
+        }
+        createdUser = data.user;
+        allUsers = data.users;
+      } catch (apiErr) {
+        if (apiErr.message && apiErr.message.includes('already exists')) {
+          throw apiErr;
+        }
+        // Fallback to local storage register if offline
+        createdUser = registerNewUser(userData);
+      }
+
+      if (Array.isArray(allUsers) && allUsers.length > 0) {
+        const sanitized = sanitizeUsers(allUsers);
+        setUsers(sanitized);
+        try {
+          localStorage.setItem('medisafe_users', JSON.stringify(sanitized));
+        } catch (e) {}
+      }
+
+      setActiveUserSession(createdUser);
+      setCurrentUser(createdUser);
 
       // Clean fresh session for newly registered user
       setCurrentAnalysisState(null);
       setMedicationHistoryState([]);
-      saveUserSessionTasks(newUser, { currentAnalysis: null, medicationHistory: [] });
+      saveUserSessionTasks(createdUser, { currentAnalysis: null, medicationHistory: [] });
       clearGlobalTaskCaches();
 
-      if (newUser.role === 'patient') {
-        const uDiseases = Array.isArray(newUser.chronicDiseases) ? newUser.chronicDiseases : [];
-        const uAllergies = Array.isArray(newUser.allergies) ? newUser.allergies : [];
-        const uMedicines = Array.isArray(newUser.currentMedicines) ? newUser.currentMedicines : [];
+      if (createdUser.role === 'patient') {
+        const uDiseases = Array.isArray(createdUser.chronicDiseases) ? createdUser.chronicDiseases : [];
+        const uAllergies = Array.isArray(createdUser.allergies) ? createdUser.allergies : [];
+        const uMedicines = Array.isArray(createdUser.currentMedicines) ? createdUser.currentMedicines : [];
 
         setPatient({
-          id: newUser.id,
-          name: newUser.name,
-          email: newUser.email,
-          age: newUser.age !== undefined ? Number(newUser.age) : 40,
-          gender: newUser.gender || 'Not specified',
-          weight: newUser.weight !== undefined ? Number(newUser.weight) : 70,
-          description: `${newUser.gender || 'Patient'}, ${newUser.age || 40}y — ${uDiseases.length > 0 ? uDiseases.join(', ') : 'No recorded conditions'}`,
+          id: createdUser.id,
+          name: createdUser.name,
+          email: createdUser.email,
+          age: createdUser.age !== undefined ? Number(createdUser.age) : 40,
+          gender: createdUser.gender || 'Not specified',
+          weight: createdUser.weight !== undefined ? Number(createdUser.weight) : 70,
+          description: `${createdUser.gender || 'Patient'}, ${createdUser.age || 40}y — ${uDiseases.length > 0 ? uDiseases.join(', ') : 'No recorded conditions'}`,
           diseases: uDiseases,
           chronicDiseases: uDiseases,
           allergies: uAllergies,
-          medicalHistory: newUser.medicalHistory || newUser.notes || 'Registered MediSafe personal profile.',
+          medicalHistory: createdUser.medicalHistory || createdUser.notes || 'Registered MediSafe personal profile.',
           currentMedicines: uMedicines,
-          hasUpdatedProfile: Boolean(newUser.hasUpdatedProfile || uDiseases.length > 0 || uAllergies.length > 0 || uMedicines.length > 0)
+          hasUpdatedProfile: Boolean(createdUser.hasUpdatedProfile || uDiseases.length > 0 || uAllergies.length > 0 || uMedicines.length > 0)
         });
       }
 
       refreshUsersAndLogs();
+      setIsAuthModalOpen(false);
 
-      if (newUser.role === 'admin') {
+      if (createdUser.role === 'admin') {
         setActiveTab('admin');
       } else {
         setActiveTab('dashboard');
       }
 
-      showToast(`Account created successfully! Welcome, ${newUser.name}`, 'success');
-      return { success: true, user: newUser };
+      showToast(`Account created successfully! Welcome, ${createdUser.name}`, 'success');
+      return { success: true, user: createdUser };
+    } catch (err) {
+      showToast(err.message, 'error');
+      return { success: false, message: err.message };
+    }
+  };
+
+  // Password Reset with 6-digit OTP verification sent from sohamyevale1126@gmail.com
+  const requestPasswordResetOtp = async (email) => {
+    try {
+      const normalizedEmail = (email || '').trim().toLowerCase();
+      if (!normalizedEmail) {
+        throw new Error('Please provide your registered email address.');
+      }
+
+      const all = getAllUsers();
+      const existing = all.find(u => u.email && u.email.toLowerCase().trim() === normalizedEmail);
+      if (!existing) {
+        throw new Error(`No account found registered with email "${email}". Please verify your email or register.`);
+      }
+
+      const dispatchResult = await dispatchPasswordResetOtp(normalizedEmail, existing.name);
+      logSystemActivity(
+        'OTP Dispatched',
+        `Password reset 6-digit OTP dispatched to ${normalizedEmail} from ${SENDER_EMAIL}`,
+        existing
+      );
+
+      return {
+        success: true,
+        message: `6-Digit OTP successfully dispatched to ${normalizedEmail} from ${SENDER_EMAIL}`,
+        email: normalizedEmail,
+        sender: SENDER_EMAIL,
+        expiresAt: dispatchResult.expiresAt
+      };
+    } catch (err) {
+      showToast(err.message, 'error');
+      return { success: false, message: err.message };
+    }
+  };
+
+  const verifyPasswordResetOtp = (email, otp) => {
+    return verifyEnteredOtp(email, otp);
+  };
+
+  const resetPassword = (email, otp, newPassword) => {
+    try {
+      const otpCheck = verifyEnteredOtp(email, otp);
+      if (!otpCheck.success) {
+        showToast(otpCheck.message, 'error');
+        return otpCheck;
+      }
+
+      const updateResult = updateUserPassword(email, newPassword);
+      if (!updateResult.success) {
+        showToast(updateResult.message, 'error');
+        return updateResult;
+      }
+
+      refreshUsersAndLogs();
+      showToast('Password reset successfully! You can now sign in with your new credentials.', 'success');
+      return {
+        success: true,
+        message: updateResult.message,
+        user: updateResult.user
+      };
     } catch (err) {
       showToast(err.message, 'error');
       return { success: false, message: err.message };
@@ -877,6 +1046,10 @@ export function HealthProvider({ children }) {
         login,
         register,
         logout,
+        requestPasswordResetOtp,
+        verifyPasswordResetOtp,
+        resetPassword,
+        senderEmail: SENDER_EMAIL,
         users: visibleUsers,
         activePatients,
         auditLogs,
@@ -893,6 +1066,7 @@ export function HealthProvider({ children }) {
         updatePatient,
         activeTab,
         setActiveTab: handleTabChange,
+        requireAuth,
         currentAnalysis,
         setCurrentAnalysis,
         runSafetyCheck,
@@ -904,6 +1078,7 @@ export function HealthProvider({ children }) {
         setIsChatbotOpen,
         isAuthModalOpen,
         setIsAuthModalOpen,
+        syncUsersWithServer,
         toast,
         showToast,
         setToast

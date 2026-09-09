@@ -2,6 +2,16 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
+html, body {
+  scroll-behavior: smooth !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html, body {
+    scroll-behavior: auto !important;
+  }
+}
+
 body {
   background-color: #F6F4ED;
   color: #18231C;
@@ -152,3 +162,4 @@ body {
   stroke-dasharray: 150;
   animation: ecg-flow 3.5s linear infinite;
 }
+

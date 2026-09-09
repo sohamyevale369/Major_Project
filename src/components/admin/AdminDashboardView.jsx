@@ -41,7 +41,8 @@ export default function AdminDashboardView() {
     removeUser,
     adminAddUser,
     setActiveTab,
-    showToast
+    showToast,
+    syncUsersWithServer
   } = useHealth();
 
   // Active individual patient record view (redirects to individual dossier page)
@@ -57,6 +58,7 @@ export default function AdminDashboardView() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
   const [dedupReport, setDedupReport] = useState(null);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   // Add User Form State
   const [addName, setAddName] = useState('');
@@ -148,6 +150,21 @@ export default function AdminDashboardView() {
   const cliniciansCount = safeUsers.filter((u) => u && u.role === 'clinician').length;
   const patientsCount = safeUsers.filter((u) => u && u.role === 'patient').length;
 
+  // Handle Manual Sync with Server DB
+  const handleManualSync = async () => {
+    setIsSyncing(true);
+    try {
+      if (syncUsersWithServer) {
+        await syncUsersWithServer();
+      }
+      showToast('Live database synchronized with server records.', 'success');
+    } catch (err) {
+      showToast('Failed to sync database: ' + (err.message || 'Unknown error'), 'error');
+    } finally {
+      setTimeout(() => setIsSyncing(false), 400);
+    }
+  };
+
   // Handle Deduplication Scan
   const handleRunDeduplication = () => {
     const report = deduplicateUsers();
@@ -222,20 +239,36 @@ export default function AdminDashboardView() {
             <h1 className="text-2xl sm:text-3xl font-black text-[#18231C] tracking-tight">
               User Registry & Database Deduplication
             </h1>
-            <p className="text-xs sm:text-sm text-[#6F7771] mt-1">
-              Manage existing patient/doctor accounts, track newly registered users, enforce data uniqueness, and review system audit logs.
-            </p>
+            <div className="flex flex-wrap items-center gap-2 mt-1">
+              <p className="text-xs sm:text-sm text-[#6F7771]">
+                Manage existing patient/doctor accounts, track newly registered users, enforce data uniqueness, and review system audit logs.
+              </p>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                Live Sync (3s)
+              </span>
+            </div>
           </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5 shrink-0">
           <button
+            onClick={handleManualSync}
+            disabled={isSyncing}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-emerald-50 border border-emerald-300 text-emerald-800 hover:bg-emerald-100 text-xs font-bold transition shadow-xs disabled:opacity-50"
+            title="Fetch latest user registrations in real-time from server database"
+          >
+            <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin text-emerald-600' : ''}`} />
+            <span>{isSyncing ? 'Syncing...' : 'Sync Live DB'}</span>
+          </button>
+
+          <button
             onClick={handleRunDeduplication}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 text-xs font-bold transition shadow-xs"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 text-xs font-bold transition shadow-xs"
             title="Scan database and remove all duplicate records"
           >
             <RefreshCw className="w-4 h-4" />
-            <span>Remove Duplicate Records</span>
+            <span>Remove Duplicates</span>
           </button>
 
           <button

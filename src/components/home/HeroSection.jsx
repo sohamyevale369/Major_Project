@@ -103,7 +103,9 @@ export default function HeroSection() {
     patient,
     currentUser,
     hasUpdatedPersonalDetails,
-    medicationHistory = []
+    medicationHistory = [],
+    requireAuth,
+    setIsAuthModalOpen
   } = useHealth();
 
   // HUD state with continuous auto-cycle animation
@@ -131,6 +133,13 @@ export default function HeroSection() {
   })();
 
   const handleQuickDemo = (patientId, drugName, dosage) => {
+    if (!currentUser) {
+      requireAuth(() => {
+        runSafetyCheck(drugName, dosage);
+        setActiveTab('risk-checker');
+      }, 'Please sign in or create an account to run personalized medication safety checks.');
+      return;
+    }
     if (currentUser?.role === 'patient') {
       runSafetyCheck(drugName, dosage);
       setActiveTab('risk-checker');
@@ -383,6 +392,10 @@ export default function HeroSection() {
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 pt-2">
                 <button
                   onClick={() => {
+                    if (!currentUser) {
+                      requireAuth(() => setActiveTab('risk-checker'), 'Please sign in or register to check medicine safety.');
+                      return;
+                    }
                     setActiveTab('risk-checker');
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
@@ -394,6 +407,10 @@ export default function HeroSection() {
 
                 <button
                   onClick={() => {
+                    if (!currentUser) {
+                      requireAuth(() => setActiveTab('ocr'), 'Please sign in or register to upload and scan prescriptions.');
+                      return;
+                    }
                     setActiveTab('ocr');
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
@@ -404,36 +421,6 @@ export default function HeroSection() {
                 </button>
               </div>
             )}
-
-            {/* Big Metrics Counters (from Image 1 & 2) */}
-            <div className="pt-6 grid grid-cols-3 gap-4 border-t border-[#E5DFD1]">
-              <div>
-                <div className="text-2xl sm:text-4xl font-black text-[#235339] tracking-tight">
-                  4,820
-                </div>
-                <div className="text-[10px] sm:text-[11px] font-mono font-semibold uppercase tracking-wider text-[#6A746C] mt-1">
-                  Medicines Evaluated
-                </div>
-              </div>
-
-              <div>
-                <div className="text-2xl sm:text-4xl font-black text-[#235339] tracking-tight">
-                  2,892
-                </div>
-                <div className="text-[10px] sm:text-[11px] font-mono font-semibold uppercase tracking-wider text-[#6A746C] mt-1">
-                  Patients Protected
-                </div>
-              </div>
-
-              <div>
-                <div className="text-2xl sm:text-4xl font-black text-[#235339] tracking-tight">
-                  99.4%
-                </div>
-                <div className="text-[10px] sm:text-[11px] font-mono font-semibold uppercase tracking-wider text-[#6A746C] mt-1">
-                  Clinical Precision
-                </div>
-              </div>
-            </div>
 
           </div>
 
@@ -668,15 +655,16 @@ export default function HeroSection() {
 
         </div>
 
-        {/* 1-CLICK INSTANT TEST PRESETS / ADMIN CONTROL HUB */}
-        <div className="mt-16 pt-12 border-t border-[#E5DFD1]">
-          <div className="mb-6">
-            <span className="section-tag">
-              {currentUser?.role === 'admin'
-                ? '01 — ADMINISTRATIVE CONTROL & GOVERNANCE'
-                : '01 — LIVE VERIFICATION PRESETS'}
-            </span>
-            <h2 className="text-xl sm:text-3xl font-black text-[#18231C] uppercase tracking-tight">
+        {/* 1-CLICK INSTANT TEST PRESETS / ADMIN CONTROL HUB (Only displayed when a user is logged in) */}
+        {currentUser && (
+          <div className="mt-16 pt-12 border-t border-[#E5DFD1]">
+            <div className="mb-6">
+              <span className="section-tag">
+                {currentUser?.role === 'admin'
+                  ? '01 — ADMINISTRATIVE CONTROL & GOVERNANCE'
+                  : '01 — LIVE VERIFICATION PRESETS'}
+              </span>
+              <h2 className="text-xl sm:text-3xl font-black text-[#18231C] uppercase tracking-tight">
               {currentUser?.role === 'admin'
                 ? 'System Control & Patient Directory'
                 : 'Test Clinical Decision Support Instantly'}
@@ -711,6 +699,10 @@ export default function HeroSection() {
               </div>
               <button
                 onClick={() => {
+                  if (!currentUser) {
+                    requireAuth(() => setActiveTab('profile'), 'Please sign in or register to complete your health profile.');
+                    return;
+                  }
                   setActiveTab('profile');
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
@@ -852,6 +844,10 @@ export default function HeroSection() {
                   <div className="pt-2">
                     <button
                       onClick={() => {
+                        if (!currentUser) {
+                          requireAuth(() => setActiveTab('profile'), 'Please sign in or register to complete your health profile.');
+                          return;
+                        }
                         setActiveTab('profile');
                         window.scrollTo({ top: 0, behavior: 'smooth' });
                       }}
@@ -1055,6 +1051,7 @@ export default function HeroSection() {
 
           </div>
         </div>
+      )}
 
       </div>
     </section>
