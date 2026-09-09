@@ -229,12 +229,31 @@ export function saveAllUsers(users, isExplicitReplace = false) {
   }
 }
 
+// Ensure fresh startup on dev server boot: purge persistent auto-login sessions
+try {
+  const currentBoot = typeof __DEV_SERVER_BOOT__ !== 'undefined' ? __DEV_SERVER_BOOT__ : '';
+  const lastBoot = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('medisafe_dev_boot') : '';
+  if (currentBoot && lastBoot !== currentBoot) {
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.setItem('medisafe_dev_boot', currentBoot);
+      sessionStorage.removeItem(CURRENT_USER_KEY);
+      sessionStorage.removeItem('medisafe_active_tab');
+    }
+  }
+  if (typeof localStorage !== 'undefined') {
+    localStorage.removeItem(CURRENT_USER_KEY);
+    localStorage.removeItem('medisafe_active_user');
+  }
+} catch (e) {
+  // Ignore storage errors in restricted contexts
+}
+
 /**
- * Retrieves currently logged in user session
+ * Retrieves currently logged in user session (scoped to active tab/session, no persistent auto-login)
  */
 export function getActiveUserSession() {
   try {
-    const stored = localStorage.getItem(CURRENT_USER_KEY);
+    const stored = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem(CURRENT_USER_KEY) : null;
     return stored ? JSON.parse(stored) : null;
   } catch (err) {
     return null;
@@ -246,10 +265,17 @@ export function getActiveUserSession() {
  */
 export function setActiveUserSession(user) {
   try {
-    if (user) {
-      localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
-    } else {
+    if (typeof sessionStorage !== 'undefined') {
+      if (user) {
+        sessionStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
+      } else {
+        sessionStorage.removeItem(CURRENT_USER_KEY);
+      }
+    }
+    // Always remove from localStorage to guarantee no auto-login occurs across browser runs
+    if (typeof localStorage !== 'undefined') {
       localStorage.removeItem(CURRENT_USER_KEY);
+      localStorage.removeItem('medisafe_active_user');
     }
   } catch (err) {
     console.error('Failed setting active user session:', err);

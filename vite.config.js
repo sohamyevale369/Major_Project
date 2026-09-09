@@ -11,6 +11,9 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
 
   return {
+    define: {
+      __DEV_SERVER_BOOT__: JSON.stringify(Date.now().toString())
+    },
     plugins: [
       react(),
       {
