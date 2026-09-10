@@ -19,7 +19,10 @@ import {
   loadUserSessionTasks,
   saveUserSessionTasks,
   clearGlobalTaskCaches,
-  updateUserPassword
+  updateUserPassword,
+  getAllDoctorReviews,
+  saveDoctorReviewRecord,
+  getPatientDoctorReviews
 } from '../data/userStorage';
 import {
   dispatchPasswordResetOtp,
@@ -196,6 +199,13 @@ export function HealthProvider({ children }) {
         }
         return stored || 'admin';
       }
+      if (activeUser?.role === 'clinician') {
+        const stored = sessionStorage.getItem('medisafe_active_tab');
+        if (['admin'].includes(stored)) {
+          return 'doctor-dashboard';
+        }
+        return stored || 'doctor-dashboard';
+      }
       return sessionStorage.getItem('medisafe_active_tab') || 'home';
     } catch (e) {
       return 'home';
@@ -333,6 +343,21 @@ export function HealthProvider({ children }) {
   const [emergencyAlert, setEmergencyAlert] = useState(null);
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+  // Doctor Clinical Reviews & Workflow State
+  const [doctorReviews, setDoctorReviews] = useState(() => getAllDoctorReviews());
+  const [doctorSelectedPatient, setDoctorSelectedPatient] = useState(null);
+
+  const saveDoctorReview = (reviewData) => {
+    const saved = saveDoctorReviewRecord(reviewData);
+    setDoctorReviews(getAllDoctorReviews());
+    showToast(`Clinical review finalized & signed by ${reviewData.doctorName || 'Doctor'}`, 'success');
+    return saved;
+  };
+
+  const getDoctorReviewsForPatient = (patientIdOrEmail) => {
+    return getPatientDoctorReviews(patientIdOrEmail);
+  };
 
   // Global Toast
   const [toast, setToast] = useState(null);
@@ -544,6 +569,9 @@ export function HealthProvider({ children }) {
     if (loggedUser.role === 'admin') {
       setActiveTab('admin');
       showToast(`Welcome Administrator ${loggedUser.name}`, 'success');
+    } else if (loggedUser.role === 'clinician') {
+      setActiveTab('doctor-dashboard');
+      showToast(`Welcome Dr. ${loggedUser.name} — Clinician Portal Active`, 'success');
     } else {
       setActiveTab('dashboard');
       showToast(`Signed in successfully as ${loggedUser.name} (${loggedUser.role === 'clinician' ? 'Healthcare Clinician' : 'Patient'})`, 'success');
@@ -649,6 +677,8 @@ export function HealthProvider({ children }) {
 
       if (createdUser.role === 'admin') {
         setActiveTab('admin');
+      } else if (createdUser.role === 'clinician') {
+        setActiveTab('doctor-dashboard');
       } else {
         setActiveTab('dashboard');
       }
@@ -1078,6 +1108,11 @@ export function HealthProvider({ children }) {
         setIsChatbotOpen,
         isAuthModalOpen,
         setIsAuthModalOpen,
+        doctorReviews,
+        saveDoctorReview,
+        getDoctorReviewsForPatient,
+        doctorSelectedPatient,
+        setDoctorSelectedPatient,
         syncUsersWithServer,
         toast,
         showToast,

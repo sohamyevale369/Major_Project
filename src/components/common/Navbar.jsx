@@ -19,7 +19,8 @@ import {
   Stethoscope,
   HeartPulse,
   KeyRound,
-  LogIn
+  LogIn,
+  FileCheck
 } from 'lucide-react';
 import { useHealth } from '../../context/HealthContext';
 import BrandLogo from './BrandLogo';
@@ -64,6 +65,16 @@ export default function Navbar() {
         { id: 'interactions', label: 'Drug Interactions DB', icon: RefreshCw },
         { id: 'ocr', label: 'Prescription OCR Tool', icon: Camera }
       ]
+    : isClinician
+    ? [
+        { id: 'doctor-dashboard', label: 'Doctor Dashboard', icon: Activity, doctorBadge: true },
+        { id: 'doctor-patients', label: 'My Patients', icon: Stethoscope },
+        { id: 'doctor-review', label: 'Clinical Review & SHAP', icon: FileText, highlight: true },
+        { id: 'risk-checker', label: 'Medicine Risk Check', icon: Pill },
+        { id: 'interactions', label: 'Drug Interactions', icon: RefreshCw },
+        { id: 'ocr', label: 'Prescription OCR', icon: Camera },
+        { id: 'doctor-report', label: 'Final Reports', icon: FileCheck }
+      ]
     : [
         { id: 'home', label: 'Home', icon: Shield },
         { id: 'dashboard', label: 'Dashboard', icon: Activity },
@@ -91,7 +102,7 @@ export default function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-40 border-b border-[#E5DFD1] bg-[#F6F4ED]/95 backdrop-blur-md transition-all">
+    <header className="sticky top-0 z-40 border-b border-[#E5DFD1] bg-[#F6F4ED]/95 backdrop-blur-md transition-all print:hidden">
       {/* Top Emergency & Trust Alert Bar */}
       <div className="bg-[#ECE7DC] border-b border-[#DCD5C5] px-4 py-1.5 text-[11px] sm:text-xs text-[#424C44] flex items-center justify-between">
         <div className="flex items-center gap-2 overflow-hidden text-ellipsis whitespace-nowrap">
@@ -179,6 +190,24 @@ export default function Navbar() {
                   </div>
                   <div className="text-[10px] text-purple-700 font-mono leading-none mt-0.5">
                     Control Rights Only
+                  </div>
+                </div>
+              </button>
+            ) : isClinician ? (
+              <button
+                onClick={() => handleNavClick('doctor-dashboard')}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-sky-300 bg-sky-50 hover:bg-sky-100 text-xs text-sky-950 transition cursor-pointer shadow-xs"
+                title="Attending Physician Doctor Portal"
+              >
+                <div className="w-6 h-6 rounded-full bg-[#235339] text-white flex items-center justify-center font-bold text-xs">
+                  <Stethoscope className="w-3.5 h-3.5" />
+                </div>
+                <div className="text-left hidden md:block">
+                  <div className="text-[11px] font-bold text-sky-950 leading-none">
+                    Doctor Portal
+                  </div>
+                  <div className="text-[10px] text-sky-800 font-mono leading-none mt-0.5">
+                    {currentUser?.department || 'Internal Medicine'}
                   </div>
                 </div>
               </button>
@@ -365,6 +394,37 @@ export default function Navbar() {
                           <ShieldCheck className="w-3.5 h-3.5 text-purple-700" />
                           <span>Admin Console & Patients</span>
                         </button>
+                      ) : isClinician ? (
+                        <>
+                          <button
+                            onClick={() => handleNavClick('doctor-dashboard')}
+                            className="w-full text-left px-3 py-2 rounded-xl text-sky-900 hover:bg-sky-50 font-bold flex items-center gap-2 transition"
+                          >
+                            <Activity className="w-3.5 h-3.5 text-sky-700" />
+                            <span>Doctor Dashboard</span>
+                          </button>
+                          <button
+                            onClick={() => handleNavClick('doctor-patients')}
+                            className="w-full text-left px-3 py-2 rounded-xl text-[#424C44] hover:bg-[#F6F4ED] flex items-center gap-2 transition"
+                          >
+                            <Stethoscope className="w-3.5 h-3.5 text-[#6A746C]" />
+                            <span>My Patients Directory</span>
+                          </button>
+                          <button
+                            onClick={() => handleNavClick('doctor-review')}
+                            className="w-full text-left px-3 py-2 rounded-xl text-[#424C44] hover:bg-[#F6F4ED] flex items-center gap-2 transition"
+                          >
+                            <FileText className="w-3.5 h-3.5 text-[#6A746C]" />
+                            <span>Clinical Review & SHAP</span>
+                          </button>
+                          <button
+                            onClick={() => handleNavClick('doctor-report')}
+                            className="w-full text-left px-3 py-2 rounded-xl text-[#424C44] hover:bg-[#F6F4ED] flex items-center gap-2 transition"
+                          >
+                            <FileCheck className="w-3.5 h-3.5 text-[#6A746C]" />
+                            <span>Final Reviewed Reports</span>
+                          </button>
+                        </>
                       ) : (
                         <>
                           <button

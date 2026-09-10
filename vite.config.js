@@ -180,7 +180,7 @@ export default defineConfig(({ mode }) => {
                       if (userMatch && userMatch[1]) gmailUser = userMatch[1].trim();
                       if (passMatch && passMatch[1]) gmailPass = passMatch[1].trim();
                     }
-                  } catch (e) {}
+                  } catch (e) { }
                   if (!gmailPass) {
                     gmailPass = env.GMAIL_APP_PASSWORD || process.env.GMAIL_APP_PASSWORD || '';
                   }

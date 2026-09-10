@@ -211,7 +211,9 @@ export function getAllUsers() {
  */
 export function saveAllUsers(users, isExplicitReplace = false) {
   try {
-    localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
+    if (typeof window !== 'undefined' && window.localStorage) {
+      localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
+    }
   } catch (err) {
     console.error('Failed saving users to storage:', err);
   }
@@ -638,5 +640,98 @@ export function updateUserPassword(email, newPassword) {
     user: updatedUser
   };
 }
+
+// ==========================================
+// Doctor Clinical Reviews Management Service
+// ==========================================
+export const DOCTOR_REVIEWS_KEY = 'medisafe_doctor_reviews';
+
+export const INITIAL_DOCTOR_REVIEWS = [
+  {
+    id: 'drev-initial-1',
+    patientId: 'usr-new-1788590733394',
+    patientName: 'Soham Vikas Yevale',
+    patientEmail: 'sohamyevale624@gmail.com',
+    doctorId: 'usr-doc-1',
+    doctorName: 'Dr. Rajesh Sharma, MD',
+    doctorDepartment: 'Internal Medicine & Pharmacology',
+    doctorLicense: 'MD-98421',
+    medicineName: 'Paracetamol (Acetaminophen)',
+    dosage: '500mg',
+    frequency: 'Every 6 hours as needed',
+    aiRiskScore: 12,
+    aiRiskLevel: 'LOW',
+    decision: 'AGREE',
+    decisionLabel: 'Agreed with AI Risk Assessment',
+    doctorComments: 'Patient is healthy with no documented renal or hepatic contraindications. Evaluated safe for intermittent headache / fever management.',
+    additionalPrecautions: ['Do not exceed 3000mg in 24 hours', 'Take with water after meals'],
+    customPrecautions: 'Maintain hydration during therapy.',
+    recommendedAction: 'Approve Prescription as Prescribed',
+    reviewedAt: '2026-09-08T14:30:00.000Z',
+    reviewDate: 'Sep 8, 2026',
+    status: 'Finalized & Clinically Signed'
+  }
+];
+
+let inMemoryDoctorReviews = [...INITIAL_DOCTOR_REVIEWS];
+
+export function getAllDoctorReviews() {
+  try {
+    if (typeof localStorage === 'undefined') return inMemoryDoctorReviews;
+    const stored = localStorage.getItem(DOCTOR_REVIEWS_KEY);
+    if (!stored) {
+      localStorage.setItem(DOCTOR_REVIEWS_KEY, JSON.stringify(INITIAL_DOCTOR_REVIEWS));
+      return INITIAL_DOCTOR_REVIEWS;
+    }
+    const parsed = JSON.parse(stored);
+    return Array.isArray(parsed) ? parsed : INITIAL_DOCTOR_REVIEWS;
+  } catch (err) {
+    console.error('Failed reading doctor reviews:', err);
+    return inMemoryDoctorReviews;
+  }
+}
+
+export function saveDoctorReviewRecord(reviewData) {
+  try {
+    const existing = getAllDoctorReviews();
+    const newRecord = {
+      id: reviewData.id || `drev-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+      reviewedAt: reviewData.reviewedAt || new Date().toISOString(),
+      reviewDate: reviewData.reviewDate || new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+      status: 'Finalized & Clinically Signed',
+      ...reviewData
+    };
+
+    // Filter out any older duplicate of this review ID
+    const updated = [newRecord, ...existing.filter(r => r.id !== newRecord.id)];
+    inMemoryDoctorReviews = updated;
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(DOCTOR_REVIEWS_KEY, JSON.stringify(updated));
+    }
+
+    logSystemActivity(
+      'Doctor Clinical Review Finalized',
+      `Dr. ${newRecord.doctorName} finalized review for ${newRecord.patientName} on ${newRecord.medicineName} (${newRecord.decisionLabel})`,
+      newRecord.doctorName
+    );
+
+    return newRecord;
+  } catch (err) {
+    console.error('Failed saving doctor review:', err);
+    return reviewData;
+  }
+}
+
+export function getPatientDoctorReviews(patientIdentifier) {
+  if (!patientIdentifier) return [];
+  const reviews = getAllDoctorReviews();
+  const query = String(patientIdentifier).toLowerCase().trim();
+  return reviews.filter(r => 
+    (r.patientId && String(r.patientId).toLowerCase() === query) ||
+    (r.patientEmail && String(r.patientEmail).toLowerCase() === query) ||
+    (r.patientName && String(r.patientName).toLowerCase() === query)
+  );
+}
+
 
 

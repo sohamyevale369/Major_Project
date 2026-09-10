@@ -214,10 +214,22 @@ export default function AuthPortal({ isModal = false, onClose = null }) {
   const [adminInputPassword, setAdminInputPassword] = useState('');
   const [showAdminPassword, setShowAdminPassword] = useState(false);
 
+  // Doctor / Clinician Portal Login State
+  const [showDoctorInput, setShowDoctorInput] = useState(false);
+  const [doctorInputEmail, setDoctorInputEmail] = useState('');
+  const [doctorInputPassword, setDoctorInputPassword] = useState('');
+  const [showDoctorPassword, setShowDoctorPassword] = useState(false);
+
   // Toggle Existing Admin Credentials input option (NO auto-fill, inputs remain blank)
   const handleToggleAdminInput = () => {
     setErrorMessage('');
     setShowAdminInput((prev) => !prev);
+  };
+
+  // Toggle Doctor Credentials input option
+  const handleToggleDoctorInput = () => {
+    setErrorMessage('');
+    setShowDoctorInput((prev) => !prev);
   };
 
   // Submit entered Admin credentials manually
@@ -233,6 +245,34 @@ export default function AuthPortal({ isModal = false, onClose = null }) {
         setErrorMessage(result.message);
       }
     }, 400);
+  };
+
+  // Submit Doctor credentials
+  const handleDoctorCredentialsSubmit = (e) => {
+    if (e) e.preventDefault();
+    setErrorMessage('');
+    setLoading(true);
+
+    setTimeout(() => {
+      const result = login(doctorInputEmail, doctorInputPassword);
+      setLoading(false);
+      if (!result.success) {
+        setErrorMessage(result.message);
+      }
+    }, 400);
+  };
+
+  // Quick 1-click Doctor Login
+  const handleDoctorQuickLogin = (email, password) => {
+    setErrorMessage('');
+    setLoading(true);
+    setTimeout(() => {
+      const result = login(email, password);
+      setLoading(false);
+      if (!result.success) {
+        setErrorMessage(result.message);
+      }
+    }, 350);
   };
 
   // Handle Register Submit
@@ -515,6 +555,143 @@ export default function AuthPortal({ isModal = false, onClose = null }) {
                   </>
                 )}
               </button>
+
+              {/* Doctor / Clinician Quick Access Divider */}
+              <div className="relative flex py-1.5 items-center">
+                <div className="flex-grow border-t border-[#D5CDBF]" />
+                <span className="flex-shrink mx-2.5 text-[10px] font-bold tracking-wider text-sky-900 uppercase font-mono flex items-center gap-1">
+                  <Stethoscope className="w-3 h-3 text-sky-700" />
+                  Doctor / Clinician Login
+                </span>
+                <div className="flex-grow border-t border-[#D5CDBF]" />
+              </div>
+
+              {/* Doctor Portal Quick Access Card */}
+              <div className="space-y-2">
+                <button
+                  type="button"
+                  id="btn-login-doctor"
+                  onClick={handleToggleDoctorInput}
+                  className={`w-full py-3 px-4 rounded-2xl border transition-all duration-200 shadow-sm hover:shadow group ${
+                    showDoctorInput
+                      ? 'bg-sky-50 border-sky-600 text-[#18231C] ring-1 ring-sky-500/30'
+                      : 'bg-[#ECE7DC] hover:bg-[#E3DDD0] border-[#D5CDBF] hover:border-sky-600 text-[#18231C]'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 text-left">
+                    <div className="w-8 h-8 rounded-xl bg-[#235339] text-white flex items-center justify-center text-xs shadow-sm group-hover:scale-105 transition-transform shrink-0">
+                      <Stethoscope className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold flex items-center gap-1.5 text-[#18231C]">
+                        <span>Login to Doctor Portal</span>
+                        <span className="text-[10px] bg-sky-100 text-sky-800 border border-sky-300 font-mono px-1.5 py-0.2 rounded font-bold">
+                          Clinician
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-[#5A645D]">
+                        Attending Physician Dashboard & Reviews
+                      </div>
+                    </div>
+                  </div>
+                  <div className={`flex items-center gap-1 font-bold text-xs px-2.5 py-1 rounded-full transition-colors shrink-0 ${
+                    showDoctorInput
+                      ? 'bg-[#235339] text-white'
+                      : 'bg-sky-100 text-sky-900 border border-sky-300 group-hover:bg-[#235339] group-hover:text-white'
+                  }`}>
+                    <span>{showDoctorInput ? 'Hide Options ▲' : 'Doctor Sign In ▼'}</span>
+                  </div>
+                </button>
+
+                {/* Doctor Login Options (1-click Verified Clinicians or Manual Input) */}
+                {showDoctorInput && (
+                  <div className="p-4 rounded-2xl bg-sky-50/70 border-2 border-sky-200 space-y-3.5 animate-fade-in text-left shadow-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-sky-950 font-mono uppercase">
+                        Select Verified Clinician Account:
+                      </span>
+                      <span className="text-[10px] font-mono text-sky-700 bg-white px-2 py-0.5 rounded-full border border-sky-200">
+                        1-Click Access
+                      </span>
+                    </div>
+
+                    {/* Pre-seeded verified Doctors */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleDoctorQuickLogin('dr.sharma@medisafe.ai', 'Doctor@123')}
+                        className="p-3 rounded-xl bg-white border border-sky-200 hover:border-[#235339] hover:shadow-xs transition text-left space-y-1 group"
+                      >
+                        <div className="font-bold text-xs text-[#18231C] group-hover:text-[#235339]">
+                          Dr. Rajesh Sharma, MD
+                        </div>
+                        <div className="text-[10px] text-[#5A645D]">
+                          Internal Medicine & Pharmacology
+                        </div>
+                        <div className="text-[10px] font-mono text-sky-800 font-bold">
+                          dr.sharma@medisafe.ai
+                        </div>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDoctorQuickLogin('dr.adams@medisafe.ai', 'Doctor@123')}
+                        className="p-3 rounded-xl bg-white border border-sky-200 hover:border-[#235339] hover:shadow-xs transition text-left space-y-1 group"
+                      >
+                        <div className="font-bold text-xs text-[#18231C] group-hover:text-[#235339]">
+                          Dr. Helen Adams, FACC
+                        </div>
+                        <div className="text-[10px] text-[#5A645D]">
+                          Cardiovascular Care Unit
+                        </div>
+                        <div className="text-[10px] font-mono text-sky-800 font-bold">
+                          dr.adams@medisafe.ai
+                        </div>
+                      </button>
+                    </div>
+
+                    {/* Or Manual Doctor Credentials Input */}
+                    <div className="pt-2 border-t border-sky-200/80 space-y-2.5">
+                      <span className="text-[11px] font-bold text-sky-950 block">
+                        Or enter other doctor credentials:
+                      </span>
+                      <div className="space-y-2">
+                        <input
+                          type="email"
+                          value={doctorInputEmail}
+                          onChange={(e) => setDoctorInputEmail(e.target.value)}
+                          placeholder="Doctor Email (e.g. doctor@hospital.org)"
+                          className="ivory-input w-full px-3 py-2 text-xs bg-white"
+                        />
+                        <div className="relative">
+                          <input
+                            type={showDoctorPassword ? 'text' : 'password'}
+                            value={doctorInputPassword}
+                            onChange={(e) => setDoctorInputPassword(e.target.value)}
+                            placeholder="Doctor Password"
+                            className="ivory-input w-full px-3 py-2 pr-9 text-xs bg-white"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowDoctorPassword(!showDoctorPassword)}
+                            className="p-1 absolute right-2.5 top-2 text-[#6A746C]"
+                          >
+                            {showDoctorPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                          </button>
+                        </div>
+                        <button
+                          type="button"
+                          disabled={loading || !doctorInputEmail || !doctorInputPassword}
+                          onClick={handleDoctorCredentialsSubmit}
+                          className="pill-btn-primary w-full py-2 text-xs font-bold shadow-sm disabled:opacity-50"
+                        >
+                          Sign In as Doctor →
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
 
               {/* Administrator Quick Access Divider */}
               <div className="relative flex py-1.5 items-center">

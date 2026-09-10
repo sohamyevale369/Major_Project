@@ -163,3 +163,64 @@ body {
   animation: ecg-flow 3.5s linear infinite;
 }
 
+/* ========================================================================= */
+/* PRINT STYLESHEET: Clean, Compact 1-2 Page Clinical Dossier Formatting */
+/* ========================================================================= */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 8mm 10mm;
+  }
+
+  *, *::before, *::after {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  html, body {
+    background: #FFFFFF !important;
+    background-color: #FFFFFF !important;
+    color: #18231C !important;
+    font-size: 11px !important;
+    line-height: 1.35 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Force elements marked print:hidden to be strictly hidden */
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* Prevent elements from being awkwardly cut in half across pages */
+  .print-avoid-break {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Allow clean page break before second section if needed */
+  .print-allow-break {
+    break-before: auto !important;
+    page-break-before: auto !important;
+  }
+
+  /* Compact container for print */
+  .print-compact-report {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+  }
+
+  /* Strip sticky positioning and navbar artifacts */
+  header, nav, footer, .sticky {
+    position: static !important;
+  }
+}
+
+

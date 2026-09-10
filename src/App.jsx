@@ -15,6 +15,7 @@ import UserDashboard from './components/dashboard/UserDashboard';
 import AIChatbotModal from './components/chatbot/AIChatbotModal';
 import AuthPortal from './components/auth/AuthPortal';
 import AdminDashboardView from './components/admin/AdminDashboardView';
+import DoctorPortalView from './components/doctor/DoctorPortalView';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -74,15 +75,21 @@ function MainApp() {
   const effectiveTab = !currentUser ? 'home' : activeTab;
 
   return (
-    <div className="min-h-screen bg-[#F6F4ED] text-[#18231C] flex flex-col selection:bg-[#235339]/20 selection:text-[#235339]">
-      {/* Navigation Header */}
-      <Navbar />
+    <div className="min-h-screen bg-[#F6F4ED] text-[#18231C] flex flex-col selection:bg-[#235339]/20 selection:text-[#235339] print:bg-white print:min-h-0">
+      {/* Navigation Header (hidden when printing) */}
+      <div className="print:hidden">
+        <Navbar />
+      </div>
 
       {/* Main Content Area */}
-      <main className="flex-1">
+      <main className="flex-1 print:flex-none print:p-0">
         {effectiveTab === 'home' && <HeroSection />}
 
-        {effectiveTab === 'dashboard' && <UserDashboard />}
+        {effectiveTab === 'dashboard' && (currentUser?.role === 'clinician' ? <DoctorPortalView initialStep="dashboard" /> : <UserDashboard />)}
+        {effectiveTab === 'doctor-dashboard' && <DoctorPortalView initialStep="dashboard" />}
+        {effectiveTab === 'doctor-patients' && <DoctorPortalView initialStep="patients" />}
+        {effectiveTab === 'doctor-review' && <DoctorPortalView initialStep="review" />}
+        {effectiveTab === 'doctor-report' && <DoctorPortalView initialStep="report" />}
         {effectiveTab === 'risk-checker' && <MedicineRiskView />}
         {effectiveTab === 'interactions' && <DrugInteractionView />}
         {effectiveTab === 'ocr' && <PrescriptionOCRView />}
@@ -97,13 +104,15 @@ function MainApp() {
         <Footer />
       </div>
 
-      {/* Modals & Overlays */}
-      <EmergencyModal />
-      <AIChatbotModal />
-      {isAuthModalOpen && (
-        <AuthPortal isModal={true} onClose={() => setIsAuthModalOpen(false)} />
-      )}
-      <Toast />
+      {/* Modals & Overlays (hidden when printing) */}
+      <div className="print:hidden">
+        <EmergencyModal />
+        <AIChatbotModal />
+        {isAuthModalOpen && (
+          <AuthPortal isModal={true} onClose={() => setIsAuthModalOpen(false)} />
+        )}
+        <Toast />
+      </div>
     </div>
   );
 }
