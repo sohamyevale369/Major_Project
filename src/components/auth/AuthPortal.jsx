@@ -262,19 +262,6 @@ export default function AuthPortal({ isModal = false, onClose = null }) {
     }, 400);
   };
 
-  // Quick 1-click Doctor Login
-  const handleDoctorQuickLogin = (email, password) => {
-    setErrorMessage('');
-    setLoading(true);
-    setTimeout(() => {
-      const result = login(email, password);
-      setLoading(false);
-      if (!result.success) {
-        setErrorMessage(result.message);
-      }
-    }, 350);
-  };
-
   // Handle Register Submit
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();
@@ -599,96 +586,97 @@ export default function AuthPortal({ isModal = false, onClose = null }) {
                       ? 'bg-[#235339] text-white'
                       : 'bg-sky-100 text-sky-900 border border-sky-300 group-hover:bg-[#235339] group-hover:text-white'
                   }`}>
-                    <span>{showDoctorInput ? 'Hide Options ▲' : 'Doctor Sign In ▼'}</span>
+                    <span>{showDoctorInput ? 'Hide Inputs ▲' : 'Input Credentials ▼'}</span>
                   </div>
                 </button>
 
-                {/* Doctor Login Options (1-click Verified Clinicians or Manual Input) */}
+                {/* Doctor Login Credentials Input */}
                 {showDoctorInput && (
-                  <div className="p-4 rounded-2xl bg-sky-50/70 border-2 border-sky-200 space-y-3.5 animate-fade-in text-left shadow-sm">
+                  <div className="p-4 rounded-2xl bg-sky-50/80 border-2 border-sky-200 space-y-3 animate-fade-in text-left mt-2 shadow-sm">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-sky-950 font-mono uppercase">
-                        Select Verified Clinician Account:
-                      </span>
-                      <span className="text-[10px] font-mono text-sky-700 bg-white px-2 py-0.5 rounded-full border border-sky-200">
-                        1-Click Access
+                      <div className="flex items-center gap-2">
+                        <Stethoscope className="w-4 h-4 text-sky-700" />
+                        <span className="text-xs font-bold text-[#18231C]">
+                          Input Doctor Credentials
+                        </span>
+                      </div>
+                      <span className="text-[10px] uppercase font-bold text-sky-800 bg-sky-100 border border-sky-200 px-2 py-0.5 rounded-full font-mono">
+                        Clinician Verification
                       </span>
                     </div>
 
-                    {/* Pre-seeded verified Doctors */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleDoctorQuickLogin('dr.sharma@medisafe.ai', 'Doctor@123')}
-                        className="p-3 rounded-xl bg-white border border-sky-200 hover:border-[#235339] hover:shadow-xs transition text-left space-y-1 group"
-                      >
-                        <div className="font-bold text-xs text-[#18231C] group-hover:text-[#235339]">
-                          Dr. Rajesh Sharma, MD
-                        </div>
-                        <div className="text-[10px] text-[#5A645D]">
-                          Internal Medicine & Pharmacology
-                        </div>
-                        <div className="text-[10px] font-mono text-sky-800 font-bold">
-                          dr.sharma@medisafe.ai
-                        </div>
-                      </button>
+                    <p className="text-[11px] text-[#5A645D] leading-relaxed">
+                      Enter your clinician credentials below:
+                    </p>
 
-                      <button
-                        type="button"
-                        onClick={() => handleDoctorQuickLogin('dr.adams@medisafe.ai', 'Doctor@123')}
-                        className="p-3 rounded-xl bg-white border border-sky-200 hover:border-[#235339] hover:shadow-xs transition text-left space-y-1 group"
-                      >
-                        <div className="font-bold text-xs text-[#18231C] group-hover:text-[#235339]">
-                          Dr. Helen Adams, FACC
+                    {/* Manual Input Fields for Credentials */}
+                    <div className="space-y-2.5 pt-1">
+                      <div>
+                        <label className="block text-[11px] font-bold text-[#18231C] mb-1">
+                          Doctor Email Address
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="email"
+                            required
+                            autoComplete="off"
+                            value={doctorInputEmail}
+                            onChange={(e) => setDoctorInputEmail(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && doctorInputEmail && doctorInputPassword) {
+                                handleDoctorCredentialsSubmit(e);
+                              }
+                            }}
+                            placeholder="Enter doctor email address"
+                            className="ivory-input w-full pl-9 pr-3 py-2 text-xs font-mono bg-white border-sky-200 focus:border-sky-600"
+                          />
+                          <Mail className="w-3.5 h-3.5 text-sky-700 absolute left-3 top-2.5" />
                         </div>
-                        <div className="text-[10px] text-[#5A645D]">
-                          Cardiovascular Care Unit
-                        </div>
-                        <div className="text-[10px] font-mono text-sky-800 font-bold">
-                          dr.adams@medisafe.ai
-                        </div>
-                      </button>
-                    </div>
+                      </div>
 
-                    {/* Or Manual Doctor Credentials Input */}
-                    <div className="pt-2 border-t border-sky-200/80 space-y-2.5">
-                      <span className="text-[11px] font-bold text-sky-950 block">
-                        Or enter other doctor credentials:
-                      </span>
-                      <div className="space-y-2">
-                        <input
-                          type="email"
-                          value={doctorInputEmail}
-                          onChange={(e) => setDoctorInputEmail(e.target.value)}
-                          placeholder="Doctor Email (e.g. doctor@hospital.org)"
-                          className="ivory-input w-full px-3 py-2 text-xs bg-white"
-                        />
+                      <div>
+                        <label className="block text-[11px] font-bold text-[#18231C] mb-1">
+                          Doctor Password
+                        </label>
                         <div className="relative">
                           <input
                             type={showDoctorPassword ? 'text' : 'password'}
+                            required
+                            autoComplete="new-password"
                             value={doctorInputPassword}
                             onChange={(e) => setDoctorInputPassword(e.target.value)}
-                            placeholder="Doctor Password"
-                            className="ivory-input w-full px-3 py-2 pr-9 text-xs bg-white"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && doctorInputEmail && doctorInputPassword) {
+                                handleDoctorCredentialsSubmit(e);
+                              }
+                            }}
+                            placeholder="Enter doctor password"
+                            className="ivory-input w-full pl-9 pr-9 py-2 text-xs font-mono bg-white border-sky-200 focus:border-sky-600"
                           />
+                          <Lock className="w-3.5 h-3.5 text-sky-700 absolute left-3 top-2.5" />
                           <button
                             type="button"
                             onClick={() => setShowDoctorPassword(!showDoctorPassword)}
-                            className="p-1 absolute right-2.5 top-2 text-[#6A746C]"
+                            className="p-1 absolute right-2.5 top-2 text-[#6A746C] hover:text-[#18231C]"
+                            aria-label={showDoctorPassword ? 'Hide password' : 'Show password'}
                           >
                             {showDoctorPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                           </button>
                         </div>
-                        <button
-                          type="button"
-                          disabled={loading || !doctorInputEmail || !doctorInputPassword}
-                          onClick={handleDoctorCredentialsSubmit}
-                          className="pill-btn-primary w-full py-2 text-xs font-bold shadow-sm disabled:opacity-50"
-                        >
-                          Sign In as Doctor →
-                        </button>
                       </div>
                     </div>
+
+                    {/* Submit Button */}
+                    <button
+                      type="button"
+                      id="btn-submit-doctor"
+                      disabled={loading || !doctorInputEmail || !doctorInputPassword}
+                      onClick={handleDoctorCredentialsSubmit}
+                      className="w-full py-2 px-3 rounded-xl bg-sky-700 hover:bg-sky-800 text-white text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <Stethoscope className="w-3.5 h-3.5" />
+                      <span>Sign In as Doctor</span>
+                    </button>
                   </div>
                 )}
               </div>

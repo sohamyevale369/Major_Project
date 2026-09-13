@@ -20,7 +20,9 @@ import {
   HeartPulse,
   KeyRound,
   LogIn,
-  FileCheck
+  FileCheck,
+  Users,
+  Briefcase
 } from 'lucide-react';
 import { useHealth } from '../../context/HealthContext';
 import BrandLogo from './BrandLogo';
@@ -63,7 +65,9 @@ export default function Navbar() {
     ? [
         { id: 'admin', label: 'Admin Console & Patients', icon: ShieldCheck, adminBadge: true },
         { id: 'interactions', label: 'Drug Interactions DB', icon: RefreshCw },
-        { id: 'ocr', label: 'Prescription OCR Tool', icon: Camera }
+        { id: 'ocr', label: 'Prescription OCR Tool', icon: Camera },
+        { id: 'about', label: 'About Us', icon: Users },
+        { id: 'careers', label: 'Careers', icon: Briefcase }
       ]
     : isClinician
     ? [
@@ -73,7 +77,9 @@ export default function Navbar() {
         { id: 'risk-checker', label: 'Medicine Risk Check', icon: Pill },
         { id: 'interactions', label: 'Drug Interactions', icon: RefreshCw },
         { id: 'ocr', label: 'Prescription OCR', icon: Camera },
-        { id: 'doctor-report', label: 'Final Reports', icon: FileCheck }
+        { id: 'doctor-report', label: 'Final Reports', icon: FileCheck },
+        { id: 'about', label: 'About Us', icon: Users },
+        { id: 'careers', label: 'Careers', icon: Briefcase }
       ]
     : [
         { id: 'home', label: 'Home', icon: Shield },
@@ -82,7 +88,9 @@ export default function Navbar() {
         { id: 'interactions', label: 'Drug Interactions', icon: RefreshCw },
         { id: 'ocr', label: 'Prescription OCR', icon: Camera },
         { id: 'profile', label: 'Health Profile', icon: User },
-        { id: 'history', label: 'History & Report', icon: History }
+        { id: 'history', label: 'History & Report', icon: History },
+        { id: 'about', label: 'About Us', icon: Users },
+        { id: 'careers', label: 'Careers', icon: Briefcase }
       ];
 
   const handleNavClick = (id) => {
@@ -90,8 +98,11 @@ export default function Navbar() {
       showToast('No access to Admin Console for patients and doctors.', 'error');
       return;
     }
-    if (id !== 'home' && !currentUser) {
-      requireAuth(() => setActiveTab(id), 'Please sign in or register to access this clinical safety feature.');
+
+    // Public pages that do NOT require sign-in: home, about, careers, risk-checker, interactions, ocr
+    const publicNavIds = ['home', 'about', 'careers', 'risk-checker', 'interactions', 'ocr'];
+    if (!currentUser && !publicNavIds.includes(id)) {
+      requireAuth(() => setActiveTab(id), 'Please sign in or register to access this personal patient feature.');
       setMobileMenuOpen(false);
       return;
     }

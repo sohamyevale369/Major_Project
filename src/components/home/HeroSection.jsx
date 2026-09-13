@@ -392,10 +392,6 @@ export default function HeroSection() {
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 pt-2">
                 <button
                   onClick={() => {
-                    if (!currentUser) {
-                      requireAuth(() => setActiveTab('risk-checker'), 'Please sign in or register to check medicine safety.');
-                      return;
-                    }
                     setActiveTab('risk-checker');
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
@@ -407,10 +403,6 @@ export default function HeroSection() {
 
                 <button
                   onClick={() => {
-                    if (!currentUser) {
-                      requireAuth(() => setActiveTab('ocr'), 'Please sign in or register to upload and scan prescriptions.');
-                      return;
-                    }
                     setActiveTab('ocr');
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}

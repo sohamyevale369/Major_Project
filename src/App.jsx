@@ -16,6 +16,8 @@ import AIChatbotModal from './components/chatbot/AIChatbotModal';
 import AuthPortal from './components/auth/AuthPortal';
 import AdminDashboardView from './components/admin/AdminDashboardView';
 import DoctorPortalView from './components/doctor/DoctorPortalView';
+import AboutUsView from './components/about/AboutUsView';
+import CareersView from './components/careers/CareersView';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -71,8 +73,9 @@ function MainApp() {
     );
   }, []);
 
-  // When not logged in, the active tab displayed is always the 'home' landing page
-  const effectiveTab = !currentUser ? 'home' : activeTab;
+  // Public tabs accessible to all users without requiring sign-in
+  const publicTabs = ['home', 'about', 'careers', 'risk-checker', 'interactions', 'ocr'];
+  const effectiveTab = (!currentUser && !publicTabs.includes(activeTab)) ? 'home' : activeTab;
 
   return (
     <div className="min-h-screen bg-[#F6F4ED] text-[#18231C] flex flex-col selection:bg-[#235339]/20 selection:text-[#235339] print:bg-white print:min-h-0">
@@ -97,6 +100,8 @@ function MainApp() {
         {effectiveTab === 'history' && <MedicationHistoryView />}
         {effectiveTab === 'report' && <SafetyReportView />}
         {effectiveTab === 'admin' && <AdminDashboardView />}
+        {effectiveTab === 'about' && <AboutUsView />}
+        {effectiveTab === 'careers' && <CareersView />}
       </main>
 
       {/* Footer (hidden when printing) */}

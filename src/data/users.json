@@ -82,12 +82,16 @@
     "licenseNumber": "",
     "age": 23,
     "gender": "Male",
-    "chronicDiseases": [],
-    "allergies": [],
+    "chronicDiseases": [
+      "Chronic Kidney Disease"
+    ],
+    "allergies": [
+      "Sulfa Drugs (Sulfonamides)"
+    ],
     "status": "Active",
     "isNewUser": false,
     "registeredAt": "2026-09-05T06:45:33.394Z",
-    "lastLogin": "2026-09-09T15:42:54.943Z",
+    "lastLogin": "2026-09-10T14:01:01.073Z",
     "notes": "Registered through MediSafe AI online portal.",
     "weight": 70,
     "currentMedicines": [],
@@ -141,7 +145,7 @@
     "status": "Active",
     "isNewUser": false,
     "registeredAt": "2024-03-15T09:00:00.000Z",
-    "lastLogin": "2026-09-10T04:16:16.863Z",
+    "lastLogin": "2026-09-10T14:10:25.764Z",
     "notes": "Chief Attending Physician. Consulted for senior nephrotoxicity alerts."
   },
   {
@@ -292,7 +296,7 @@
     "status": "Active",
     "isNewUser": true,
     "registeredAt": "2026-09-05T08:30:45.562Z",
-    "lastLogin": "2026-09-09T14:19:12.556Z",
+    "lastLogin": "2026-09-10T14:20:57.399Z",
     "notes": "Registered through MediSafe AI online portal."
   }
 ]
